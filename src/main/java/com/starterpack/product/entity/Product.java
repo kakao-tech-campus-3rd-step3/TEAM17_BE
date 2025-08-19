@@ -49,6 +49,43 @@ public class Product {
     @ManyToMany(mappedBy = "products")
     private Set<Pack> packs = new HashSet<>();
 
+    public Product() {}
+
+    public Product(Long id, String name, String link, String productType, String src, Integer cost, Category category) {
+        this.id = id;
+        this.name = name;
+        this.link = link;
+        this.productType = productType;
+        this.src = src;
+        this.cost = cost;
+        this.category = category;
+    }
+
+    public Product(String name, String link, String productType, String src, Integer cost, Category category) {
+        this(null, name, link, productType, src, cost, category);
+    }
+
+    public void update(String name, String link, String productType, String src, Integer cost, Category category) {
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+        if (link != null && !link.isBlank()) {
+            this.link = link;
+        }
+        if (productType != null && !productType.isBlank()) {
+            this.productType = productType;
+        }
+        if (src != null && !src.isBlank()) {
+            this.src = src;
+        }
+        if (cost != null) {
+            this.cost = cost;
+        }
+        if (category != null) {
+            this.category = category;
+        }
+    }
+
     // --- getters/setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
