@@ -1,5 +1,6 @@
-package com.starterpack.product;
+package com.starterpack.repository;
 
+import com.starterpack.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

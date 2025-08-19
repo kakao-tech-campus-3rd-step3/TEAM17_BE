@@ -1,7 +1,6 @@
-package com.starterpack.pack;
+package com.starterpack.entity;
 
-import com.starterpack.category.Category;
-import com.starterpack.product.Product;
+import com.starterpack.entity.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
