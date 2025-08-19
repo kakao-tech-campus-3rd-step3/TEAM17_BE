@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>카테고리 등록/수정</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+</head>
+<body>
+<h1 th:text="${category.id == null} ? '새 카테고리 등록' : '카테고리 수정'"></h1>
+
+<form th:action="${category.id == null} ? @{/admin/categories/add} : @{/admin/categories/{id}/edit(id=${category.id})}"
+      th:object="${category}" method="post">
+
+  <input type="hidden" th:field="*{id}" />
+
+  <div>
+    <label for="name">카테고리 이름:</label>
+    <input type="text" id="name" th:field="*{name}" required />
+  </div>
+  <div>
+    <label for="src">이미지 주소:</label>
+    <input type="text" id="src" th:field="*{src}" />
+  </div>
+
+  <button type="submit" class="btn-like-link">저장</button>
+  <a th:href="@{/admin/categories}" class="btn-like-link">취소</a>
+</form>
+</body>
+</html>

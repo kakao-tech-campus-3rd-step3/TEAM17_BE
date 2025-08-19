@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>카테고리 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+</head>
+<body>
+<h1>카테고리 목록</h1>
+
+<div th:if="${message}" th:text="${message}" class="alert alert-success"></div>
+
+<a href="/admin/categories/add" class="btn-like-link">새 카테고리 등록</a>
+
+<table border="1">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>이름</th>
+    <th>이미지 SRC</th>
+    <th>관리</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="category : ${categories}">
+    <td th:text="${category.id}">1</td>
+    <td th:text="${category.name}">의류</td>
+    <td th:text="${category.src}">/img/category/cloth.png</td>
+    <td>
+      <a th:href="@{/admin/categories/{id}/edit(id=${category.id})}" class="btn-like-link">수정</a>
+      <form th:action="@{/admin/categories/{id}/delete(id=${category.id})}" method="post" style="display:inline;">
+        <button type="submit" class="btn-like-link" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
