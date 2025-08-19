@@ -1,6 +1,6 @@
-package com.starterpack.repository;
+package com.starterpack.category.repository;
 
-import com.starterpack.entity.Category;
+import com.starterpack.category.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

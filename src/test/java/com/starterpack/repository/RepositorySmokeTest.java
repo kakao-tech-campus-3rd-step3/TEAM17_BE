@@ -1,6 +1,11 @@
 package com.starterpack.repository;
 
-import com.starterpack.entity.*;
+import com.starterpack.category.entity.Category;
+import com.starterpack.category.repository.CategoryRepository;
+import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.repository.PackRepository;
+import com.starterpack.product.entity.Product;
+import com.starterpack.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -14,9 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 class RepositorySmokeTest {
 
-    @Autowired CategoryRepository categoryRepository;
-    @Autowired ProductRepository productRepository;
-    @Autowired PackRepository packRepository;
+    @Autowired
+    CategoryRepository categoryRepository;
+    @Autowired
+    ProductRepository productRepository;
+    @Autowired
+    PackRepository packRepository;
 
     @Test
     void category_product_pack_CRUD_and_relations() {
