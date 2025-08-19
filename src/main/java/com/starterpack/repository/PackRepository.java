@@ -1,5 +1,6 @@
-package com.starterpack.pack;
+package com.starterpack.repository;
 
+import com.starterpack.entity.Pack;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
