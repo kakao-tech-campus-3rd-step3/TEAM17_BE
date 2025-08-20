@@ -25,7 +25,7 @@ public class PackService {
 
     @Transactional(readOnly = true)
     public List<PackResponseDto> getPacks() {
-        return packRepository.findAllWithProducts().stream()
+        return packRepository.findAll().stream()
                 .map(PackResponseDto::from)
                 .toList();
     }
