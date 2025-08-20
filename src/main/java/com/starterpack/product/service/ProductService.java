@@ -63,9 +63,9 @@ public class ProductService {
 
         Product product = new Product(
                 productCreateRequestDto.name(),
+                productCreateRequestDto.link(),
                 productCreateRequestDto.productType(),
                 productCreateRequestDto.src(),
-                productCreateRequestDto.link(),
                 productCreateRequestDto.cost(),
                 category
         );
