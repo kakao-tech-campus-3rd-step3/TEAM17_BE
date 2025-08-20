@@ -6,12 +6,13 @@
   <style>.error { color: red; }</style>
 </head>
 <body>
-<h1 th:text="${productDto.id == null} ? '새 상품 등록' : '상품 수정'">상품 폼</h1>
+<h1 th:text="${productId == null} ? '새 상품 등록' : '상품 수정'">상품 폼</h1>
 
-<form th:action="${productDto.id == null} ? @{/admin/products/add} : @{/admin/products/{id}/edit(id=${productDto.id})}"
+<form th:action="${productId == null} ? @{/admin/products/add} : @{/admin/products/{id}/edit(id=${productId})}"
       th:object="${productDto}" method="post">
 
-  <input type="hidden" th:field="*{id}" />
+  <input type="hidden" name="id" th:value="${productId}" />
+
   <div>
     <label for="name">상품 이름:</label>
     <input type="text" id="name" th:field="*{name}" />

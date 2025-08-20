@@ -23,38 +23,6 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public Product saveProduct(Product product, Long categoryId) {
-        if (product.getId() != null) {
-            Product existingProduct = findProductById(product.getId());
-            existingProduct.setName(product.getName());
-            existingProduct.setLink(product.getLink());
-            existingProduct.setProductType(product.getProductType());
-            existingProduct.setSrc(product.getSrc());
-            existingProduct.setCost(product.getCost());
-            product = existingProduct;
-        }
-
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid category Id:" + categoryId));
-            product.setCategory(category);
-        } else {
-            product.setCategory(null);
-        }
-        return productRepository.save(product);
-    }
-
-
-    public Product findProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid product Id:" + id));
-    }
-
-    public List<Product> findAllProducts() {
-        return productRepository.findAll();
-    }
-
-    //여기서부터 시작
     public ProductDetailResponseDto createProduct(ProductCreateRequestDto productCreateRequestDto) {
         Category category = getCategoryByCategoryId(productCreateRequestDto.categoryId());
 
@@ -108,7 +76,7 @@ public class ProductService {
                 productUpdateRequestDto.cost(),
                 category);
 
-        return ProductDetailResponseDto.from(productRepository.save(product));
+        return ProductDetailResponseDto.from(product);
     }
 
     public void deleteProduct(Long productId) {

@@ -1,8 +1,9 @@
 package com.starterpack.admin.product;
 
 import com.starterpack.category.service.CategoryService;
-import com.starterpack.product.dto.ProductRequestDto;
-import com.starterpack.product.entity.Product;
+import com.starterpack.product.dto.ProductCreateRequestDto;
+import com.starterpack.product.dto.ProductDetailResponseDto;
+import com.starterpack.product.dto.ProductUpdateRequestDto;
 import com.starterpack.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,66 +23,75 @@ public class AdminProductController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("products", productService.findAllProducts());
+        model.addAttribute("products", productService.getProductsForAdmin());
         return "admin/products/list";
     }
 
     @GetMapping("/add")
     public String addForm(Model model) {
-        model.addAttribute("productDto", new ProductRequestDto());
+        model.addAttribute("productDto", ProductCreateRequestDto.emptyForm());
         model.addAttribute("categories", categoryService.findAllCategories());
         return "admin/products/form";
     }
 
     @PostMapping("/add")
-    public String add(@Valid @ModelAttribute("productDto") ProductRequestDto dto,
-            BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    public String add(
+            @Valid @ModelAttribute("productDto") ProductCreateRequestDto createDto,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.findAllCategories());
             return "admin/products/form";
         }
-        Product product = new Product();
-        product.setName(dto.getName());
-        product.setLink(dto.getLink());
-        product.setProductType(dto.getProductType());
-        product.setSrc(dto.getSrc());
-        product.setCost(dto.getCost());
-
-        Product savedProduct = productService.saveProduct(product, dto.getCategoryId());
-        redirectAttributes.addFlashAttribute("message", "상품 '" + savedProduct.getName() + "' 등록 완료");
+        ProductDetailResponseDto savedProductDto = productService.createProduct(createDto);
+        redirectAttributes.addFlashAttribute("message", "상품 '" + savedProductDto.name() + "' 등록 완료");
         return "redirect:/admin/products";
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        Product product = productService.findProductById(id);
-        model.addAttribute("productDto", new ProductRequestDto(product)); // Entity -> DTO 변환
+    public String editForm(
+            @PathVariable Long id,
+            Model model) {
+        ProductDetailResponseDto productDetail = productService.getProductDetail(id);
+
+        ProductUpdateRequestDto updateDto = new ProductUpdateRequestDto(
+                productDetail.name(),
+                productDetail.link(),
+                productDetail.productType(),
+                productDetail.src(),
+                productDetail.cost(),
+                productDetail.categoryId()
+        );
+
+        model.addAttribute("productDto", updateDto); // Entity -> DTO 변환
         model.addAttribute("categories", categoryService.findAllCategories());
+        model.addAttribute("productId", id);
         return "admin/products/form";
     }
 
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, @Valid @ModelAttribute("productDto") ProductRequestDto dto,
-            BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    public String edit(
+            @PathVariable Long id,
+            @Valid @ModelAttribute("productDto") ProductUpdateRequestDto updateRequestDto,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.findAllCategories());
+            model.addAttribute("productId", id);
             return "admin/products/form";
         }
-        Product product = new Product();
-        product.setId(id);
-        product.setName(dto.getName());
-        product.setLink(dto.getLink());
-        product.setProductType(dto.getProductType());
-        product.setSrc(dto.getSrc());
-        product.setCost(dto.getCost());
 
-        Product updatedProduct = productService.saveProduct(product, dto.getCategoryId());
-        redirectAttributes.addFlashAttribute("message", "상품 '" + updatedProduct.getName() + "' 수정 완료");
+        ProductDetailResponseDto updateResponseDto = productService.updateProduct(id, updateRequestDto);
+        redirectAttributes.addFlashAttribute("message", "상품 '" + updateResponseDto.name() + "' 수정 완료");
         return "redirect:/admin/products";
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String delete(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes) {
         productService.deleteProduct(id);
         redirectAttributes.addFlashAttribute("message", "상품 삭제 완료");
         return "redirect:/admin/products";
