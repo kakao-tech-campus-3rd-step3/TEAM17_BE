@@ -3,10 +3,7 @@ package com.starterpack.product.service;
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 
-import com.starterpack.product.dto.ProductCreateRequestDto;
-import com.starterpack.product.dto.ProductDetailResponseDto;
-import com.starterpack.product.dto.ProductSimpleResponseDto;
-import com.starterpack.product.dto.ProductUpdateRequestDto;
+import com.starterpack.product.dto.*;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -87,6 +84,14 @@ public class ProductService {
 
         return products.stream()
                 .map(ProductSimpleResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> getProductsForAdmin(){
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(ProductAdminListDto::from)
                 .collect(Collectors.toList());
     }
 
