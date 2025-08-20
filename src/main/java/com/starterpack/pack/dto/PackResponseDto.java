@@ -2,6 +2,7 @@ package com.starterpack.pack.dto;
 
 import com.starterpack.pack.entity.Pack;
 import java.util.List;
+import java.util.Objects;
 
 public record PackResponseDto(
         Long id,
@@ -13,14 +14,17 @@ public record PackResponseDto(
 ) {
     public static PackResponseDto from(Pack pack) {
         List<List<String>> parts = pack.getProducts().stream()
-                .map(p -> List.of(p.getName(), p.getSrc()))
+                .map(p -> List.of(
+                        Objects.toString(p.getName(), ""),
+                        Objects.toString(p.getSrc(), "")
+                ))
                 .toList();
 
         return new PackResponseDto(
                 pack.getId(),
-                pack.getName(),
+                Objects.toString(pack.getName(), ""),
                 pack.getTotalCost(),
-                pack.getDescription(),
+                Objects.toString(pack.getDescription(), ""),
                 parts,
                 pack.getPackLikeCount()
         );
