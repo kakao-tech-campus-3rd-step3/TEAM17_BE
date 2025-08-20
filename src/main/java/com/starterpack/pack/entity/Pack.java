@@ -29,6 +29,9 @@ public class Pack {
     @JoinColumn(name = "category_id") // ERD: category
     private Category category;
 
+    @Column(name = "name", length = 100, nullable = false)
+    private String name;
+
     @Column(name = "total_cost")
     private Integer totalCost;
 
@@ -65,6 +68,8 @@ public class Pack {
     public void setId(Long id) { this.id = id; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public Integer getTotalCost() { return totalCost; }
     public void setTotalCost(Integer totalCost) { this.totalCost = totalCost; }
     public Integer getPackLikeCount() { return packLikeCount; }
