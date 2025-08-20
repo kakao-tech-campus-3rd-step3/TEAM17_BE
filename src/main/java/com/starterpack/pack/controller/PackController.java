@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 @RestController
-@RequestMapping("/api/staterPack")
+@RequestMapping("/api/starterPack")
 public class PackController {
 
     private final PackService packService;
