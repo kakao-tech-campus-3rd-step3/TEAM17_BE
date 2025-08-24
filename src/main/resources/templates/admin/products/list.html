@@ -26,7 +26,7 @@
     <td>
       <a th:href="${product.link}" th:text="${product.name}" target="_blank">상품명</a>
     </td>
-    <td th:text="${product.category?.name}">미지정</td>
+    <td th:text="${product.categoryName}">미지정</td>
     <td th:text="${product.productType}">타입</td>
     <td th:text="${product.cost}">10000</td>
     <td>

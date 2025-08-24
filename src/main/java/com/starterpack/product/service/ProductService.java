@@ -3,10 +3,7 @@ package com.starterpack.product.service;
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 
-import com.starterpack.product.dto.ProductCreateRequestDto;
-import com.starterpack.product.dto.ProductDetailResponseDto;
-import com.starterpack.product.dto.ProductSimpleResponseDto;
-import com.starterpack.product.dto.ProductUpdateRequestDto;
+import com.starterpack.product.dto.*;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -26,38 +23,6 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public Product saveProduct(Product product, Long categoryId) {
-        if (product.getId() != null) {
-            Product existingProduct = findProductById(product.getId());
-            existingProduct.setName(product.getName());
-            existingProduct.setLink(product.getLink());
-            existingProduct.setProductType(product.getProductType());
-            existingProduct.setSrc(product.getSrc());
-            existingProduct.setCost(product.getCost());
-            product = existingProduct;
-        }
-
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid category Id:" + categoryId));
-            product.setCategory(category);
-        } else {
-            product.setCategory(null);
-        }
-        return productRepository.save(product);
-    }
-
-
-    public Product findProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid product Id:" + id));
-    }
-
-    public List<Product> findAllProducts() {
-        return productRepository.findAll();
-    }
-
-    //여기서부터 시작
     public ProductDetailResponseDto createProduct(ProductCreateRequestDto productCreateRequestDto) {
         Category category = getCategoryByCategoryId(productCreateRequestDto.categoryId());
 
@@ -90,6 +55,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> getProductsForAdmin(){
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
     public ProductDetailResponseDto updateProduct(Long productId, ProductUpdateRequestDto productUpdateRequestDto) {
         Product product = getProduct(productId);
 
@@ -103,7 +76,7 @@ public class ProductService {
                 productUpdateRequestDto.cost(),
                 category);
 
-        return ProductDetailResponseDto.from(productRepository.save(product));
+        return ProductDetailResponseDto.from(product);
     }
 
     public void deleteProduct(Long productId) {
