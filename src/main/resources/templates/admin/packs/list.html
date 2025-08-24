@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>패키지 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+</head>
+<body>
+<h1>패키지 목록</h1>
+
+<div th:if="${message}" th:text="${message}">성공 메시지</div>
+<a th:href="@{/admin/packs/add}" class="btn-like-link">새 패키지 등록</a>
+
+<table border="1">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>이름</th>
+    <th>구성수</th>
+    <th>총 비용</th>
+    <th>좋아요</th>
+    <th>관리</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="pack : ${packs}">
+    <td th:text="${pack.id}">1</td>
+    <td th:text="${pack.name}">패키지명</td>
+    <!-- PackResponseDto.parts: List<List<String>> 이므로 size 로 구성수 표시 -->
+    <td th:text="${#lists.size(pack.parts)}">0</td>
+    <td th:text="${pack.cost}">0</td>
+    <td th:text="${pack.like}">0</td>
+    <td>
+      <a th:href="@{/admin/packs/{id}/edit(id=${pack.id})}" class="btn-like-link">수정</a>
+      <form th:action="@{/admin/packs/{id}/delete(id=${pack.id})}" method="post" style="display:inline;">
+        <button type="submit" class="btn-like-link" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
