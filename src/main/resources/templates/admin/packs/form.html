@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>패키지 등록/수정</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>.error { color: red; }</style>
+</head>
+<body>
+<h1 th:text="${packId == null} ? '새 패키지 등록' : '패키지 수정'">패키지 폼</h1>
+
+<form th:action="${packId == null} ? @{/admin/packs/add} : @{/admin/packs/{id}/edit(id=${packId})}"
+      th:object="${packDto}" method="post">
+
+  <input type="hidden" name="id" th:value="${packId}" />
+
+  <div>
+    <label for="name">패키지 이름:</label>
+    <input type="text" id="name" th:field="*{name}" />
+    <div class="error" th:errors="*{name}"></div>
+  </div>
+
+  <div>
+    <label for="categoryId">카테고리:</label>
+    <select id="categoryId" th:field="*{categoryId}">
+      <option value="">-- 카테고리 선택 --</option>
+      <option th:each="category : ${categories}"
+              th:value="${category.id}"
+              th:text="${category.name}">카테고리명</option>
+    </select>
+    <div class="error" th:errors="*{categoryId}"></div>
+  </div>
+
+  <div>
+    <label for="productIds">구성 상품:</label>
+    <!-- 다중 선택 -->
+    <select id="productIds" th:field="*{productIds}" multiple size="10" style="min-width: 320px;">
+      <option th:each="p : ${products}"
+              th:value="${p.id}"
+              th:text="${p.name} + ' (' + ${p.cost} + ')'"
+      >상품명</option>
+    </select>
+    <div class="hint">※ 여러 개를 선택하려면 Ctrl/⌘ 또는 Shift를 사용하세요.</div>
+    <div class="error" th:errors="*{productIds}"></div>
+  </div>
+
+  <div>
+    <label for="totalCost">총 비용:</label>
+    <input type="number" id="totalCost" th:field="*{totalCost}" />
+    <div class="error" th:errors="*{totalCost}"></div>
+  </div>
+
+  <div>
+    <label for="src">이미지 SRC:</label>
+    <input type="text" id="src" th:field="*{src}" />
+    <div class="error" th:errors="*{src}"></div>
+  </div>
+
+  <div>
+    <label for="description">설명:</label>
+    <textarea id="description" th:field="*{description}" rows="5" style="min-width: 320px;"></textarea>
+    <div class="error" th:errors="*{description}"></div>
+  </div>
+
+  <button type="submit" class="btn-like-link">저장</button>
+  <a th:href="@{/admin/packs}" class="btn-like-link">취소</a>
+</form>
+</body>
+</html>

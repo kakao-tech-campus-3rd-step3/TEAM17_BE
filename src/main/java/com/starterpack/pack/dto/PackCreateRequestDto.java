@@ -14,4 +14,8 @@ public record PackCreateRequestDto(
         @PositiveOrZero Integer totalCost,
         String description,
         String src
-) {}
+) {
+    public static PackCreateRequestDto emptyForm() {
+        return new PackCreateRequestDto(null, "", null, null, "","");
+    }
+}

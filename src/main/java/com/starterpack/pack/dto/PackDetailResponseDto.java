@@ -6,6 +6,7 @@ import java.util.List;
 
 public record PackDetailResponseDto(
         Long id,
+        Long categoryId,
         String name,
         Integer cost,
         String description,
@@ -18,8 +19,11 @@ public record PackDetailResponseDto(
                 .map(PartDto::from)
                 .toList();
 
+        Long categoryId = (pack.getCategory() != null) ? pack.getCategory().getId() : null;
+
         return new PackDetailResponseDto(
                 pack.getId(),
+                categoryId,
                 pack.getName(),
                 pack.getTotalCost(),
                 pack.getDescription(),
