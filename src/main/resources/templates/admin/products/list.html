@@ -24,7 +24,10 @@
   <tr th:each="product : ${products}">
     <td th:text="${product.id}">1</td>
     <td>
-      <a th:href="${product.link}" th:text="${product.name}" target="_blank">상품명</a>
+      <a th:href="${product.link}" target="_blank" style="display:flex; align-items:center; gap:10px;">
+        <img th:src="${product.src}" alt="상품 이미지" style="width:60px; height:auto;" />
+        <span th:text="${product.name}">상품명</span>
+      </a>
     </td>
     <td th:text="${product.categoryName}">미지정</td>
     <td th:text="${product.productType}">타입</td>

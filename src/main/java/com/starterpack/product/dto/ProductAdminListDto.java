@@ -8,7 +8,8 @@ public record ProductAdminListDto(
         String link,
         String productType,
         Integer cost,
-        String categoryName
+        String categoryName,
+        String src
 ) {
     public static ProductAdminListDto from(Product product) {
         String categoryName = product.getCategory().getName();
@@ -19,7 +20,8 @@ public record ProductAdminListDto(
                 product.getLink(),
                 product.getProductType(),
                 product.getCost(),
-                categoryName
+                categoryName,
+                product.getSrc()
         );
     }
 }

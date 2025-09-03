@@ -47,7 +47,7 @@ CREATE TABLE product (
 -- ------------------------------------------------------------
 CREATE TABLE pack (
   id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  category_id      BIGINT UNSIGNED NULL, 
+  category_id      BIGINT UNSIGNED NULL,
   total_cost       INT UNSIGNED    NULL,
   pack_like_count  INT UNSIGNED    NOT NULL DEFAULT 0,
   src              VARCHAR(500)    NULL,
