@@ -72,6 +72,54 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    // 카테고리별 필터링하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> getProductsForAdminByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 검색과 카테고리 필터링을 함께 하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> searchProductsForAdminWithCategory(String keyword, Long categoryId) {
+        List<Product> products;
+        if (categoryId != null) {
+            products = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId);
+        } else {
+            products = productRepository.findByNameContainingIgnoreCase(keyword);
+        }
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 상품 목록을 정렬하는 메서드
+    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products, String sortBy, String sortOrder) {
+        return products.stream()
+                .sorted((p1, p2) -> {
+                    int comparison = 0;
+                    switch (sortBy) {
+                        case "name":
+                            comparison = p1.name().compareTo(p2.name());
+                            break;
+                        case "cost":
+                            comparison = p1.cost().compareTo(p2.cost());
+                            break;
+                        case "category":
+                            comparison = p1.categoryName().compareTo(p2.categoryName());
+                            break;
+                        case "id":
+                        default:
+                            comparison = p1.id().compareTo(p2.id());
+                            break;
+                    }
+                    return "desc".equals(sortOrder) ? -comparison : comparison;
+                })
+                .collect(Collectors.toList());
+    }
+
     public ProductDetailResponseDto updateProduct(Long productId, ProductUpdateRequestDto productUpdateRequestDto) {
         Product product = getProduct(productId);
 

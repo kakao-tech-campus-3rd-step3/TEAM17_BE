@@ -8,18 +8,51 @@
 <h1>상품 목록</h1>
 <div th:if="${message}" th:text="${message}">성공 메시지</div>
 
-<!-- 검색 폼 추가 -->
-<form th:action="@{/admin/products}" method="get" style="margin: 20px 0;">
-  <input type="text" name="keyword" th:value="${keyword}" placeholder="상품명으로 검색..." style="padding: 8px; width: 300px;">
-  <button type="submit" style="padding: 8px 16px; margin-left: 10px;">검색</button>
-  <a th:href="@{/admin/products}" style="margin-left: 10px;">전체보기</a>
+<!-- 검색 및 필터 폼 -->
+<form th:action="@{/admin/products}" method="get" style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+  <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    <div>
+      <label>검색:</label>
+      <input type="text" name="keyword" th:value="${keyword}" placeholder="상품명으로 검색..." style="padding: 8px; width: 200px;">
+    </div>
+    <div>
+      <label>카테고리:</label>
+      <select name="categoryId" style="padding: 8px;">
+        <option value="">전체</option>
+        <option th:each="category : ${categories}" 
+                th:value="${category.id}" 
+                th:text="${category.name}"
+                th:selected="${category.id == selectedCategoryId}"></option>
+      </select>
+    </div>
+    <div>
+      <label>정렬:</label>
+      <select name="sortBy" style="padding: 8px;">
+        <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+        <option value="name" th:selected="${sortBy == 'name'}">이름</option>
+        <option value="cost" th:selected="${sortBy == 'cost'}">가격</option>
+        <option value="category" th:selected="${sortBy == 'category'}">카테고리</option>
+      </select>
+      <select name="sortOrder" style="padding: 8px;">
+        <option value="asc" th:selected="${sortOrder == 'asc'}">오름차순</option>
+        <option value="desc" th:selected="${sortOrder == 'desc'}">내림차순</option>
+      </select>
+    </div>
+    <div>
+      <button type="submit" style="padding: 8px 16px;">적용</button>
+      <a th:href="@{/admin/products}" style="margin-left: 10px;">초기화</a>
+    </div>
+  </div>
 </form>
 
 <a th:href="@{/admin/products/add}" class="btn-like-link">새 상품 등록</a>
 
-<!-- 검색 결과 표시 -->
-<div th:if="${keyword != null and !keyword.isEmpty()}" style="margin: 10px 0; color: #666;">
-  '<span th:text="${keyword}"></span>' 검색 결과: <span th:text="${#lists.size(products)}"></span>개
+<!-- 검색/필터 결과 표시 -->
+<div th:if="${keyword != null and !keyword.isEmpty() or selectedCategoryId != null}" style="margin: 10px 0; color: #666;">
+  <span th:if="${keyword != null and !keyword.isEmpty()}">'<span th:text="${keyword}"></span>' 검색</span>
+  <span th:if="${keyword != null and !keyword.isEmpty() and selectedCategoryId != null}"> + </span>
+  <span th:if="${selectedCategoryId != null}">카테고리 필터</span>
+  결과: <span th:text="${#lists.size(products)}"></span>개
 </div>
 
 <table border="1">

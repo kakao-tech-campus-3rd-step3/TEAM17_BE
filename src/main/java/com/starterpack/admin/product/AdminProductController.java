@@ -25,15 +25,37 @@ public class AdminProductController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String list(@RequestParam(required = false) String keyword, Model model) {
+    public String list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder,
+            Model model) {
+        
         List<ProductAdminListDto> products;
+        
+        // 검색과 필터링
         if (keyword != null && !keyword.trim().isEmpty()) {
-            products = productService.searchProductsForAdmin(keyword.trim());
+            if (categoryId != null) {
+                products = productService.searchProductsForAdminWithCategory(keyword.trim(), categoryId);
+            } else {
+                products = productService.searchProductsForAdmin(keyword.trim());
+            }
+        } else if (categoryId != null) {
+            products = productService.getProductsForAdminByCategory(categoryId);
         } else {
             products = productService.getProductsForAdmin();
         }
+        
+        // 정렬 적용
+        products = productService.sortProducts(products, sortBy, sortOrder);
+        
         model.addAttribute("products", products);
+        model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortOrder", sortOrder);
         return "admin/products/list";
     }
 
