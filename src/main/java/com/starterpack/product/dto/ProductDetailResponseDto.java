@@ -14,6 +14,7 @@ public record ProductDetailResponseDto(
         Integer cost,
         Integer likeCount,
         Long categoryId,
+        String categoryName,
         List<PackInfo> packs
 ) {
     public static ProductDetailResponseDto from(Product product) {
@@ -30,6 +31,7 @@ public record ProductDetailResponseDto(
                 product.getCost(),
                 product.getLikeCount(),
                 product.getCategory().getId(),
+                product.getCategory().getName(),
                 packInfos
         );
     }

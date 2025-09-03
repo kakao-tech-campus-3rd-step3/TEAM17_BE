@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @Transactional
@@ -60,6 +63,93 @@ public class ProductService {
         List<Product> products = productRepository.findAll();
         return products.stream()
                 .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 페이지네이션을 지원하는 메서드들
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> getProductsForAdminWithPagination(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> searchProductsForAdminWithPagination(String keyword, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> getProductsForAdminByCategoryWithPagination(Long categoryId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> searchProductsForAdminWithCategoryAndPagination(String keyword, Long categoryId, Pageable pageable) {
+        Page<Product> productPage;
+        if (categoryId != null) {
+            productPage = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId, pageable);
+        } else {
+            productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    // 상품명으로 검색하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> searchProductsForAdmin(String keyword) {
+        List<Product> products = productRepository.findByNameContainingIgnoreCase(keyword);
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 카테고리별 필터링하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> getProductsForAdminByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 검색과 카테고리 필터링을 함께 하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> searchProductsForAdminWithCategory(String keyword, Long categoryId) {
+        List<Product> products;
+        if (categoryId != null) {
+            products = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId);
+        } else {
+            products = productRepository.findByNameContainingIgnoreCase(keyword);
+        }
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 상품 목록을 정렬하는 메서드
+    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products, String sortBy, String sortOrder) {
+        return products.stream()
+                .sorted((p1, p2) -> {
+                    int comparison = 0;
+                    switch (sortBy) {
+                        case "name":
+                            comparison = p1.name().compareTo(p2.name());
+                            break;
+                        case "cost":
+                            comparison = p1.cost().compareTo(p2.cost());
+                            break;
+                        case "category":
+                            comparison = p1.categoryName().compareTo(p2.categoryName());
+                            break;
+                        case "id":
+                        default:
+                            comparison = p1.id().compareTo(p2.id());
+                            break;
+                    }
+                    return "desc".equals(sortOrder) ? -comparison : comparison;
+                })
                 .collect(Collectors.toList());
     }
 

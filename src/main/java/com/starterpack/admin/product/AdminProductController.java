@@ -1,6 +1,7 @@
 package com.starterpack.admin.product;
 
 import com.starterpack.category.service.CategoryService;
+import com.starterpack.product.dto.ProductAdminListDto;
 import com.starterpack.product.dto.ProductCreateRequestDto;
 import com.starterpack.product.dto.ProductDetailResponseDto;
 import com.starterpack.product.dto.ProductUpdateRequestDto;
@@ -13,6 +14,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 @Controller
 @RequestMapping("/admin/products")
 @RequiredArgsConstructor
@@ -22,9 +29,53 @@ public class AdminProductController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("products", productService.getProductsForAdmin());
+    public String list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortOrder,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            Model model) {
+        
+        // 정렬 설정
+        Sort.Direction direction = "desc".equals(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<ProductAdminListDto> productPage;
+        
+        // 검색과 필터링
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            if (categoryId != null) {
+                productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
+            } else {
+                productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
+            }
+        } else if (categoryId != null) {
+            productPage = productService.getProductsForAdminByCategoryWithPagination(categoryId, pageable);
+        } else {
+            productPage = productService.getProductsForAdminWithPagination(pageable);
+        }
+        
+        model.addAttribute("productPage", productPage);
+        model.addAttribute("products", productPage.getContent());
+        model.addAttribute("categories", categoryService.findAllCategories());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortOrder", sortOrder);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
         return "admin/products/list";
+    }
+
+    // 상품 상세보기 페이지를 보여주는 메서드
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        ProductDetailResponseDto product = productService.getProductDetail(id);
+        model.addAttribute("product", product);
+        return "admin/products/detail";
     }
 
     @GetMapping("/add")
