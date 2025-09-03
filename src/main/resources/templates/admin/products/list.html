@@ -24,14 +24,17 @@
   <tr th:each="product : ${products}">
     <td th:text="${product.id}">1</td>
     <td>
-      <a th:href="${product.link}" target="_blank" style="display:flex; align-items:center; gap:10px;">
-        <img th:src="${product.src}" alt="상품 이미지" style="width:60px; height:auto;" />
-        <span th:text="${product.name}">상품명</span>
+      <a th:href="@{/admin/products/{id}(id=${product.id})}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+        <img th:src="${product.src}" 
+             th:onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0MFY0MEgyMFYyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPHN2Zz4K'"
+             alt="상품 이미지" 
+             style="width:60px; height:60px; object-fit:cover; border-radius:4px;" />
+        <span th:text="${product.name}" style="color:#333;">상품명</span>
       </a>
     </td>
     <td th:text="${product.categoryName}">미지정</td>
     <td th:text="${product.productType}">타입</td>
-    <td th:text="${product.cost}">10000</td>
+    <td th:text="${#numbers.formatInteger(product.cost, 3, 'COMMA')} + '원'">10,000원</td>
     <td>
       <a th:href="@{/admin/products/{id}/edit(id=${product.id})}" class="btn-like-link">수정</a>
       <form th:action="@{/admin/products/{id}/delete(id=${product.id})}" method="post" style="display:inline;">

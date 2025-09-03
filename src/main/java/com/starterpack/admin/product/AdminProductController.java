@@ -27,6 +27,14 @@ public class AdminProductController {
         return "admin/products/list";
     }
 
+    // 상품 상세보기 페이지를 보여주는 메서드
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        ProductDetailResponseDto product = productService.getProductDetail(id);
+        model.addAttribute("product", product);
+        return "admin/products/detail";
+    }
+
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("productDto", ProductCreateRequestDto.emptyForm());
