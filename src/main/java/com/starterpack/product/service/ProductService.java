@@ -63,6 +63,15 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    // 상품명으로 검색하는 메서드
+    @Transactional(readOnly = true)
+    public List<ProductAdminListDto> searchProductsForAdmin(String keyword) {
+        List<Product> products = productRepository.findByNameContainingIgnoreCase(keyword);
+        return products.stream()
+                .map(ProductAdminListDto::from)
+                .collect(Collectors.toList());
+    }
+
     public ProductDetailResponseDto updateProduct(Long productId, ProductUpdateRequestDto productUpdateRequestDto) {
         Product product = getProduct(productId);
 

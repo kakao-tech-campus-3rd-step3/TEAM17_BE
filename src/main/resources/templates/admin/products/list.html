@@ -7,7 +7,20 @@
 <body>
 <h1>상품 목록</h1>
 <div th:if="${message}" th:text="${message}">성공 메시지</div>
+
+<!-- 검색 폼 추가 -->
+<form th:action="@{/admin/products}" method="get" style="margin: 20px 0;">
+  <input type="text" name="keyword" th:value="${keyword}" placeholder="상품명으로 검색..." style="padding: 8px; width: 300px;">
+  <button type="submit" style="padding: 8px 16px; margin-left: 10px;">검색</button>
+  <a th:href="@{/admin/products}" style="margin-left: 10px;">전체보기</a>
+</form>
+
 <a th:href="@{/admin/products/add}" class="btn-like-link">새 상품 등록</a>
+
+<!-- 검색 결과 표시 -->
+<div th:if="${keyword != null and !keyword.isEmpty()}" style="margin: 10px 0; color: #666;">
+  '<span th:text="${keyword}"></span>' 검색 결과: <span th:text="${#lists.size(products)}"></span>개
+</div>
 
 <table border="1">
   <thead>

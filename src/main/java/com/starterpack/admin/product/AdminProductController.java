@@ -1,6 +1,7 @@
 package com.starterpack.admin.product;
 
 import com.starterpack.category.service.CategoryService;
+import com.starterpack.product.dto.ProductAdminListDto;
 import com.starterpack.product.dto.ProductCreateRequestDto;
 import com.starterpack.product.dto.ProductDetailResponseDto;
 import com.starterpack.product.dto.ProductUpdateRequestDto;
@@ -13,6 +14,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin/products")
 @RequiredArgsConstructor
@@ -22,8 +25,15 @@ public class AdminProductController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("products", productService.getProductsForAdmin());
+    public String list(@RequestParam(required = false) String keyword, Model model) {
+        List<ProductAdminListDto> products;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            products = productService.searchProductsForAdmin(keyword.trim());
+        } else {
+            products = productService.getProductsForAdmin();
+        }
+        model.addAttribute("products", products);
+        model.addAttribute("keyword", keyword);
         return "admin/products/list";
     }
 
