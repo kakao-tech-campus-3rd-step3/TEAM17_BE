@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/admin/products")
@@ -30,32 +34,39 @@ public class AdminProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "asc") String sortOrder,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
             Model model) {
         
-        List<ProductAdminListDto> products;
+        // 정렬 설정
+        Sort.Direction direction = "desc".equals(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<ProductAdminListDto> productPage;
         
         // 검색과 필터링
         if (keyword != null && !keyword.trim().isEmpty()) {
             if (categoryId != null) {
-                products = productService.searchProductsForAdminWithCategory(keyword.trim(), categoryId);
+                productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
             } else {
-                products = productService.searchProductsForAdmin(keyword.trim());
+                productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
             }
         } else if (categoryId != null) {
-            products = productService.getProductsForAdminByCategory(categoryId);
+            productPage = productService.getProductsForAdminByCategoryWithPagination(categoryId, pageable);
         } else {
-            products = productService.getProductsForAdmin();
+            productPage = productService.getProductsForAdminWithPagination(pageable);
         }
         
-        // 정렬 적용
-        products = productService.sortProducts(products, sortBy, sortOrder);
-        
-        model.addAttribute("products", products);
+        model.addAttribute("productPage", productPage);
+        model.addAttribute("products", productPage.getContent());
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategoryId", categoryId);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortOrder", sortOrder);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
         return "admin/products/list";
     }
 

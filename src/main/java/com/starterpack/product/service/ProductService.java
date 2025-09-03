@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @Transactional
@@ -61,6 +64,36 @@ public class ProductService {
         return products.stream()
                 .map(ProductAdminListDto::from)
                 .collect(Collectors.toList());
+    }
+
+    // 페이지네이션을 지원하는 메서드들
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> getProductsForAdminWithPagination(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> searchProductsForAdminWithPagination(String keyword, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> getProductsForAdminByCategoryWithPagination(Long categoryId, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
+        return productPage.map(ProductAdminListDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> searchProductsForAdminWithCategoryAndPagination(String keyword, Long categoryId, Pageable pageable) {
+        Page<Product> productPage;
+        if (categoryId != null) {
+            productPage = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId, pageable);
+        } else {
+            productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        }
+        return productPage.map(ProductAdminListDto::from);
     }
 
     // 상품명으로 검색하는 메서드
