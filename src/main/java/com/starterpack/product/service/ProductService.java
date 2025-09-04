@@ -3,6 +3,8 @@ package com.starterpack.product.service;
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.product.dto.*;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
@@ -13,15 +15,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 
 @Service
 @Transactional
 public class ProductService {
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository,
+            CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
     }
@@ -44,7 +47,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDetailResponseDto getProductDetail(Long productId) {
         Product product = productRepository.findById(productId).
-                orElseThrow(() -> new IllegalArgumentException(productId + "에 해당하는 상품을 찾지 못했습니다."));
+                orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return ProductDetailResponseDto.from(product);
     }
@@ -59,7 +62,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductAdminListDto> getProductsForAdmin(){
+    public List<ProductAdminListDto> getProductsForAdmin() {
         List<Product> products = productRepository.findAll();
         return products.stream()
                 .map(ProductAdminListDto::from)
@@ -74,22 +77,27 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductAdminListDto> searchProductsForAdminWithPagination(String keyword, Pageable pageable) {
-        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+    public Page<ProductAdminListDto> searchProductsForAdminWithPagination(String keyword,
+            Pageable pageable) {
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(keyword,
+                pageable);
         return productPage.map(ProductAdminListDto::from);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductAdminListDto> getProductsForAdminByCategoryWithPagination(Long categoryId, Pageable pageable) {
+    public Page<ProductAdminListDto> getProductsForAdminByCategoryWithPagination(Long categoryId,
+            Pageable pageable) {
         Page<Product> productPage = productRepository.findByCategoryId(categoryId, pageable);
         return productPage.map(ProductAdminListDto::from);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductAdminListDto> searchProductsForAdminWithCategoryAndPagination(String keyword, Long categoryId, Pageable pageable) {
+    public Page<ProductAdminListDto> searchProductsForAdminWithCategoryAndPagination(String keyword,
+            Long categoryId, Pageable pageable) {
         Page<Product> productPage;
         if (categoryId != null) {
-            productPage = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId, pageable);
+            productPage = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword,
+                    categoryId, pageable);
         } else {
             productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
         }
@@ -116,10 +124,12 @@ public class ProductService {
 
     // 검색과 카테고리 필터링을 함께 하는 메서드
     @Transactional(readOnly = true)
-    public List<ProductAdminListDto> searchProductsForAdminWithCategory(String keyword, Long categoryId) {
+    public List<ProductAdminListDto> searchProductsForAdminWithCategory(String keyword,
+            Long categoryId) {
         List<Product> products;
         if (categoryId != null) {
-            products = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId);
+            products = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword,
+                    categoryId);
         } else {
             products = productRepository.findByNameContainingIgnoreCase(keyword);
         }
@@ -129,7 +139,8 @@ public class ProductService {
     }
 
     // 상품 목록을 정렬하는 메서드
-    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products, String sortBy, String sortOrder) {
+    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products, String sortBy,
+            String sortOrder) {
         return products.stream()
                 .sorted((p1, p2) -> {
                     int comparison = 0;
@@ -153,7 +164,8 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public ProductDetailResponseDto updateProduct(Long productId, ProductUpdateRequestDto productUpdateRequestDto) {
+    public ProductDetailResponseDto updateProduct(Long productId,
+            ProductUpdateRequestDto productUpdateRequestDto) {
         Product product = getProduct(productId);
 
         Category category = getCategoryByCategoryId(productUpdateRequestDto.categoryId());
@@ -170,8 +182,8 @@ public class ProductService {
     }
 
     public void deleteProduct(Long productId) {
-        if(!productRepository.existsById(productId)) {
-            throw new IllegalArgumentException(productId + "번에 해당하는 상품을 찾을 수 없습니다.");
+        if (!productRepository.existsById(productId)) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
 
         productRepository.deleteById(productId);
@@ -179,11 +191,11 @@ public class ProductService {
 
     private Category getCategoryByCategoryId(Long categoryId) {
         return categoryRepository.findById(categoryId).
-                orElseThrow(() -> new IllegalArgumentException(categoryId + "번에 해당하는 카테고리를 찾지 못했습니다."));
+                orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     private Product getProduct(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException(productId + "번에 해당하는 상품을 찾지 못했습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }

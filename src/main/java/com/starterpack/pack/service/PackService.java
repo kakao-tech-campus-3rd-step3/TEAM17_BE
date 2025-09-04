@@ -2,15 +2,18 @@ package com.starterpack.pack.service;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.pack.dto.*;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.repository.PackRepository;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +43,7 @@ public class PackService {
     @Transactional(readOnly = true)
     public PackDetailResponseDto getPackDetail(Long id) {
         Pack pack = packRepository.findWithProductsById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pack not found: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
         return PackDetailResponseDto.from(pack);
     }
 
@@ -48,7 +51,7 @@ public class PackService {
     public PackDetailResponseDto create(PackCreateRequestDto req) {
 
         Category category = categoryRepository.findById(req.categoryId())
-                .orElseThrow(() -> new EntityNotFoundException("Category not found: " + req.categoryId()));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
         Set<Product> products = loadProducts(req.productIds());
 
@@ -76,24 +79,27 @@ public class PackService {
     @Transactional
     public PackDetailResponseDto update(Long id, PackUpdateRequestDto req) {
         Pack pack = packRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pack not found: " + id));
-
+                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
 
         if (req.name() != null) {
-            if (req.name().isBlank()) throw new IllegalArgumentException("Pack name must not be blank");
+            if (req.name().isBlank()) {
+                throw new IllegalArgumentException("Pack name must not be blank");
+            }
             pack.setName(req.name());
         }
 
-
         if (req.categoryId() != null) {
             Category category = categoryRepository.findById(req.categoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("Category not found: " + req.categoryId()));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
             pack.setCategory(category);
         }
 
-
-        if (req.description() != null) pack.setDescription(req.description());
-        if (req.src() != null) pack.setSrc(req.src());
+        if (req.description() != null) {
+            pack.setDescription(req.description());
+        }
+        if (req.src() != null) {
+            pack.setSrc(req.src());
+        }
 
         // products 변경 시 연관관계 재설정 + totalCost 재계산
         if (req.productIds() != null) {
@@ -104,7 +110,8 @@ public class PackService {
             for (Product p : products) {
                 pack.addProduct(p);
             }
-            int total = (req.totalCost() != null) ? req.totalCost() : calcTotalCost(pack.getProducts());
+            int total =
+                    (req.totalCost() != null) ? req.totalCost() : calcTotalCost(pack.getProducts());
             pack.setTotalCost(total);
         } else if (req.totalCost() != null) {
             // 제품 미변경 + 금액만 변경
@@ -117,7 +124,7 @@ public class PackService {
     @Transactional
     public void delete(Long id) {
         Pack pack = packRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pack not found: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
         for (Product p : new HashSet<>(pack.getProducts())) {
             pack.removeProduct(p);
         }
@@ -128,7 +135,17 @@ public class PackService {
     private Set<Product> loadProducts(List<Long> productIds) {
         List<Product> found = productRepository.findAllById(productIds);
         if (found.size() != productIds.size()) {
-            throw new EntityNotFoundException("Some products not found: " + productIds);
+            Set<Long> foundIds = found.stream()
+                    .map(Product::getId)
+                    .collect(Collectors.toSet());
+
+            List<Long> missingIds = productIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            String detailMessage = String.format("다음 ID에 해당하는 상품을 찾을 수 없습니다: %s", missingIds);
+
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, detailMessage);
         }
         return new HashSet<>(found);
     }
