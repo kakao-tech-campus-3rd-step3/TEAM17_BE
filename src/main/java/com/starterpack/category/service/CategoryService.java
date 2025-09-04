@@ -2,6 +2,8 @@ package com.starterpack.category.service;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ public class CategoryService {
 
     public Category findCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid category Id:" + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     @Transactional
