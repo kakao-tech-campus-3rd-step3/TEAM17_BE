@@ -53,6 +53,7 @@ class RepositorySmokeTest {
 
         // 팩 저장 + 상품 연관
         Pack pack = new Pack();
+        pack.setName("주짓수 스타터팩");
         pack.setCategory(cat);
         pack.setTotalCost(57000);
         pack.setPackLikeCount(3);
