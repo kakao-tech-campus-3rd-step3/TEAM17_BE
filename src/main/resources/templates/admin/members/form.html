@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="${memberId != null ? '멤버 수정' : '멤버 등록'}">멤버 수정</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    .form-container { 
+      max-width: 600px; 
+      margin: 20px auto; 
+      padding: 20px; 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      background-color: #f8f9fa; 
+    }
+    .form-group { 
+      margin: 15px 0; 
+    }
+    .form-group label { 
+      display: block; 
+      margin-bottom: 5px; 
+      font-weight: bold; 
+      color: #495057; 
+    }
+    .form-group input, .form-group select { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid #ced4da; 
+      border-radius: 4px; 
+      font-size: 14px; 
+    }
+    .form-group input:focus, .form-group select:focus { 
+      outline: none; 
+      border-color: #007bff; 
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); 
+    }
+    .form-group .error { 
+      color: #dc3545; 
+      font-size: 12px; 
+      margin-top: 5px; 
+    }
+    .form-group .help-text { 
+      color: #6c757d; 
+      font-size: 12px; 
+      margin-top: 5px; 
+    }
+    .readonly-field { 
+      background-color: #e9ecef; 
+      color: #6c757d; 
+    }
+    .action-buttons { 
+      margin-top: 20px; 
+      display: flex; 
+      gap: 10px; 
+      justify-content: center; 
+    }
+  </style>
+</head>
+<body>
+<h1 th:text="${memberId != null ? '멤버 수정' : '멤버 등록'}">멤버 수정</h1>
+<div th:if="${message}" th:text="${message}" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0;">성공 메시지</div>
+
+<div class="form-container">
+  <form th:action="${memberId != null ? '/admin/members/' + memberId + '/edit' : '/admin/members/add'}" 
+        th:object="${memberDto}" 
+        method="post">
+    
+    <!-- 사용자 ID (읽기 전용) -->
+    <div class="form-group" th:if="${memberId != null}">
+      <label>사용자 ID:</label>
+      <input type="text" th:value="${memberId}" readonly class="readonly-field" />
+      <div class="help-text">사용자 ID는 변경할 수 없습니다.</div>
+    </div>
+    
+    <!-- 이메일 -->
+    <div class="form-group">
+      <label for="email">이메일 *</label>
+      <input type="email" 
+             id="email" 
+             th:field="*{email}" 
+             placeholder="user@example.com" 
+             required />
+      <div th:if="${#fields.hasErrors('email')}" 
+           th:errors="*{email}" 
+           class="error">이메일 오류 메시지</div>
+    </div>
+    
+    <!-- 비밀번호 (수정 시에는 표시하지 않음) -->
+    <div class="form-group" th:if="${memberId == null}">
+      <label for="password">비밀번호 *</label>
+      <input type="password" 
+             id="password" 
+             th:field="*{password}" 
+             placeholder="8자 이상 입력하세요" 
+             required />
+      <div th:if="${#fields.hasErrors('password')}" 
+           th:errors="*{password}" 
+           class="error">비밀번호 오류 메시지</div>
+      <div class="help-text">최소 8자 이상 입력해주세요.</div>
+    </div>
+    
+    <!-- 비밀번호 (수정 시) -->
+    <div class="form-group" th:if="${memberId != null}">
+      <label for="password">비밀번호</label>
+      <input type="password" 
+             id="password" 
+             th:field="*{password}" 
+             placeholder="새 비밀번호 (변경하지 않으려면 비워두세요)" />
+      <div th:if="${#fields.hasErrors('password')}" 
+           th:errors="*{password}" 
+           class="error">비밀번호 오류 메시지</div>
+      <div class="help-text">비밀번호를 변경하지 않으려면 비워두세요.</div>
+    </div>
+    
+    <!-- 이름 -->
+    <div class="form-group">
+      <label for="name">이름 *</label>
+      <input type="text" 
+             id="name" 
+             th:field="*{name}" 
+             placeholder="홍길동" 
+             required />
+      <div th:if="${#fields.hasErrors('name')}" 
+           th:errors="*{name}" 
+           class="error">이름 오류 메시지</div>
+    </div>
+    
+    <!-- 프로필 이미지 URL -->
+    <div class="form-group">
+      <label for="profileImageUrl">프로필 이미지 URL</label>
+      <input type="url" 
+             id="profileImageUrl" 
+             th:field="*{profileImageUrl}" 
+             placeholder="https://example.com/profile.jpg" />
+      <div th:if="${#fields.hasErrors('profileImageUrl')}" 
+           th:errors="*{profileImageUrl}" 
+           class="error">프로필 이미지 URL 오류 메시지</div>
+      <div class="help-text">선택사항입니다. 이미지 URL을 입력하세요.</div>
+    </div>
+    
+    <!-- 로그인 방식 (읽기 전용) -->
+    <div class="form-group" th:if="${memberId != null}">
+      <label>로그인 방식:</label>
+      <input type="text" 
+             th:value="${originalMember.provider}" 
+             readonly 
+             class="readonly-field" />
+      <div class="help-text">로그인 방식은 변경할 수 없습니다.</div>
+    </div>
+    
+    <!-- 소셜 ID (읽기 전용) -->
+    <div class="form-group" th:if="${memberId != null and originalMember.providerId != null and !originalMember.providerId.isEmpty()}">
+      <label>소셜 ID:</label>
+      <input type="text" 
+             th:value="${originalMember.providerId}" 
+             readonly 
+             class="readonly-field" />
+      <div class="help-text">소셜 로그인 ID는 변경할 수 없습니다.</div>
+    </div>
+    
+    <!-- 계정 상태 (읽기 전용) -->
+    <div class="form-group" th:if="${memberId != null}">
+      <label>계정 상태:</label>
+      <input type="text" 
+             th:value="${originalMember.isActive ? '활성' : '비활성'}" 
+             readonly 
+             class="readonly-field" />
+      <div class="help-text">계정 상태는 별도 메뉴에서 변경하세요.</div>
+    </div>
+    
+    <div class="action-buttons">
+      <button type="submit" class="btn-like-link" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px;">
+        <span th:text="${memberId != null ? '수정 완료' : '등록 완료'}">수정 완료</span>
+      </button>
+      <a th:href="${memberId != null ? '/admin/members/' + memberId : '/admin/members'}" 
+         class="btn-like-link">취소</a>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>
