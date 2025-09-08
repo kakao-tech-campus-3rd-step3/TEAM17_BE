@@ -8,7 +8,28 @@ CREATE DATABASE IF NOT EXISTS starterpack
 USE starterpack;
 
 -- ------------------------------------------------------------
--- 1) 카테고리 (Category)
+-- 1) 멤버 (Member)
+-- ------------------------------------------------------------
+CREATE TABLE member (
+  user_id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  email             VARCHAR(100)    NOT NULL,
+  password          VARCHAR(255)    NULL,
+  name              VARCHAR(50)     NOT NULL,
+  provider          VARCHAR(20)     NOT NULL,
+  provider_id       VARCHAR(100)    NULL,
+  profile_image_url VARCHAR(500)    NULL,
+  is_active         BOOLEAN         NOT NULL DEFAULT TRUE,
+  created_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id),
+  UNIQUE KEY uk_member_email (email),
+  UNIQUE KEY uk_member_provider_id (provider, provider_id),
+  KEY idx_member_provider (provider),
+  KEY idx_member_is_active (is_active)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- 2) 카테고리 (Category)
 -- ------------------------------------------------------------
 CREATE TABLE category (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -47,6 +68,7 @@ CREATE TABLE product (
 -- ------------------------------------------------------------
 CREATE TABLE pack (
   id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name             VARCHAR(100)    NOT NULL,
   category_id      BIGINT UNSIGNED NULL,
   total_cost       INT UNSIGNED    NULL,
   pack_like_count  INT UNSIGNED    NOT NULL DEFAULT 0,
