@@ -1,6 +1,6 @@
 package com.starterpack.member.service;
 
-import com.starterpack.member.dto.MemberCreateRequestDto;
+import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.entity.Member;
@@ -49,6 +49,28 @@ public class MemberService {
         Member member = memberRepository.findByProviderAndProviderId(provider, providerId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return new MemberResponseDto(member);
+    }
+
+    @Transactional
+    public MemberResponseDto addMember(MemberCreationRequestDto request) {
+        // 이메일 중복 확인
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
+        }
+
+        Member member = new Member(
+                request.getEmail(),
+                request.getEncodedPassword(),
+                request.getName(),
+                request.getProvider(),
+                request.getProviderId()
+        );
+
+        if (request.getProfileImageUrl() != null) {
+            member.setProfileImageUrl(request.getProfileImageUrl());
+        }
+
+        return new MemberResponseDto(memberRepository.save(member));
     }
 
     // 멤버 정보 수정

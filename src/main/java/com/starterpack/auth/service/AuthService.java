@@ -1,11 +1,9 @@
 package com.starterpack.auth.service;
 
-import com.starterpack.exception.BusinessException;
-import com.starterpack.exception.ErrorCode;
-import com.starterpack.member.dto.MemberCreateRequestDto;
+import com.starterpack.member.dto.LocalSignUpRequestDto;
+import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
-import com.starterpack.member.entity.Member.Provider;
 import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -20,31 +18,29 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * AuthService의 책임:
+     * 1. '자체 회원가입'에 필요한 데이터를 가공 (비밀번호 암호화)
+     * 2. '표준화된 요청 객체'로 변환
+     * 3. 'MemberService'에 생성 위임
+     */
+
     // 자체 회원가입 기능
     @Transactional
-    public MemberResponseDto localSignUp(MemberCreateRequestDto requestDto) {
-        // 이메일 중복 확인
-        if (memberRepository.existsByEmail(requestDto.getEmail())) {
-            throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
-        }
-
+    public MemberResponseDto localSignUp(LocalSignUpRequestDto requestDto) {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-        Member member = new Member(
-                requestDto.getEmail(),
-                encodedPassword, // 암호화된 비밀번호로 DB에 저장
-                requestDto.getName(),
-                Provider.EMAIL,
-                null // providerId는 로컬 회원가입에서 사용하지 않음
-        );
+        // 표준화된 내부 객체로 변환
+        MemberCreationRequestDto creationRequest = MemberCreationRequestDto.builder()
+                .email(requestDto.getEmail())
+                .encodedPassword(encodedPassword)
+                .name(requestDto.getName())
+                .provider(Member.Provider.EMAIL)
+                .providerId(null)
+                .build();
 
-        if (requestDto.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(requestDto.getProfileImageUrl());
-        }
-
-        Member savedMember = memberRepository.save(member);
-        return new MemberResponseDto(savedMember);
+        return memberService.addMember(creationRequest);
     }
 
 }

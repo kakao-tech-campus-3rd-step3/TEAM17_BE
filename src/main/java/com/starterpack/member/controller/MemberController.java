@@ -1,7 +1,7 @@
 package com.starterpack.member.controller;
 
 import com.starterpack.auth.service.AuthService;
-import com.starterpack.member.dto.MemberCreateRequestDto;
+import com.starterpack.member.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.service.MemberService;
@@ -26,7 +26,7 @@ public class MemberController {
     // 멤버 생성
     @PostMapping
     public ResponseEntity<MemberResponseDto> addMember(
-            @Valid @RequestBody MemberCreateRequestDto requestDto
+            @Valid @RequestBody LocalSignUpRequestDto requestDto
     ) {
         MemberResponseDto responseDto = authService.localSignUp(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
