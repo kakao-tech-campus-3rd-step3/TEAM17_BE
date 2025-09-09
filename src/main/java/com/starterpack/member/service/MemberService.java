@@ -8,6 +8,7 @@ import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 모든 멤버 조회
     public List<MemberResponseDto> findAllMembers() {
@@ -63,9 +65,12 @@ public class MemberService {
             throw new BusinessException(ErrorCode.MEMBER_PROVIDER_ID_DUPLICATED);
         }
 
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+
         Member member = new Member(
                 requestDto.getEmail(),
-                requestDto.getPassword(),
+                encodedPassword, // 암호화된 비밀번호로 DB에 저장
                 requestDto.getName(),
                 requestDto.getProvider(),
                 requestDto.getProviderId()
@@ -93,8 +98,9 @@ public class MemberService {
             member.setEmail(requestDto.getEmail());
         }
 
-        if (requestDto.getPassword() != null) {
-            member.setPassword(requestDto.getPassword());
+        // 비밀번호 암호화해서 저장
+        if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
+            member.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         }
 
         if (requestDto.getName() != null) {
