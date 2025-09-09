@@ -4,7 +4,6 @@ import com.starterpack.member.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
-import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
