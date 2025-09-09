@@ -1,5 +1,6 @@
 package com.starterpack.member.controller;
 
+import com.starterpack.auth.service.AuthService;
 import com.starterpack.member.dto.MemberCreateRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
@@ -14,11 +15,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/members")
 public class MemberController {
-    
     private final MemberService memberService;
+    private final AuthService authService;
 
-    public MemberController(MemberService memberService) {
+    public MemberController(MemberService memberService, AuthService authService) {
         this.memberService = memberService;
+        this.authService = authService;
     }
 
     // 멤버 생성
@@ -26,7 +28,7 @@ public class MemberController {
     public ResponseEntity<MemberResponseDto> addMember(
             @Valid @RequestBody MemberCreateRequestDto requestDto
     ) {
-        MemberResponseDto responseDto = memberService.addMember(requestDto);
+        MemberResponseDto responseDto = authService.localSignUp(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 

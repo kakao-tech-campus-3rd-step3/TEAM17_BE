@@ -15,7 +15,7 @@ CREATE TABLE member (
   email             VARCHAR(100)    NOT NULL,
   password          VARCHAR(255)    NULL,
   name              VARCHAR(50)     NOT NULL,
-  provider          VARCHAR(20)     NOT NULL,
+  provider          VARCHAR(20)     NULL,
   provider_id       VARCHAR(100)    NULL,
   profile_image_url VARCHAR(500)    NULL,
   is_active         BOOLEAN         NOT NULL DEFAULT TRUE,

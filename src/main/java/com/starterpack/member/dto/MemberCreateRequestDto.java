@@ -3,7 +3,6 @@ package com.starterpack.member.dto;
 import com.starterpack.member.entity.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class MemberCreateRequestDto {
@@ -20,7 +19,6 @@ public class MemberCreateRequestDto {
     @Size(max = 50, message = "이름은 50자를 초과할 수 없습니다")
     private String name;
 
-    @NotNull(message = "로그인 방식은 필수입니다")
     private Member.Provider provider;
 
     private String providerId;

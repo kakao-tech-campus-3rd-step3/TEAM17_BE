@@ -51,39 +51,6 @@ public class MemberService {
         return new MemberResponseDto(member);
     }
 
-    // 멤버 생성
-    @Transactional
-    public MemberResponseDto addMember(MemberCreateRequestDto requestDto) {
-        // 이메일 중복 확인
-        if (memberRepository.existsByEmail(requestDto.getEmail())) {
-            throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
-        }
-
-        // 소셜 로그인인 경우 프로바이더 ID 중복 확인
-        if (requestDto.getProvider() != Member.Provider.EMAIL && 
-            memberRepository.findByProviderAndProviderId(requestDto.getProvider(), requestDto.getProviderId()).isPresent()) {
-            throw new BusinessException(ErrorCode.MEMBER_PROVIDER_ID_DUPLICATED);
-        }
-
-        // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
-
-        Member member = new Member(
-                requestDto.getEmail(),
-                encodedPassword, // 암호화된 비밀번호로 DB에 저장
-                requestDto.getName(),
-                requestDto.getProvider(),
-                requestDto.getProviderId()
-        );
-        
-        if (requestDto.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(requestDto.getProfileImageUrl());
-        }
-
-        Member savedMember = memberRepository.save(member);
-        return new MemberResponseDto(savedMember);
-    }
-
     // 멤버 정보 수정
     @Transactional
     public MemberResponseDto updateMember(Long userId, MemberUpdateRequestDto requestDto) {
