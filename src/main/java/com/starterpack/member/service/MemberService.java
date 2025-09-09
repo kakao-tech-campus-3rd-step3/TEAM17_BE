@@ -4,6 +4,7 @@ import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.entity.Member;
+import com.starterpack.member.entity.Role;
 import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
@@ -68,6 +69,10 @@ public class MemberService {
 
         if (request.profileImageUrl() != null) {
             member.setProfileImageUrl(request.profileImageUrl());
+
+        // API를 통해 생성되는 멤버는 반드시 기본 권한
+        member.setRole(Role.USER);
+
         }
 
         return new MemberResponseDto(memberRepository.save(member));

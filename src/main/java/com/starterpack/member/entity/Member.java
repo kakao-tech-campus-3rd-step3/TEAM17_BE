@@ -1,12 +1,16 @@
 package com.starterpack.member.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "member")
 public class Member {
 
@@ -34,6 +38,10 @@ public class Member {
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -60,35 +68,5 @@ public class Member {
     public enum Provider {
         EMAIL, KAKAO
     }
-
-    // --- getters/setters ---
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Provider getProvider() { return provider; }
-    public void setProvider(Provider provider) { this.provider = provider; }
-
-    public String getProviderId() { return providerId; }
-    public void setProviderId(String providerId) { this.providerId = providerId; }
-
-    public String getProfileImageUrl() { return profileImageUrl; }
-    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
-
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
+
