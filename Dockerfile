@@ -34,7 +34,7 @@ RUN apk add --no-cache curl
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 # 빌드된 JAR 파일 복사
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/build/libs/*-SNAPSHOT.jar app.jar
 
 # 파일 소유권 변경
 RUN chown -R appuser:appuser /app
