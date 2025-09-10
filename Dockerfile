@@ -49,8 +49,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# JVM 옵션 설정 (기본값)
-ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-
 # 애플리케이션 실행 (Railway 호환)
-ENTRYPOINT ["sh", "-c", "exec java ${JAVA_OPTS} -jar app.jar"]
+ENTRYPOINT ["java","-Xmx512m","-Xms256m","-XX:+UseG1GC","-XX:+UseContainerSupport","-XX:MaxRAMPercentage=75.0","-jar","app.jar"]
