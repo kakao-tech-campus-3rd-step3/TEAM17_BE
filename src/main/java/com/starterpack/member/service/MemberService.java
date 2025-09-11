@@ -54,20 +54,20 @@ public class MemberService {
     @Transactional
     public MemberResponseDto addMember(MemberCreationRequestDto request) {
         // 이메일 중복 확인
-        if (memberRepository.existsByEmail(request.getEmail())) {
+        if (memberRepository.existsByEmail(request.email())) {
             throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
         }
 
         Member member = new Member(
-                request.getEmail(),
-                request.getEncodedPassword(),
-                request.getName(),
-                request.getProvider(),
-                request.getProviderId()
+                request.email(),
+                request.encodedPassword(),
+                request.name(),
+                request.provider(),
+                request.providerId()
         );
 
-        if (request.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(request.getProfileImageUrl());
+        if (request.profileImageUrl() != null) {
+            member.setProfileImageUrl(request.profileImageUrl());
         }
 
         return new MemberResponseDto(memberRepository.save(member));
@@ -80,24 +80,24 @@ public class MemberService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 이메일 변경 시 중복 확인
-        if (requestDto.getEmail() != null && !requestDto.getEmail().equals(member.getEmail())) {
-            if (memberRepository.existsByEmail(requestDto.getEmail())) {
+        if (requestDto.email() != null && !requestDto.email().equals(member.getEmail())) {
+            if (memberRepository.existsByEmail(requestDto.email())) {
                 throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
             }
-            member.setEmail(requestDto.getEmail());
+            member.setEmail(requestDto.email());
         }
 
         // 비밀번호 암호화해서 저장
-        if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
-            member.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        if (requestDto.password() != null && !requestDto.password().isBlank()) {
+            member.setPassword(passwordEncoder.encode(requestDto.password()));
         }
 
-        if (requestDto.getName() != null) {
-            member.setName(requestDto.getName());
+        if (requestDto.name() != null) {
+            member.setName(requestDto.name());
         }
 
-        if (requestDto.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(requestDto.getProfileImageUrl());
+        if (requestDto.profileImageUrl() != null) {
+            member.setProfileImageUrl(requestDto.profileImageUrl());
         }
 
         Member updatedMember = memberRepository.save(member);

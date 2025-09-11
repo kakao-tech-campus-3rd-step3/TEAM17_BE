@@ -48,20 +48,20 @@ public class AdminMemberController {
         // 간단한 필터링 (실제로는 Repository에서 처리하는 것이 좋음)
         if (keyword != null && !keyword.trim().isEmpty()) {
             members = members.stream()
-                    .filter(member -> member.getName().contains(keyword) || 
-                                   member.getEmail().contains(keyword))
+                    .filter(member -> member.name().contains(keyword) ||
+                                   member.email().contains(keyword))
                     .toList();
         }
         
         if (provider != null && !provider.isEmpty()) {
             members = members.stream()
-                    .filter(member -> member.getProvider().toString().equals(provider))
+                    .filter(member -> member.provider().toString().equals(provider))
                     .toList();
         }
         
         if (isActive != null) {
             members = members.stream()
-                    .filter(member -> member.getIsActive().equals(isActive))
+                    .filter(member -> member.isActive().equals(isActive))
                     .toList();
         }
         
@@ -92,10 +92,10 @@ public class AdminMemberController {
         MemberResponseDto member = memberService.findMemberById(userId);
         
         MemberUpdateRequestDto updateDto = new MemberUpdateRequestDto(
-                member.getEmail(),
+                member.email(),
                 null, // 비밀번호는 수정하지 않음
-                member.getName(),
-                member.getProfileImageUrl()
+                member.name(),
+                member.profileImageUrl()
         );
         
         model.addAttribute("memberDto", updateDto);
@@ -121,7 +121,7 @@ public class AdminMemberController {
         }
         
         MemberResponseDto updatedMember = memberService.updateMember(userId, updateDto);
-        redirectAttributes.addFlashAttribute("message", "멤버 '" + updatedMember.getName() + "' 수정 완료");
+        redirectAttributes.addFlashAttribute("message", "멤버 '" + updatedMember.name() + "' 수정 완료");
         return "redirect:/admin/members";
     }
 
@@ -132,12 +132,12 @@ public class AdminMemberController {
             RedirectAttributes redirectAttributes) {
         
         MemberResponseDto member = memberService.findMemberById(userId);
-        Boolean newStatus = !member.getIsActive();
+        Boolean newStatus = !member.isActive();
         
         memberService.updateMemberActiveStatus(userId, newStatus);
         
         String statusText = newStatus ? "활성화" : "비활성화";
-        redirectAttributes.addFlashAttribute("message", "멤버 '" + member.getName() + "' " + statusText + " 완료");
+        redirectAttributes.addFlashAttribute("message", "멤버 '" + member.name() + "' " + statusText + " 완료");
         return "redirect:/admin/members";
     }
 
@@ -150,7 +150,7 @@ public class AdminMemberController {
         MemberResponseDto member = memberService.findMemberById(userId);
         memberService.deleteMember(userId);
         
-        redirectAttributes.addFlashAttribute("message", "멤버 '" + member.getName() + "' 삭제 완료");
+        redirectAttributes.addFlashAttribute("message", "멤버 '" + member.name() + "' 삭제 완료");
         return "redirect:/admin/members";
     }
 }

@@ -29,13 +29,13 @@ public class AuthService {
     @Transactional
     public MemberResponseDto localSignUp(LocalSignUpRequestDto requestDto) {
         // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        String encodedPassword = passwordEncoder.encode(requestDto.password());
 
         // 표준화된 내부 객체로 변환
         MemberCreationRequestDto creationRequest = MemberCreationRequestDto.builder()
-                .email(requestDto.getEmail())
+                .email(requestDto.email())
                 .encodedPassword(encodedPassword)
-                .name(requestDto.getName())
+                .name(requestDto.name())
                 .provider(Member.Provider.EMAIL)
                 .providerId(null)
                 .build();
