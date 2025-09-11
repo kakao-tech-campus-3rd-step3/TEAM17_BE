@@ -55,8 +55,7 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedResponseDto getFeed(Long feedId) {
-        Feed feed = feedRepository.findByIdWithDetails(feedId)
-                .orElseThrow(() -> new IllegalArgumentException("피드를 찾지 못했습니다."));
+        Feed feed = getFeedById(feedId);
 
         return FeedResponseDto.from(feed);
     }
@@ -66,6 +65,15 @@ public class FeedService {
         Page<Feed> feedPage = feedRepository.findAll(pageable);
 
         return feedPage.map(FeedResponseDto::from);
+    }
+
+    @Transactional
+    public void deleteFeed(Long feedId, Member member) {
+        Feed feed = getFeedById(feedId);
+
+        checkFeedOwner(member, feed);
+
+        feedRepository.delete(feed);
     }
 
     private Category getCategory(Long categoryId) {
@@ -98,4 +106,16 @@ public class FeedService {
 
         feed.getFeedProducts().add(feedProduct);
     }
+
+    private void checkFeedOwner(Member member, Feed feed) {
+        if (!feed.getUser().getUserId().equals(member.getUserId())) {
+            throw new IllegalArgumentException("이 피드를 삭제할 권한이 없습니다.");
+        }
+    }
+
+    private Feed getFeedById(Long feedId) {
+        return feedRepository.findById(feedId)
+                .orElseThrow(() -> new IllegalArgumentException("피드를 찾을 수 없습니다."));
+    }
+
 }
