@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -26,6 +28,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     // 의존성 주입은 인터페이스 타입으로 해줌, 구현체는 스프링에서 자동으로 주입
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final List<String> publicUrls;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // AntPathMatcher를 사용하여 현재 요청 URI가 공개 URL 패턴 중 하나와 일치하는지 확인
+        return publicUrls.stream()
+                .anyMatch(p -> pathMatcher.match(p, request.getRequestURI()));
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

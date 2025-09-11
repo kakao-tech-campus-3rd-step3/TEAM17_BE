@@ -1,7 +1,10 @@
 package com.starterpack.config;
 
+import com.starterpack.auth.exception.CustomAccessDeniedHandler;
+import com.starterpack.auth.exception.CustomAuthenticationEntryPoint;
 import com.starterpack.auth.jwt.JwtTokenFilter;
 import com.starterpack.auth.jwt.JwtTokenUtil;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +24,8 @@ public class SecurityConfig {
 
     private final JwtTokenUtil  jwtTokenUtil;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private static final String[] PUBLIC_URLS = {
             "/", // 루트 경로
@@ -50,8 +55,14 @@ public class SecurityConfig {
 
         // 커스텀 필터 적용 (Spring Security의 기본 필터인 UsernamePasswordAuthenticationFilter 앞에 JwtTokenFilter 배치)
         http.addFilterBefore(
-                new JwtTokenFilter(userDetailsService, jwtTokenUtil),
+                new JwtTokenFilter(userDetailsService, jwtTokenUtil, Arrays.asList(PUBLIC_URLS)),
                 UsernamePasswordAuthenticationFilter.class
+        );
+
+        //  인증/인가 관련 예외 처리 핸들러 등록
+        http.exceptionHandling(ex -> ex
+                .authenticationEntryPoint(customAuthenticationEntryPoint) // 인증 실패 시(401)
+                .accessDeniedHandler(customAccessDeniedHandler)           // 인가 실패 시(403)
         );
 
         return http.build();
