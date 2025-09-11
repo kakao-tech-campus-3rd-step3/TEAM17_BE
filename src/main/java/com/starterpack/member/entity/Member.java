@@ -25,7 +25,7 @@ public class Member {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @Column(nullable = false, length = 20)
     private Provider provider;
 
     @Column(name = "provider_id", length = 100)
