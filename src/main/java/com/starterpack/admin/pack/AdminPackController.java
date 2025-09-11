@@ -25,17 +25,25 @@ public class AdminPackController {
     private final CategoryService categoryService;
     private final ProductService productService;
 
-    /** 리스트 */
     @GetMapping
-    public String list(@RequestParam(required = false) Long categoryId, Model model) {
+    public String main(){
+        return "redirect:admin/packs/all";
+    }
+
+    /** 리스트 */
+    @GetMapping("/all")
+    public String listAll(Model model){
+        model.addAttribute("categories", categoryService.findAllCategories());
+        model.addAttribute("packs", packService.getPacks());
+        return "admin/packs/list";
+    }
+
+
+    @GetMapping
+    public String list(@RequestParam Long categoryId, Model model) {
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("categoryId", categoryId);
-
-        if (categoryId == null) {
-            model.addAttribute("packs", packService.getPacks());               // 전체
-        } else {
-            model.addAttribute("packs", packService.getPacksByCategory(categoryId)); // 필터 결과
-        }
+        model.addAttribute("packs", packService.getPacksByCategory(categoryId)); // 필터 결
         return "admin/packs/list";
     }
 
