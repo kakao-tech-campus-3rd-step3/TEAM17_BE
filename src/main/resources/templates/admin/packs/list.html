@@ -82,7 +82,7 @@
   function handleCategoryChange(selectElement) {
     const selectedValue = selectElement.value;
     if (selectedValue === "") {
-      window.location.href = /*[[@{/admin/packs/all}]]*/ '/admin-packs-all-url';
+      window.location.href = /*[[@{/admin/packs}]]*/ '/admin-packs-url';
     } else {
       selectElement.form.submit();
     }

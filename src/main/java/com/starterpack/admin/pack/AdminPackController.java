@@ -25,13 +25,8 @@ public class AdminPackController {
     private final CategoryService categoryService;
     private final ProductService productService;
 
-    @GetMapping
-    public String main(){
-        return "redirect:/admin/packs/all";
-    }
-
     /** 리스트 */
-    @GetMapping("/all")
+    @GetMapping
     public String listAll(Model model){
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("packs", packService.getPacks());
