@@ -27,15 +27,18 @@ public class AdminPackController {
 
     /** 리스트 */
     @GetMapping
-    public String list(@RequestParam(required = false) Long categoryId, Model model) {
+    public String listAll(Model model){
+        model.addAttribute("categories", categoryService.findAllCategories());
+        model.addAttribute("packs", packService.getPacks());
+        return "admin/packs/list";
+    }
+
+
+    @GetMapping("/filter")
+    public String list(@RequestParam Long categoryId, Model model) {
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("categoryId", categoryId);
-
-        if (categoryId == null) {
-            model.addAttribute("packs", packService.getPacks());               // 전체
-        } else {
-            model.addAttribute("packs", packService.getPacksByCategory(categoryId)); // 필터 결과
-        }
+        model.addAttribute("packs", packService.getPacksByCategory(categoryId)); // 필터 결
         return "admin/packs/list";
     }
 

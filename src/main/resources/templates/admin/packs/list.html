@@ -23,9 +23,9 @@
 
 <div class="toolbar">
   <!-- 카테고리 필터 -->
-  <form class="filter" th:action="@{/admin/packs}" method="get">
+  <form class="filter" th:action="@{/admin/packs/filter}" method="get">
     <label for="categoryId">카테고리:</label>
-    <select id="categoryId" name="categoryId" onchange="this.form.submit()">
+    <select id="categoryId" name="categoryId" onchange="handleCategoryChange(this)">
       <option value="" th:selected="${categoryId == null}">전체</option>
       <option th:each="c : ${categories}"
               th:value="${c.id}"
@@ -78,4 +78,14 @@
   </tbody>
 </table>
 </body>
+<script th:inline="javascript">
+  function handleCategoryChange(selectElement) {
+    const selectedValue = selectElement.value;
+    if (selectedValue === "") {
+      window.location.href = /*[[@{/admin/packs}]]*/ '/admin-packs-url';
+    } else {
+      selectElement.form.submit();
+    }
+  }
+</script>
 </html>
