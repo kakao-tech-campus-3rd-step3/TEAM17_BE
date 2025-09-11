@@ -4,9 +4,11 @@ import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.entity.Member;
+import com.starterpack.member.entity.Role;
 import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,14 @@ public class MemberService {
         return new MemberResponseDto(member);
     }
 
-    // 이메일로 멤버 조회
+    // 이메일로 멤버 조회 (내부용)
+    public Optional<Member> findByEmail(String email) {
+        return memberRepository.findByEmail(email);
+    }
+
+    // 이메일로 멤버 조회 (컨트롤러 용)
     public MemberResponseDto findMemberByEmail(String email) {
-        Member member = memberRepository.findByEmail(email)
+        Member member = this.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         return new MemberResponseDto(member);
     }
@@ -69,6 +76,10 @@ public class MemberService {
         if (request.profileImageUrl() != null) {
             member.setProfileImageUrl(request.profileImageUrl());
         }
+        
+        // API를 통해 생성되는 멤버는 반드시 기본 권한
+        member.setRole(Role.USER);
+        
 
         return new MemberResponseDto(memberRepository.save(member));
     }
