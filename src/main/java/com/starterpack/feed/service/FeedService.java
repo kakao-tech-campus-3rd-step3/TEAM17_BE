@@ -13,6 +13,8 @@ import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,13 @@ public class FeedService {
                 .orElseThrow(() -> new IllegalArgumentException("피드를 찾지 못했습니다."));
 
         return FeedResponseDto.from(feed);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FeedResponseDto> getAllFeeds(Pageable pageable) {
+        Page<Feed> feedPage = feedRepository.findAll(pageable);
+
+        return feedPage.map(FeedResponseDto::from);
     }
 
     private Category getCategory(Long categoryId) {
