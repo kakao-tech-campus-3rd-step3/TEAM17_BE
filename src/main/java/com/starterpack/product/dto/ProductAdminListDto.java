@@ -12,7 +12,9 @@ public record ProductAdminListDto(
         String src
 ) {
     public static ProductAdminListDto from(Product product) {
-        String categoryName = product.getCategory().getName();
+        String categoryName = (product.getCategory() != null)
+                ? product.getCategory().getName()
+                : "미지정";
 
         return new ProductAdminListDto(
                 product.getId(),
@@ -24,4 +26,5 @@ public record ProductAdminListDto(
                 product.getSrc()
         );
     }
+
 }
