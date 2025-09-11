@@ -43,5 +43,5 @@ RAILWAY_DEPLOYMENT.md
 ### Mac OS ###
 .DS_Store
 
-### env ###
+### Application Secrets ###
 .env
