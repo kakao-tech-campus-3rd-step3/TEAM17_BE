@@ -1,131 +1,119 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>멤버 상세 정보</title>
+  <meta charset="UTF-8"/>
+  <title>멤버 상세</title>
   <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
   <style>
-    .member-info { 
-      background-color: #f8f9fa; 
-      padding: 20px; 
-      border-radius: 8px; 
-      margin: 20px 0; 
-    }
-    .info-row { 
-      display: flex; 
-      margin: 10px 0; 
-      padding: 8px 0; 
-      border-bottom: 1px solid #e9ecef; 
-    }
-    .info-label { 
-      font-weight: bold; 
-      width: 150px; 
-      color: #495057; 
-    }
-    .info-value { 
-      flex: 1; 
-      color: #212529; 
-    }
-    .status-active { color: #28a745; font-weight: bold; }
-    .status-inactive { color: #dc3545; font-weight: bold; }
-    .provider-badge { 
-      display: inline-block; 
-      padding: 4px 12px; 
-      border-radius: 16px; 
-      font-size: 14px; 
-      font-weight: bold;
-    }
-    .provider-email { background-color: #e3f2fd; color: #1976d2; }
-    .provider-kakao { background-color: #fff3e0; color: #f57c00; }
-    .profile-image { 
-      width: 100px; 
-      height: 100px; 
-      border-radius: 50%; 
-      object-fit: cover; 
-      border: 3px solid #dee2e6; 
-    }
-    .action-buttons { 
-      margin-top: 20px; 
-      display: flex; 
-      gap: 10px; 
-    }
+    :root { --primary:#4F46E5; --muted:#f6f7fb; --danger:#dc2626; --border:#e5e7eb; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:#111827; }
+    .admin-shell { display:grid; grid-template-columns: 260px 1fr; min-height:100vh; }
+    main.admin-content { padding:24px; }
+    .container{ max-width:900px; margin:0 auto; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .grid{ display:grid; grid-template-columns: 180px 1fr; gap:20px; align-items:start; }
+    .profile{ display:flex; flex-direction:column; align-items:center; gap:12px; }
+    .avatar{ width:120px; height:120px; border-radius:999px; object-fit:cover; border:3px solid #e5e7eb; background:#f3f4f6; }
+    .kv{ display:grid; grid-template-columns: 160px 1fr; gap:8px 12px; }
+    .k{ font-weight:700; color:#374151; }
+    .v{ color:#111827; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+    .badge.email { background:#e3f2fd; color:#1d4ed8; }
+    .badge.kakao { background:#fff3e0; color:#b45309; }
+    .status-active { color:#16a34a; font-weight:700; }
+    .status-inactive { color:#dc2626; font-weight:700; }
+    .btnbar{ display:flex; gap:8px; margin-top:18px; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    .toast { margin-bottom:12px; padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; }
   </style>
 </head>
 <body>
-<h1>멤버 상세 정보</h1>
-<div th:if="${message}" th:text="${message}" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0;">성공 메시지</div>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
 
-<div class="member-info">
-  <div class="info-row">
-    <div class="info-label">프로필 이미지:</div>
-    <div class="info-value">
-      <img th:if="${member.profileImageUrl != null and !member.profileImageUrl.isEmpty()}"
-           th:src="${member.profileImageUrl}" 
-           class="profile-image" 
-           alt="프로필 이미지" />
-      <span th:if="${member.profileImageUrl == null or member.profileImageUrl.isEmpty()}"
-            style="color: #6c757d;">이미지 없음</span>
+  <!-- 본문 -->
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">멤버 상세</h1>
+        <div style="display:flex; gap:8px;">
+          <a th:href="@{/admin/members}" class="btn">목록</a>
+          <a th:href="@{/admin/members/{id}/edit(id=${member.userId})}" class="btn btn-primary">수정</a>
+        </div>
+      </div>
+
+      <div th:if="${message}" class="toast" th:text="${message}">성공 메시지</div>
+
+      <div class="card">
+        <div class="grid">
+          <!-- 프로필 -->
+          <div class="profile">
+            <img class="avatar"
+                 th:if="${member.profileImageUrl != null and !member.profileImageUrl.isEmpty()}"
+                 th:src="${member.profileImageUrl}" alt="프로필 이미지"/>
+            <div th:if="${member.profileImageUrl == null or member.profileImageUrl.isEmpty()}"
+                 class="avatar" style="display:flex;align-items:center;justify-content:center;color:#6b7280;">No Image</div>
+            <div style="font-weight:800; font-size:18px;" th:text="${member.name}">홍길동</div>
+            <div class="badge" th:classappend="${member.provider.toString().toLowerCase() == 'email'} ? ' email' : ' kakao'"
+                 th:text="${member.provider}">EMAIL</div>
+          </div>
+
+          <!-- 정보 -->
+          <div class="kv">
+            <div class="k">사용자 ID</div>
+            <div class="v" th:text="${member.userId}">1</div>
+
+            <div class="k">이메일</div>
+            <div class="v" th:text="${member.email}">user@example.com</div>
+
+            <div class="k">로그인 방식</div>
+            <div class="v">
+              <span class="badge" th:classappend="${member.provider.toString().toLowerCase() == 'email'} ? ' email' : ' kakao'"
+                    th:text="${member.provider}">EMAIL</span>
+            </div>
+
+            <div class="k" th:if="${member.providerId != null and !member.providerId.isEmpty()}">소셜 ID</div>
+            <div class="v" th:if="${member.providerId != null and !member.providerId.isEmpty()}"
+                 th:text="${member.providerId}">123456</div>
+
+            <div class="k">계정 상태</div>
+            <div class="v">
+              <span th:class="${member.isActive} ? 'status-active' : 'status-inactive'"
+                    th:text="${member.isActive} ? '활성' : '비활성'">활성</span>
+            </div>
+
+            <div class="k">가입일</div>
+            <div class="v" th:text="${#temporals.format(member.createdAt, 'yyyy년 MM월 dd일 HH:mm:ss')}">2024-01-01 12:00:00</div>
+
+            <div class="k">수정일</div>
+            <div class="v" th:text="${#temporals.format(member.updatedAt, 'yyyy년 MM월 dd일 HH:mm:ss')}">2024-01-02 09:00:00</div>
+          </div>
+        </div>
+
+        <div class="btnbar">
+          <a th:href="@{/admin/members/{id}/edit(id=${member.userId})}" class="btn btn-primary">수정</a>
+
+          <form th:action="@{/admin/members/{id}/toggle-active(id=${member.userId})}" method="post" style="display:inline;">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn"
+                    th:text="${member.isActive} ? '비활성화' : '활성화'"
+                    th:onclick="'return confirm(\'' + (${member.isActive} ? '비활성화' : '활성화') + '하시겠습니까?\');'">비활성화</button>
+          </form>
+
+          <form th:action="@{/admin/members/{id}/delete(id=${member.userId})}" method="post" style="display:inline;">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+          </form>
+
+          <a th:href="@{/admin/members}" class="btn">목록</a>
+        </div>
+      </div>
     </div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">사용자 ID:</div>
-    <div class="info-value" th:text="${member.userId}">1</div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">이름:</div>
-    <div class="info-value" th:text="${member.name}">홍길동</div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">이메일:</div>
-    <div class="info-value" th:text="${member.email}">user@example.com</div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">로그인 방식:</div>
-    <div class="info-value">
-      <span th:class="'provider-badge provider-' + ${member.provider.toString().toLowerCase()}"
-            th:text="${member.provider}">EMAIL</span>
-    </div>
-  </div>
-  
-  <div class="info-row" th:if="${member.providerId != null and !member.providerId.isEmpty()}">
-    <div class="info-label">소셜 ID:</div>
-    <div class="info-value" th:text="${member.providerId}">123456789</div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">계정 상태:</div>
-    <div class="info-value">
-      <span th:class="${member.isActive} ? 'status-active' : 'status-inactive'"
-            th:text="${member.isActive} ? '활성' : '비활성'">활성</span>
-    </div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">가입일:</div>
-    <div class="info-value" th:text="${#temporals.format(member.createdAt, 'yyyy년 MM월 dd일 HH:mm:ss')}">2024년 01월 01일 12:00:00</div>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-label">수정일:</div>
-    <div class="info-value" th:text="${#temporals.format(member.updatedAt, 'yyyy년 MM월 dd일 HH:mm:ss')}">2024년 01월 01일 12:00:00</div>
-  </div>
+  </main>
 </div>
-
-<div class="action-buttons">
-  <a th:href="@{/admin/members/{userId}/edit(userId=${member.userId})}" class="btn-like-link">수정</a>
-  <form th:action="@{/admin/members/{userId}/toggle-active(userId=${member.userId})}" method="post" style="display:inline;">
-    <button type="submit" class="btn-like-link" 
-            th:text="${member.isActive} ? '비활성화' : '활성화'"
-            th:onclick="'return confirm(\'' + (${member.isActive} ? '비활성화' : '활성화') + '하시겠습니까?\');'">비활성화</button>
-  </form>
-  <form th:action="@{/admin/members/{userId}/delete(userId=${member.userId})}" method="post" style="display:inline;">
-    <button type="submit" class="btn-like-link" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
-  </form>
-  <a th:href="@{/admin/members}" class="btn-like-link">목록으로</a>
-</div>
-
 </body>
 </html>
