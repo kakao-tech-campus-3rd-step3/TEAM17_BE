@@ -1,5 +1,6 @@
 package com.starterpack.feed.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedType;
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ public record FeedResponseDto(
         CategoryResponseDto category,
         int likeCount,
         LocalDateTime createdAt,
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         List<TaggedProductResponseDto> products
 ) {
     public static FeedResponseDto from(Feed feed) {

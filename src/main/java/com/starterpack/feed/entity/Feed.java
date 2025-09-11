@@ -75,4 +75,16 @@ public class Feed {
         this.feedType = feedType;
         this.category = category;
     }
+
+    public void update(String description, String imageUrl, Category category) {
+        if (description != null) {
+            this.description = description;
+        }
+        if (imageUrl != null) {
+            this.imageUrl = imageUrl;
+        }
+        if (category != null) {
+            this.category = category;
+        }
+    }
 }

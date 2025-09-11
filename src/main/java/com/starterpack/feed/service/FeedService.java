@@ -4,6 +4,7 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedResponseDto;
+import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.dto.ProductTagRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedProduct;
@@ -13,24 +14,18 @@ import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class FeedService {
     private final FeedRepository feedRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
-
-
-    public FeedService(FeedRepository feedRepository, CategoryRepository categoryRepository,
-            ProductRepository productRepository) {
-        this.feedRepository = feedRepository;
-        this.categoryRepository = categoryRepository;
-        this.productRepository = productRepository;
-    }
 
     @Transactional
     public FeedResponseDto addFeed(
@@ -65,6 +60,25 @@ public class FeedService {
         Page<Feed> feedPage = feedRepository.findAll(pageable);
 
         return feedPage.map(FeedResponseDto::from);
+    }
+
+    @Transactional
+    public FeedResponseDto updateFeed(
+            Long feedId,
+            Member member,
+            FeedUpdateRequestDto updateDto
+    ){
+        Feed feed = getFeedById(feedId);
+
+        checkFeedOwner(member, feed);
+
+        Category category = getCategory(updateDto.categoryId());
+
+        feed.update(updateDto.description(),
+                updateDto.imageUrl(),
+                category);
+
+        return FeedResponseDto.from(feed);
     }
 
     @Transactional
