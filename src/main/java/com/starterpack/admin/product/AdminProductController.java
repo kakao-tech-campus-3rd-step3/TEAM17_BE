@@ -14,7 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,13 +45,11 @@ public class AdminProductController {
         Page<ProductAdminListDto> productPage;
         
         // 검색과 필터링
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            if (categoryId != null) {
-                productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
-            } else {
-                productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
-            }
-        } else if (categoryId != null) {
+        if (hasKeyword(keyword) && hasCategoryId(categoryId)) {
+            productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
+        } else if (hasKeyword(keyword)) {
+            productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
+        } else if (hasCategoryId(categoryId)) {
             productPage = productService.getProductsForAdminByCategoryWithPagination(categoryId, pageable);
         } else {
             productPage = productService.getProductsForAdminWithPagination(pageable);
@@ -146,5 +143,14 @@ public class AdminProductController {
         productService.deleteProduct(id);
         redirectAttributes.addFlashAttribute("message", "상품 삭제 완료");
         return "redirect:/admin/products";
+    }
+
+    //검색을 위한 키워드가 포함되어 있는지 체크하는 메서드
+    private boolean hasKeyword(String keyword) {
+        return keyword != null && !keyword.trim().isEmpty();
+    }
+    //카테고리로 필터링을 할 categoryId가 포함되어 있는지 체크하는 메서드
+    private boolean hasCategoryId(Long categoryId) {
+        return categoryId != null;
     }
 }
