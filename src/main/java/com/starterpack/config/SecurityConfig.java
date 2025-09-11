@@ -1,27 +1,58 @@
 package com.starterpack.config;
 
+import com.starterpack.auth.jwt.JwtTokenFilter;
+import com.starterpack.auth.jwt.JwtTokenUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtTokenUtil  jwtTokenUtil;
+    private final UserDetailsService userDetailsService;
+
+    private static final String[] PUBLIC_URLS = {
+            "/", // 루트 경로
+            "/api/auth/**" // 로그인, 회원가입 등 인증 관련 API
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // 1. CSRF 보호 비활성화 (Stateless한 API 서버의 경우 보통 비활성화합니다)
-                .csrf(csrf -> csrf.disable())
 
-                // 2. HTTP 요청에 대한 인가 규칙 설정
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청(anyRequest)을 인증 없이 허용(permitAll)
-                )
-                // 3. 폼 로그인 및 HTTP Basic 인증 비활성화
-                .formLogin(formLogin -> formLogin.disable())
-                .httpBasic(httpBasic -> httpBasic.disable());
+        // 세션을 사용하지 않으므로 STATELESS로 설정
+        http.sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // CSRF 비활성화
+        http.csrf(csrf -> csrf.disable());
+
+        // 폼 로그인 및 HTTP Basic 인증 비활성화
+        http.formLogin(form -> form.disable());
+        http.httpBasic(basic -> basic.disable());
+
+        // API 엔드포인트별 접근 권한 설정
+        http.authorizeHttpRequests(auth -> auth
+                        // .requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
+                        .requestMatchers(PUBLIC_URLS).permitAll() // 배포 환경에선 아래 둘 주석 해제하기
+                        .anyRequest().authenticated()
+        );
+
+        // 커스텀 필터 적용 (Spring Security의 기본 필터인 UsernamePasswordAuthenticationFilter 앞에 JwtTokenFilter 배치)
+        http.addFilterBefore(
+                new JwtTokenFilter(userDetailsService, jwtTokenUtil),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         return http.build();
     }

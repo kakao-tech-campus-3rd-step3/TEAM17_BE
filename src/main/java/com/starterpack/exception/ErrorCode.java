@@ -37,7 +37,17 @@ public enum ErrorCode {
     MEMBER_PROVIDER_ID_DUPLICATED(HttpStatus.CONFLICT,
             "M003",
             "이미 사용 중인 소셜 로그인 계정입니다."),
-    //LOGIN
+    //Security
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED,
+            "S001",
+            "유효하지 않은 토큰입니다."),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN,
+            "S002",
+            "요청에 대한 접근 권한이 없습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED,
+            "S003",
+            "인증이 필요합니다."),
+    //Loin
     INVALID_LOGIN_PROVIDER(HttpStatus.BAD_REQUEST,
             "L001",
             "이메일 회원가입 유저가 아닙니다."),
