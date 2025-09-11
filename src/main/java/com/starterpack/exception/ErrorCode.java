@@ -36,7 +36,14 @@ public enum ErrorCode {
             "이미 사용 중인 이메일입니다."),
     MEMBER_PROVIDER_ID_DUPLICATED(HttpStatus.CONFLICT,
             "M003",
-            "이미 사용 중인 소셜 로그인 계정입니다.")
+            "이미 사용 중인 소셜 로그인 계정입니다."),
+    //LOGIN
+    INVALID_LOGIN_PROVIDER(HttpStatus.BAD_REQUEST,
+            "L001",
+            "이메일 회원가입 유저가 아닙니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED,
+            "L002",
+            "비밀번호가 틀렸습니다.")
     ;
 
     private final HttpStatus httpStatus;

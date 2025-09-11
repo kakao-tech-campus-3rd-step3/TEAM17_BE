@@ -1,6 +1,10 @@
 package com.starterpack.auth.service;
 
-import com.starterpack.member.dto.LocalSignUpRequestDto;
+import com.starterpack.auth.dto.LocalLoginRequestDto;
+import com.starterpack.auth.dto.TokenResponseDto;
+import com.starterpack.auth.jwt.JwtTokenUtil;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.auth.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
@@ -9,12 +13,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.starterpack.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenUtil;
 
     /**
      * AuthService의 책임:
@@ -41,4 +47,31 @@ public class AuthService {
         return memberService.addMember(creationRequest);
     }
 
+    /**
+     * 로컬 로그인 처리
+     * @param requestDto 이메일, 비밀번호
+     * @return JWT 토큰 정보
+     */
+    @Transactional(readOnly = true)
+    public TokenResponseDto localLogin(LocalLoginRequestDto requestDto) {
+
+        // 이메일로 회원 조회
+        Member member = memberService.findByEmail(requestDto.email())
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 계정 유형 확인 (자체 로그인 유저만 허용)
+        if (member.getProvider() != Member.Provider.EMAIL) {
+            throw new BusinessException(ErrorCode.INVALID_LOGIN_PROVIDER);
+        }
+
+        // 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(requestDto.password(), member.getPassword())) {
+            throw new BusinessException(ErrorCode.LOGIN_FAILED);
+        }
+
+        // 모든 검증 통과 -> JWT 토큰 생성
+        String token = jwtTokenUtil.createToken(member.getEmail(), member.getRole());
+
+        return new TokenResponseDto(token);
+    }
 }

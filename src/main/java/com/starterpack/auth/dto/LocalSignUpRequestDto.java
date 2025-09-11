@@ -1,6 +1,5 @@
-package com.starterpack.member.dto;
+package com.starterpack.auth.dto;
 
-import com.starterpack.member.entity.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
