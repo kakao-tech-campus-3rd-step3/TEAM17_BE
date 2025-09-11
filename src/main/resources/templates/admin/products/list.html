@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>상품 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    .pagination { margin: 20px 0; text-align: center; }
+    .pagination a, .pagination span { 
+      display: inline-block; 
+      padding: 8px 12px; 
+      margin: 0 2px; 
+      border: 1px solid #ddd; 
+      text-decoration: none; 
+      color: #333;
+    }
+    .pagination a:hover { background-color: #f5f5f5; }
+    .pagination .current { background-color: #007bff; color: white; }
+    .pagination .disabled { color: #ccc; cursor: not-allowed; }
+    .page-info { margin: 10px 0; color: #666; }
+  </style>
+</head>
+<body>
+<h1>상품 목록</h1>
+<div th:if="${message}" th:text="${message}">성공 메시지</div>
+
+<!-- 검색 및 필터 폼 -->
+<form th:action="@{/admin/products}" method="get" style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+  <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    <div>
+      <label>검색:</label>
+      <input type="text" name="keyword" th:value="${keyword}" placeholder="상품명으로 검색..." style="padding: 8px; width: 200px;">
+    </div>
+    <div>
+      <label>카테고리:</label>
+      <select name="categoryId" style="padding: 8px;">
+        <option value="">전체</option>
+        <option th:each="category : ${categories}" 
+                th:value="${category.id}" 
+                th:text="${category.name}"
+                th:selected="${category.id == selectedCategoryId}"></option>
+      </select>
+    </div>
+    <div>
+      <label>정렬:</label>
+      <select name="sortBy" style="padding: 8px;">
+        <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+        <option value="name" th:selected="${sortBy == 'name'}">이름</option>
+        <option value="cost" th:selected="${sortBy == 'cost'}">가격</option>
+        <option value="category" th:selected="${sortBy == 'category'}">카테고리</option>
+      </select>
+      <select name="sortOrder" style="padding: 8px;">
+        <option value="asc" th:selected="${sortOrder == 'asc'}">오름차순</option>
+        <option value="desc" th:selected="${sortOrder == 'desc'}">내림차순</option>
+      </select>
+    </div>
+    <div>
+      <label>페이지 크기:</label>
+      <select name="size" style="padding: 8px;">
+        <option value="10" th:selected="${pageSize == 10}">10개</option>
+        <option value="20" th:selected="${pageSize == 20}">20개</option>
+        <option value="50" th:selected="${pageSize == 50}">50개</option>
+      </select>
+    </div>
+    <div>
+      <button type="submit" style="padding: 8px 16px;">적용</button>
+      <a th:href="@{/admin/products}" style="margin-left: 10px;">초기화</a>
+    </div>
+  </div>
+  <!-- 페이지 파라미터 유지 -->
+  <input type="hidden" name="page" value="0">
+</form>
+
+<a th:href="@{/admin/products/add}" class="btn-like-link">새 상품 등록</a>
+
+<!-- 페이지 정보 표시 -->
+<div class="page-info">
+  <span th:if="${keyword != null and !keyword.isEmpty() or selectedCategoryId != null}">
+    <span th:if="${keyword != null and !keyword.isEmpty()}">'<span th:text="${keyword}"></span>' 검색</span>
+    <span th:if="${keyword != null and !keyword.isEmpty() and selectedCategoryId != null}"> + </span>
+    <span th:if="${selectedCategoryId != null}">카테고리 필터</span>
+    결과: 
+  </span>
+  총 <span th:text="${productPage.totalElements}">0</span>개 중 
+  <span th:text="${productPage.number * productPage.size + 1}">1</span>-<span th:text="${productPage.numberOfElements > 0 ? productPage.number * productPage.size + productPage.numberOfElements : productPage.totalElements}">10</span>개 표시
+  (페이지 <span th:text="${productPage.number + 1}">1</span>/<span th:text="${productPage.totalPages}">1</span>)
+</div>
+
+<!-- 빈 결과 처리 -->
+<div th:if="${productPage.totalElements == 0}" style="text-align: center; padding: 40px; color: #666;">
+  <p>검색 결과가 없습니다.</p>
+  <a th:href="@{/admin/products}">전체 상품 보기</a>
+</div>
+
+<!-- 상품 목록 테이블 -->
+<table border="1" th:if="${productPage.totalElements > 0}">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>이름</th>
+    <th>카테고리</th>
+    <th>타입</th>
+    <th>가격</th>
+    <th>관리</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="product : ${products}">
+    <td th:text="${product.id}">1</td>
+    <td>
+      <a th:href="@{/admin/products/{id}(id=${product.id})}" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+        <img th:src="${product.src}" 
+             th:onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0MFY0MEgyMFYyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPHN2Zz4K'"
+             alt="상품 이미지" 
+             style="width:60px; height:60px; object-fit:cover; border-radius:4px;" />
+        <span th:text="${product.name}" style="color:#333;">상품명</span>
+      </a>
+    </td>
+    <td th:text="${product.categoryName}">미지정</td>
+    <td th:text="${product.productType}">타입</td>
+    <td th:text="${#numbers.formatInteger(product.cost, 3, 'COMMA')} + '원'">10,000원</td>
+    <td>
+      <a th:href="@{/admin/products/{id}/edit(id=${product.id})}" class="btn-like-link">수정</a>
+      <form th:action="@{/admin/products/{id}/delete(id=${product.id})}" method="post" style="display:inline;">
+        <button type="submit" class="btn-like-link" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<!-- 페이지네이션 -->
+<div class="pagination" th:if="${productPage.totalPages > 1}">
+  <!-- 이전 페이지 -->
+  <a th:if="${productPage.hasPrevious()}" 
+     th:href="@{/admin/products(keyword=${keyword}, categoryId=${selectedCategoryId}, sortBy=${sortBy}, sortOrder=${sortOrder}, page=${productPage.number - 1}, size=${pageSize})}">이전</a>
+  <span th:unless="${productPage.hasPrevious()}" class="disabled">이전</span>
+  
+  <!-- 페이지 번호들 -->
+  <th:block th:each="pageNum : ${#numbers.sequence(0, productPage.totalPages - 1)}">
+    <a th:if="${pageNum != productPage.number}" 
+       th:href="@{/admin/products(keyword=${keyword}, categoryId=${selectedCategoryId}, sortBy=${sortBy}, sortOrder=${sortOrder}, page=${pageNum}, size=${pageSize})}"
+       th:text="${pageNum + 1}">1</a>
+    <span th:if="${pageNum == productPage.number}" class="current" th:text="${pageNum + 1}">1</span>
+  </th:block>
+  
+  <!-- 다음 페이지 -->
+  <a th:if="${productPage.hasNext()}" 
+     th:href="@{/admin/products(keyword=${keyword}, categoryId=${selectedCategoryId}, sortBy=${sortBy}, sortOrder=${sortOrder}, page=${productPage.number + 1}, size=${pageSize})}">다음</a>
+  <span th:unless="${productPage.hasNext()}" class="disabled">다음</span>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>상품 등록/수정</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>.error { color: red; }</style>
+</head>
+<body>
+<h1 th:text="${productId == null} ? '새 상품 등록' : '상품 수정'">상품 폼</h1>
+
+<form th:action="${productId == null} ? @{/admin/products/add} : @{/admin/products/{id}/edit(id=${productId})}"
+      th:object="${productDto}" method="post">
+
+  <input type="hidden" name="id" th:value="${productId}" />
+
+  <div>
+    <label for="name">상품 이름:</label>
+    <input type="text" id="name" th:field="*{name}" />
+    <div class="error" th:errors="*{name}"></div>
+  </div>
+  <div>
+    <label for="categoryId">카테고리:</label>
+    <select id="categoryId" th:field="*{categoryId}">
+      <option value="">-- 카테고리 선택 --</option>
+      <option th:each="category : ${categories}"
+              th:value="${category.id}"
+              th:text="${category.name}">카테고리명</option>
+    </select>
+  </div>
+  <div>
+    <label for="cost">가격:</label>
+    <input type="number" id="cost" th:field="*{cost}" />
+    <div class="error" th:errors="*{cost}"></div>
+  </div>
+  <div>
+    <label for="productType">상품 타입:</label>
+    <input type="text" id="productType" th:field="*{productType}" />
+  </div>
+  <div>
+    <label for="link">상품 링크:</label>
+    <input type="url" id="link" th:field="*{link}" />
+  </div>
+  <div>
+    <label for="src">이미지 SRC:</label>
+    <input type="text" id="src" th:field="*{src}" />
+  </div>
+
+  <button type="submit" class="btn-like-link">저장</button>
+  <a th:href="@{/admin/products}" class="btn-like-link">취소</a>
+</form>
+</body>
+</html>
