@@ -27,7 +27,7 @@ public class AdminPackController {
 
     @GetMapping
     public String main(){
-        return "redirect:admin/packs/all";
+        return "redirect:/admin/packs/all";
     }
 
     /** 리스트 */
@@ -39,7 +39,7 @@ public class AdminPackController {
     }
 
 
-    @GetMapping
+    @GetMapping("/filter")
     public String list(@RequestParam Long categoryId, Model model) {
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("categoryId", categoryId);
