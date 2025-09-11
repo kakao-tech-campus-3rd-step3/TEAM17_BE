@@ -75,10 +75,11 @@ public class MemberService {
 
         if (request.profileImageUrl() != null) {
             member.setProfileImageUrl(request.profileImageUrl());
-
+        }
+        
         // API를 통해 생성되는 멤버는 반드시 기본 권한
         member.setRole(Role.USER);
-        }
+        
 
         return new MemberResponseDto(memberRepository.save(member));
     }
