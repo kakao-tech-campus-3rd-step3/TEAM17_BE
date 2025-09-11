@@ -9,6 +9,6 @@ public record FeedCreateRequestDto(
     String imageUrl,
     FeedType feedType,
     Long categoryId,
-    List<ProductCreateRequestDto> products
+    List<ProductTagRequestDto> products
 ) {
 }
