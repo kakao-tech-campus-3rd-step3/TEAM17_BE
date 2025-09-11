@@ -23,3 +23,7 @@ spring:
       mode: always
       schema-locations: classpath:schema-h2.sql
       data-locations: classpath:data-h2.sql
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  expiration-ms: ${JWT_EXPIRATION_MS}
+  issuer: starterpack

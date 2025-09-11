@@ -26,14 +26,16 @@ CREATE TABLE member (
   provider_id        VARCHAR(100),
   profile_image_url  VARCHAR(500),
   is_active          BOOLEAN      NOT NULL DEFAULT TRUE,
+  role               VARCHAR(20)  NOT NULL DEFAULT 'USER',
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT chk_member_role CHECK (role IN ('USER','ADMIN')) -- (선택) Enum 보호
 );
 
-CREATE UNIQUE INDEX uk_member_email ON member(email);
+CREATE UNIQUE INDEX uk_member_email       ON member(email);
 CREATE UNIQUE INDEX uk_member_provider_id ON member(provider, provider_id);
-CREATE INDEX idx_member_provider   ON member(provider);
-CREATE INDEX idx_member_is_active  ON member(is_active);
+CREATE INDEX        idx_member_provider   ON member(provider);
+CREATE INDEX        idx_member_is_active  ON member(is_active);
 
 ------------------------------------------------------------
 -- 2) 카테고리
@@ -64,11 +66,9 @@ CREATE INDEX idx_product_name      ON product(name);
 CREATE INDEX idx_product_category  ON product(category_id);
 CREATE INDEX idx_product_like      ON product(like_count);
 
--- 제약 (체크)
-ALTER TABLE product ADD CONSTRAINT chk_product_cost_nonneg  CHECK (cost IS NULL OR cost >= 0);
-ALTER TABLE product ADD CONSTRAINT chk_product_like_nonneg  CHECK (like_count >= 0);
+ALTER TABLE product ADD CONSTRAINT chk_product_cost_nonneg CHECK (cost IS NULL OR cost >= 0);
+ALTER TABLE product ADD CONSTRAINT chk_product_like_nonneg CHECK (like_count >= 0);
 
--- FK: product → category (SET NULL)
 ALTER TABLE product
   ADD CONSTRAINT fk_product_category
   FOREIGN KEY (category_id)
@@ -89,13 +89,12 @@ CREATE TABLE pack (
   description      CLOB
 );
 
-CREATE INDEX idx_pack_category     ON pack(category_id);
-CREATE INDEX idx_pack_like         ON pack(pack_like_count);
+CREATE INDEX idx_pack_category ON pack(category_id);
+CREATE INDEX idx_pack_like     ON pack(pack_like_count);
 
 ALTER TABLE pack ADD CONSTRAINT chk_pack_total_cost_nonneg CHECK (total_cost IS NULL OR total_cost >= 0);
 ALTER TABLE pack ADD CONSTRAINT chk_pack_like_nonneg       CHECK (pack_like_count >= 0);
 
--- FK: pack → category (SET NULL)
 ALTER TABLE pack
   ADD CONSTRAINT fk_pack_category
   FOREIGN KEY (category_id)
@@ -114,7 +113,6 @@ CREATE TABLE pack_product (
 
 CREATE INDEX idx_pp_product ON pack_product(product_id);
 
--- FK: pack_product → pack (CASCADE)
 ALTER TABLE pack_product
   ADD CONSTRAINT fk_pp_pack
   FOREIGN KEY (pack_id)
@@ -122,7 +120,6 @@ ALTER TABLE pack_product
   ON DELETE CASCADE
   ON UPDATE CASCADE;
 
--- FK: pack_product → product (CASCADE)
 ALTER TABLE pack_product
   ADD CONSTRAINT fk_pp_product
   FOREIGN KEY (product_id)

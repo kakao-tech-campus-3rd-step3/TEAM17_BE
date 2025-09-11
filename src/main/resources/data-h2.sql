@@ -1,15 +1,18 @@
 -- ------------------------------------------------------------
--- Hobby Starter Pack Mock Data (H2 & MySQL compatible)
--- ------------------------------------------------------------
+INSERT INTO member (email, password, name, is_active, role)
+VALUES
+('admin@test.com', '{noop}pass', '관리자', TRUE, 'ADMIN'),
+('user@test.com',  '{noop}pass', '일반사용자', TRUE, 'USER');
 
+-- ------------------------------------------------------------
 -- 1) 카테고리 (Category) Mock 데이터 (6개)
 INSERT INTO category (name, src) VALUES
-                                     ('베이킹', 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp'),
-                                     ('캠핑', 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg'),
-                                     ('러닝', 'https://cdn-icons-png.flaticon.com/512/4112/4112938.png'),
-                                     ('독서', 'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg'),
-                                     ('헬스', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s'),
-                                     ('요리', 'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=');
+('베이킹', 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp'),
+('캠핑', 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg'),
+('러닝', 'https://cdn-icons-png.flaticon.com/512/4112/4112938.png'),
+('독서', 'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg'),
+('헬스', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s'),
+('요리', 'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=');
 
 -- ------------------------------------------------------------
 -- 2) 상품 (Product) Mock 데이터 (각 카테고리 별 2개씩)
@@ -36,25 +39,19 @@ INSERT INTO product (name, link, product_type, src, cost, like_count, category_i
 -- ------------------------------------------------------------
 -- 3) 스타터팩 (Pack) Mock 데이터 (6개)
 INSERT INTO pack (name, category_id, total_cost, pack_like_count, src, description) VALUES
-                                                                                        ('홈베이킹 기본 스타터팩', 1, 100000, 80, 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp', '베이킹 기본 스타터팩 설명입니다'),
-                                                                                        ('캠핑 기본 스타터팩', 2, 200000, 150, 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
-                                                                                        ('러닝 기본 스타터팩', 3, 333333, 210, 'https://cdn-icons-png.flaticon.com/512/4112/4112938.png', '런닝 기본 스타터팩 설명입니다'),
-                                                                                        ('독서 기본 스타터팩', 4, 444444, 110, 'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg', '독서 기본 스타터팩 설명입니다'),
-                                                                                        ('헬스 기본 스타터팩', 5, 555555, 180, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s', '헬스 기본 스타터팩 설명입니다'),
-                                                                                        ('요리 기본 스타터팩', 6, 666666, 160, 'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=', '요리 기본 스타터팩 설명입니다');
+('홈베이킹 기본 스타터팩', 1, 100000, 80, 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp', '베이킹 기본 스타터팩 설명입니다'),
+('캠핑 기본 스타터팩',     2, 200000, 150, 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
+('러닝 기본 스타터팩',     3, 333333, 210, 'https://cdn-icons-png.flaticon.com/512/4112/4112938.png', '런닝 기본 스타터팩 설명입니다'),
+('독서 기본 스타터팩',     4, 444444, 110, 'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg', '독서 기본 스타터팩 설명입니다'),
+('헬스 기본 스타터팩',     5, 555555, 180, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s', '헬스 기본 스타터팩 설명입니다'),
+('요리 기본 스타터팩',     6, 666666, 160, 'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=', '요리 기본 스타터팩 설명입니다');
 
 -- ------------------------------------------------------------
 -- 4) 상품_스타터팩 매핑 (PtoP) Mock 데이터
 INSERT INTO pack_product (pack_id, product_id) VALUES
--- 1번 팩: 베이킹 스타터팩
 (1, 1), (1, 2),
--- 2번 팩: 캠핑 스타터팩
 (2, 3), (2, 4),
--- 3번 팩: 런닝 스타터팩
 (3, 5), (3, 6),
--- 4번 팩: 독서 스타터팩
 (4, 7), (4, 8),
--- 5번 팩: 헬스 스타터팩
 (5, 9), (5, 10),
--- 6번 팩: 요리 스타터팩
 (6, 11), (6, 12);
