@@ -1,6 +1,6 @@
 package com.starterpack.member.service;
 
-import com.starterpack.member.dto.MemberCreateRequestDto;
+import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.entity.Member;
@@ -8,6 +8,7 @@ import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 모든 멤버 조회
     public List<MemberResponseDto> findAllMembers() {
@@ -49,34 +51,26 @@ public class MemberService {
         return new MemberResponseDto(member);
     }
 
-    // 멤버 생성
     @Transactional
-    public MemberResponseDto addMember(MemberCreateRequestDto requestDto) {
+    public MemberResponseDto addMember(MemberCreationRequestDto request) {
         // 이메일 중복 확인
-        if (memberRepository.existsByEmail(requestDto.getEmail())) {
+        if (memberRepository.existsByEmail(request.email())) {
             throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
         }
 
-        // 소셜 로그인인 경우 프로바이더 ID 중복 확인
-        if (requestDto.getProvider() != Member.Provider.EMAIL && 
-            memberRepository.findByProviderAndProviderId(requestDto.getProvider(), requestDto.getProviderId()).isPresent()) {
-            throw new BusinessException(ErrorCode.MEMBER_PROVIDER_ID_DUPLICATED);
-        }
-
         Member member = new Member(
-                requestDto.getEmail(),
-                requestDto.getPassword(),
-                requestDto.getName(),
-                requestDto.getProvider(),
-                requestDto.getProviderId()
+                request.email(),
+                request.encodedPassword(),
+                request.name(),
+                request.provider(),
+                request.providerId()
         );
-        
-        if (requestDto.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(requestDto.getProfileImageUrl());
+
+        if (request.profileImageUrl() != null) {
+            member.setProfileImageUrl(request.profileImageUrl());
         }
 
-        Member savedMember = memberRepository.save(member);
-        return new MemberResponseDto(savedMember);
+        return new MemberResponseDto(memberRepository.save(member));
     }
 
     // 멤버 정보 수정
@@ -86,23 +80,24 @@ public class MemberService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 이메일 변경 시 중복 확인
-        if (requestDto.getEmail() != null && !requestDto.getEmail().equals(member.getEmail())) {
-            if (memberRepository.existsByEmail(requestDto.getEmail())) {
+        if (requestDto.email() != null && !requestDto.email().equals(member.getEmail())) {
+            if (memberRepository.existsByEmail(requestDto.email())) {
                 throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
             }
-            member.setEmail(requestDto.getEmail());
+            member.setEmail(requestDto.email());
         }
 
-        if (requestDto.getPassword() != null) {
-            member.setPassword(requestDto.getPassword());
+        // 비밀번호 암호화해서 저장
+        if (requestDto.password() != null && !requestDto.password().isBlank()) {
+            member.setPassword(passwordEncoder.encode(requestDto.password()));
         }
 
-        if (requestDto.getName() != null) {
-            member.setName(requestDto.getName());
+        if (requestDto.name() != null) {
+            member.setName(requestDto.name());
         }
 
-        if (requestDto.getProfileImageUrl() != null) {
-            member.setProfileImageUrl(requestDto.getProfileImageUrl());
+        if (requestDto.profileImageUrl() != null) {
+            member.setProfileImageUrl(requestDto.profileImageUrl());
         }
 
         Member updatedMember = memberRepository.save(member);
