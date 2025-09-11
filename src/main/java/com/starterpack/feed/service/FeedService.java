@@ -12,7 +12,9 @@ import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FeedService {
@@ -28,6 +30,7 @@ public class FeedService {
         this.productRepository = productRepository;
     }
 
+    @Transactional
     public FeedResponseDto addFeed(
             Member member,
             FeedCreateRequestDto createDto) {
@@ -46,6 +49,14 @@ public class FeedService {
         }
 
         return FeedResponseDto.from(feedRepository.save(feed));
+    }
+
+    @Transactional(readOnly = true)
+    public FeedResponseDto getFeed(Long feedId) {
+        Feed feed = feedRepository.findByIdWithDetails(feedId)
+                .orElseThrow(() -> new IllegalArgumentException("피드를 찾지 못했습니다."));
+
+        return FeedResponseDto.from(feed);
     }
 
     private Category getCategory(Long categoryId) {
