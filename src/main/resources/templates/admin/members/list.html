@@ -44,7 +44,7 @@
     <div class="container">
       <div class="titlebar">
         <h1 class="title">멤버 관리</h1>
-        <a th:href="@{/admin/members/add}" class="btn btn-primary">새 멤버 등록</a>
+        <a th:href="@{/admin/members/form}" class="btn btn-primary">새 멤버 등록</a>
       </div>
 
       <div th:if="${message}" class="toast" th:text="${message}">성공 메시지</div>
@@ -129,10 +129,12 @@
                  th:text="${m.name}">홍길동</a>
             </td>
             <td th:text="${m.email}">user@example.com</td>
-            <td>
-              <span class="badge" th:classappend="${m.provider.toString().toLowerCase() == 'email'} ? ' email' : ' kakao'"
-                    th:text="${m.provider}">EMAIL</span>
+            <td th:with="prov=${m.provider?.name() ?: (m.provider ?: 'EMAIL')}">
+              <span class="badge"
+                    th:classappend="${#strings.equalsIgnoreCase(prov,'email')} ? ' email' : ' kakao'"
+                    th:text="${prov}">EMAIL</span>
             </td>
+
             <td>
               <span th:class="${m.isActive} ? 'status-active' : 'status-inactive'"
                     th:text="${m.isActive} ? '활성' : '비활성'">활성</span>
