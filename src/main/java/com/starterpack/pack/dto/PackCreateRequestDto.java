@@ -15,7 +15,12 @@ public record PackCreateRequestDto(
         String description,
         String src
 ) {
-    public static PackCreateRequestDto emptyForm() {
-        return new PackCreateRequestDto(null, "", null, null, "","");
-    }
+    public static final PackCreateRequestDto EMPTY_FORM = new PackCreateRequestDto(
+            null,
+            "",
+            List.of(),
+            null,
+            "",
+            ""
+    );
 }
