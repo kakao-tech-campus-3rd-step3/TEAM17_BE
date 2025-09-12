@@ -53,8 +53,11 @@ public enum ErrorCode {
             "이메일 회원가입 유저가 아닙니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED,
             "L002",
-            "비밀번호가 틀렸습니다.")
-    ;
+            "비밀번호가 틀렸습니다."),
+    //feed
+    FEED_NOT_FOUND(HttpStatus.NOT_FOUND,
+            "F001",
+            "해당하는 피드를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;

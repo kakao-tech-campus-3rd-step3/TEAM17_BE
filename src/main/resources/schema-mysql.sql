@@ -105,7 +105,55 @@ CREATE TABLE pack_product (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
+-- ------------------------------------------------------------
+-- 5) 사용자 피드 (Feed)
+-- ------------------------------------------------------------
+CREATE TABLE feed (
+    id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    user_id     BIGINT UNSIGNED     NOT NULL,
+    description TEXT                NULL, -- 피드 설명
+    image_url   VARCHAR(500)        NOT NULL, -- 일상: 일상사진, 정보공유: 대표사진
+    feed_type   ENUM('INFO', 'DAILY') NOT NULL,
+    category_id BIGINT UNSIGNED     NULL,
+    like_count  INT     UNSIGNED    NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_feed_user (user_id),
+    KEY idx_feed_category (category_id),
+    CONSTRAINT fk_feed_user
+        FOREIGN KEY (user_id)
+            REFERENCES member(user_id)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE,
+    CONSTRAINT fk_feed_category
+        FOREIGN KEY (category_id)
+            REFERENCES category(id)
+            ON UPDATE CASCADE
+            ON DELETE SET NULL
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 6) 피드, 상품 연관 테이블
+-- ------------------------------------------------------------
+CREATE TABLE feed_product (
+      id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      feed_id     BIGINT UNSIGNED NOT NULL,
+      product_id  BIGINT UNSIGNED NOT NULL,
+      description TEXT   NULL, -- 상품 설명인데 추후 Product에 옮길지 결정할 예정
+      PRIMARY KEY (id),
+      UNIQUE KEY uk_feed_product (feed_id, product_id),
+      KEY idx_fp_product (product_id),
+      CONSTRAINT fk_fp_feed
+          FOREIGN KEY (feed_id)
+              REFERENCES feed(id)
+              ON UPDATE CASCADE
+              ON DELETE CASCADE,
+      CONSTRAINT fk_fp_product
+          FOREIGN KEY (product_id)
+              REFERENCES product(id)
+              ON UPDATE CASCADE
+              ON DELETE CASCADE
+) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
