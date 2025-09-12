@@ -11,7 +11,7 @@ import com.starterpack.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +19,16 @@ import org.springframework.data.domain.Pageable;
 @Service
 @Transactional
 public class ProductService {
+
+    private static final Map<String, Comparator<ProductAdminListDto>> COMPARATORS;
+
+    static {
+        COMPARATORS = new HashMap<>();
+        COMPARATORS.put("name", Comparator.comparing(ProductAdminListDto::name));
+        COMPARATORS.put("cost", Comparator.comparing(ProductAdminListDto::cost));
+        COMPARATORS.put("category", Comparator.comparing(ProductAdminListDto::categoryName));
+        COMPARATORS.put("id", Comparator.comparing(ProductAdminListDto::id));
+    }
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -139,28 +149,18 @@ public class ProductService {
     }
 
     // 상품 목록을 정렬하는 메서드
-    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products, String sortBy,
-            String sortOrder) {
+    public List<ProductAdminListDto> sortProducts(List<ProductAdminListDto> products,
+                                                  String sortBy,
+                                                  String sortOrder) {
+        Comparator<ProductAdminListDto> comparator =
+                COMPARATORS.getOrDefault(sortBy, COMPARATORS.get("id"));
+
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+
         return products.stream()
-                .sorted((p1, p2) -> {
-                    int comparison = 0;
-                    switch (sortBy) {
-                        case "name":
-                            comparison = p1.name().compareTo(p2.name());
-                            break;
-                        case "cost":
-                            comparison = p1.cost().compareTo(p2.cost());
-                            break;
-                        case "category":
-                            comparison = p1.categoryName().compareTo(p2.categoryName());
-                            break;
-                        case "id":
-                        default:
-                            comparison = p1.id().compareTo(p2.id());
-                            break;
-                    }
-                    return "desc".equals(sortOrder) ? -comparison : comparison;
-                })
+                .sorted(comparator)
                 .collect(Collectors.toList());
     }
 
