@@ -1,91 +1,121 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+  <meta charset="UTF-8"/>
   <title>패키지 관리</title>
   <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
   <style>
-    .toolbar { display:flex; gap:12px; align-items:center; margin:12px 0; }
-    .toolbar .spacer { flex:1; }
-    .filter select { padding:6px 8px; }
-    table { width:100%; border-collapse: collapse; }
-    thead th { background:#f7f7f7; }
-    th, td { padding:8px 10px; border:1px solid #ddd; }
-    .btn-like-link { text-decoration:none; border:1px solid #ccc; padding:6px 10px; border-radius:6px; }
-    .toast { margin:10px 0; padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; color:#166534; }
+    :root { --primary:#4F46E5; --border:#e5e7eb; --text:#111827; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:var(--text); }
+    .container{ max-width:1000px; margin:32px auto; padding:0 16px; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .tag{ padding:3px 10px; font-size:12px; border-radius:999px; background:#EEF2FF; color:#3730A3; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .top-actions{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+
+    /* 테이블 */
+    .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; }
+    thead th{
+      position:sticky; top:0; background:#fafafa; border-bottom:1px solid var(--border);
+      text-align:left; font-weight:700; padding:12px 14px; white-space:nowrap;
+    }
+    tbody td{ border-bottom:1px solid var(--border); padding:12px 14px; vertical-align:middle; }
+    tbody tr:last-child td{ border-bottom:none; }
     .empty { text-align:center; color:#888; }
+    .actions{ white-space:nowrap; display:flex; gap:8px; }
+    .btn{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
   </style>
 </head>
 <body>
-<h1>패키지 목록</h1>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
 
-<!-- 플래시 메시지 -->
-<div th:if="${message}" class="toast" th:text="${message}">성공 메시지</div>
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">패키지 목록</h1>
+        <span class="tag">LIST</span>
+      </div>
 
-<div class="toolbar">
-  <!-- 카테고리 필터 -->
-  <form class="filter" th:action="@{/admin/packs/filter}" method="get">
-    <label for="categoryId">카테고리:</label>
-    <select id="categoryId" name="categoryId" onchange="handleCategoryChange(this)">
-      <option value="" th:selected="${categoryId == null}">전체</option>
-      <option th:each="c : ${categories}"
-              th:value="${c.id}"
-      th:text="${c.name}"
-      th:selected="${categoryId != null and c.id == categoryId}">
-      카테고리명
-      </option>
-    </select>
-    <noscript><button type="submit">적용</button></noscript>
-  </form>
+      <!-- 메시지 -->
+      <div class="card" th:if="${message}">
+        <div th:text="${message}" class="alert alert-success">성공 메시지</div>
+      </div>
 
-  <div class="spacer"></div>
+      <div class="card">
+        <!-- 상단 버튼 + 카테고리 필터 -->
+        <div class="top-actions">
+          <form class="filter" th:action="@{/admin/packs/filter}" method="get">
+            <label for="categoryId">카테고리:</label>
+            <select id="categoryId" name="categoryId" onchange="handleCategoryChange(this)">
+              <option value="" th:selected="${categoryId == null}">전체</option>
+              <option th:each="c : ${categories}"
+                      th:value="${c.id}"
+                      th:text="${c.name}"
+                      th:selected="${categoryId != null and c.id == categoryId}">
+                카테고리명
+              </option>
+            </select>
+            <noscript><button type="submit">적용</button></noscript>
+          </form>
 
-  <!-- 새로 만들기 -->
-  <a th:href="@{/admin/packs/add}" class="btn-like-link">새 패키지 등록</a>
+          <a th:href="@{/admin/packs/add}" class="btn btn-primary">새 패키지 등록</a>
+        </div>
+
+        <!-- 목록 테이블 -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th style="width:90px;">ID</th>
+              <th>이름</th>
+              <th style="width:110px;">구성수</th>
+              <th style="width:140px;">총 비용</th>
+              <th style="width:120px;">좋아요</th>
+              <th style="width:180px;">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(packs)}">
+              <td class="empty" colspan="6">표시할 패키지가 없습니다.</td>
+            </tr>
+
+            <tr th:each="pack : ${packs}">
+              <td th:text="${pack.id}">1</td>
+              <td th:text="${pack.name}">패키지명</td>
+              <td th:text="${#lists.size(pack.parts)}">0</td>
+              <td th:text="${pack.cost}">0</td>
+              <td th:text="${pack.like}">0</td>
+              <td class="actions">
+                <a th:href="@{/admin/packs/{id}/edit(id=${pack.id})}" class="btn">수정</a>
+                <form th:action="@{/admin/packs/{id}/delete(id=${pack.id})}" method="post"
+                      onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn">삭제</button>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
 </div>
 
-<table>
-  <thead>
-  <tr>
-    <th style="width:90px;">ID</th>
-    <th>이름</th>
-    <th style="width:110px;">구성수</th>
-    <th style="width:140px;">총 비용</th>
-    <th style="width:120px;">좋아요</th>
-    <th style="width:180px;">관리</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:if="${#lists.isEmpty(packs)}">
-    <td class="empty" colspan="6">표시할 패키지가 없습니다.</td>
-  </tr>
-
-  <tr th:each="pack : ${packs}">
-    <td th:text="${pack.id}">1</td>
-    <td th:text="${pack.name}">패키지명</td>
-    <td th:text="${#lists.size(pack.parts)}">0</td>
-    <td th:text="${pack.cost}">0</td>
-    <td th:text="${pack.like}">0</td>
-    <td>
-      <a th:href="@{/admin/packs/{id}/edit(id=${pack.id})}" class="btn-like-link">수정</a>
-      <form th:action="@{/admin/packs/{id}/delete(id=${pack.id})}" method="post" style="display:inline;"
-            onsubmit="return confirm('정말로 삭제하시겠습니까?');">
-        <!-- Spring Security를 쓴다면 CSRF 토큰도 넣기 -->
-        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-        <button type="submit" class="btn-like-link">삭제</button>
-      </form>
-    </td>
-  </tr>
-  </tbody>
-</table>
-</body>
 <script th:inline="javascript">
   function handleCategoryChange(selectElement) {
     const selectedValue = selectElement.value;
     if (selectedValue === "") {
-      window.location.href = /*[[@{/admin/packs}]]*/ '/admin-packs-url';
+      window.location.href = /*[[@{/admin/packs}]]*/ '/admin/packs';
     } else {
       selectElement.form.submit();
     }
   }
 </script>
+</body>
 </html>
