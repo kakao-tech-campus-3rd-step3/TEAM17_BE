@@ -30,7 +30,8 @@ public class SecurityConfig {
     private static final String[] PUBLIC_URLS = {
             "/", // 루트 경로
             "/api/auth/**", // 로그인, 회원가입 등 인증 관련 API
-            "/admin/**"
+            "/admin/**",
+            "/actuator/**"
     };
 
     @Bean
