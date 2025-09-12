@@ -1,6 +1,5 @@
 package com.starterpack.feed.dto;
 
-import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedProduct;
 import com.starterpack.product.entity.Product;
 

@@ -2,6 +2,8 @@ package com.starterpack.feed.service;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
@@ -13,7 +15,6 @@ import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,7 @@ public class FeedService {
 
     @Transactional(readOnly = true)
     public FeedResponseDto getFeed(Long feedId) {
-        Feed feed = getFeedById(feedId);
+        Feed feed = getFeedByIdWithDetails(feedId);
 
         return FeedResponseDto.from(feed);
     }
@@ -68,7 +69,7 @@ public class FeedService {
             Member member,
             FeedUpdateRequestDto updateDto
     ){
-        Feed feed = getFeedById(feedId);
+        Feed feed = getFeedByIdWithDetails(feedId);
 
         checkFeedOwner(member, feed);
 
@@ -83,7 +84,7 @@ public class FeedService {
 
     @Transactional
     public void deleteFeed(Long feedId, Member member) {
-        Feed feed = getFeedById(feedId);
+        Feed feed = getFeedByIdWithDetails(feedId);
 
         checkFeedOwner(member, feed);
 
@@ -93,7 +94,7 @@ public class FeedService {
     private Category getCategory(Long categoryId) {
         return categoryRepository
                 .findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     private boolean isInfoFeedWithProducts(FeedCreateRequestDto createDto) {
@@ -123,13 +124,13 @@ public class FeedService {
 
     private void checkFeedOwner(Member member, Feed feed) {
         if (!feed.getUser().getUserId().equals(member.getUserId())) {
-            throw new IllegalArgumentException("이 피드를 삭제할 권한이 없습니다.");
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
     }
 
-    private Feed getFeedById(Long feedId) {
-        return feedRepository.findById(feedId)
-                .orElseThrow(() -> new IllegalArgumentException("피드를 찾을 수 없습니다."));
+    private Feed getFeedByIdWithDetails(Long feedId) {
+        return feedRepository.findByIdWithDetails(feedId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
     }
 
 }
