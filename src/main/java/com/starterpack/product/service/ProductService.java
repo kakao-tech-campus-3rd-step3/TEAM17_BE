@@ -101,17 +101,18 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductAdminListDto> searchProductsForAdminWithCategoryAndPagination(String keyword,
-            Long categoryId, Pageable pageable) {
-        Page<Product> productPage;
-        if (categoryId != null) {
-            productPage = productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword,
-                    categoryId, pageable);
-        } else {
-            productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
-        return productPage.map(ProductAdminListDto::from);
+    public Page<ProductAdminListDto> searchProductsForAdmin(String keyword, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCase(keyword, pageable)
+                .map(ProductAdminListDto::from);
     }
+
+    @Transactional(readOnly = true)
+    public Page<ProductAdminListDto> searchProductsForAdminWithCategory(
+            String keyword, Long categoryId, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId, pageable)
+                .map(ProductAdminListDto::from);
+    }
+
 
     @Transactional(readOnly = true)
     public List<ProductAdminListDto> searchProductsForAdmin(String keyword) {
