@@ -36,25 +36,29 @@ public class AdminProductController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
             Model model) {
-        
+
         // 정렬 설정
-        Sort.Direction direction = "desc".equals(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<ProductAdminListDto> productPage;
-        
-        // 검색과 필터링
-        if (hasKeyword(keyword) && hasCategoryId(categoryId)) {
-            productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
-        } else if (hasKeyword(keyword)) {
-            productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
+
+        if (hasKeyword(keyword)) {
+            String kw = keyword.trim();
+            productPage = (categoryId == null)
+                    ? productService.searchProductsForAdmin(kw, pageable)
+                    : productService.searchProductsForAdminWithCategory(kw, categoryId, pageable);
+
+            // 키워드가 없고 카테고리만 있는 경우
         } else if (hasCategoryId(categoryId)) {
             productPage = productService.getProductsForAdminByCategoryWithPagination(categoryId, pageable);
+
+            // 전체 조회
         } else {
             productPage = productService.getProductsForAdminWithPagination(pageable);
         }
-        
+
         model.addAttribute("productPage", productPage);
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("categories", categoryService.findAllCategories());
