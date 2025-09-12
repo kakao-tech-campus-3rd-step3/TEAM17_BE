@@ -45,7 +45,7 @@ public class AdminPackController {
     /** 등록 폼 */
     @GetMapping("/add")
     public String addForm(Model model) {
-        model.addAttribute("packDto", PackCreateRequestDto.emptyForm());
+        model.addAttribute("packDto", PackCreateRequestDto.EMPTY_FORM);
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("products", productService.getProductsForAdmin());
         return "admin/packs/form";

@@ -15,8 +15,12 @@ import jakarta.persistence.Table;
 
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "product")
 public class Product {
 
@@ -85,23 +89,4 @@ public class Product {
             this.category = category;
         }
     }
-
-    // --- getters/setters ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
-    public String getProductType() { return productType; }
-    public void setProductType(String productType) { this.productType = productType; }
-    public String getSrc() { return src; }
-    public void setSrc(String src) { this.src = src; }
-    public Integer getCost() { return cost; }
-    public void setCost(Integer cost) { this.cost = cost; }
-    public Integer getLikeCount() { return likeCount; }
-    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-    public Set<Pack> getPacks() { return packs; }
 }
