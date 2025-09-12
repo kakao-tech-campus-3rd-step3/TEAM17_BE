@@ -78,47 +78,89 @@ public class PackService {
 
     @Transactional
     public PackDetailResponseDto update(Long id, PackUpdateRequestDto req) {
-        Pack pack = packRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+        Pack pack = findPackById(id);
+        
+        validateUpdateRequest(req);
+        updatePackFields(pack, req);
+        
+        return PackDetailResponseDto.from(pack);
+    }
 
+    // Pack 조회 메서드
+    private Pack findPackById(Long id) {
+        return packRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+    }
+
+    // 요청 데이터 검증
+    private void validateUpdateRequest(PackUpdateRequestDto req) {
+        if (req.name() != null && req.name().isBlank()) {
+            throw new IllegalArgumentException("Pack name must not be blank");
+        }
+    }
+
+    // Pack 필드 업데이트
+    private void updatePackFields(Pack pack, PackUpdateRequestDto req) {
+        updateBasicFields(pack, req);
+        updateProductsAndCost(pack, req);
+    }
+
+    // 기본 필드 업데이트
+    private void updateBasicFields(Pack pack, PackUpdateRequestDto req) {
         if (req.name() != null) {
-            if (req.name().isBlank()) {
-                throw new IllegalArgumentException("Pack name must not be blank");
-            }
             pack.setName(req.name());
         }
-
+        
         if (req.categoryId() != null) {
-            Category category = categoryRepository.findById(req.categoryId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+            Category category = findCategoryById(req.categoryId());
             pack.setCategory(category);
         }
-
+        
         if (req.description() != null) {
             pack.setDescription(req.description());
         }
+        
         if (req.src() != null) {
             pack.setSrc(req.src());
         }
+    }
 
-        // products 변경 시 연관관계 재설정 + totalCost 재계산
+    // 제품 및 비용 업데이트
+    private void updateProductsAndCost(Pack pack, PackUpdateRequestDto req) {
         if (req.productIds() != null) {
-            for (Product p : new HashSet<>(pack.getProducts())) {
-                pack.removeProduct(p);
-            }
-            Set<Product> products = loadProducts(req.productIds());
-            for (Product p : products) {
-                pack.addProduct(p);
-            }
-            int total =
-                    (req.totalCost() != null) ? req.totalCost() : calcTotalCost(pack.getProducts());
-            pack.setTotalCost(total);
+            updateProducts(pack, req.productIds());
+            updateTotalCost(pack, req.totalCost());
         } else if (req.totalCost() != null) {
-            // 제품 미변경 + 금액만 변경
             pack.setTotalCost(req.totalCost());
         }
+    }
 
-        return PackDetailResponseDto.from(pack);
+    // 제품 업데이트
+    private void updateProducts(Pack pack, List<Long> productIds) {
+        // 기존 제품 제거
+        for (Product product : new HashSet<>(pack.getProducts())) {
+            pack.removeProduct(product);
+        }
+        
+        // 새 제품 추가
+        Set<Product> products = loadProducts(productIds);
+        for (Product product : products) {
+            pack.addProduct(product);
+        }
+    }
+
+    // 총 비용 업데이트
+    private void updateTotalCost(Pack pack, Integer requestedTotalCost) {
+        int totalCost = (requestedTotalCost != null) 
+            ? requestedTotalCost 
+            : calcTotalCost(pack.getProducts());
+        pack.setTotalCost(totalCost);
+    }
+
+    // 카테고리 조회 메서드
+    private Category findCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     @Transactional
