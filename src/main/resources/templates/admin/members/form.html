@@ -46,7 +46,8 @@
       <div th:if="${message}" class="toast" th:text="${message}">성공 메시지</div>
 
       <div class="card">
-        <form th:action="${isEdit} ? @{/admin/members/{id}/edit(id=${memberId})} : @{/admin/members/add}"
+        <!-- ✅ 생성: /admin/members  |  수정: /admin/members/{id}/edit -->
+        <form th:action="${isEdit} ? @{/admin/members/{id}/edit(id=${memberId})} : @{/admin/members}"
               th:object="${memberDto}"
               method="post">
           <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -68,7 +69,7 @@
                 <div class="error" th:errors="*{email}"></div>
               </div>
 
-              <!-- 비밀번호: 생성/수정 케이스 분기 -->
+              <!-- 비밀번호: 생성/수정 분기 -->
               <div class="field" th:if="${!isEdit}">
                 <label for="password">비밀번호 *</label>
                 <input type="password" id="password" th:field="*{password}" placeholder="8자 이상 입력하세요"
@@ -104,19 +105,19 @@
               </div>
 
               <!-- 읽기 전용 필드 (수정 시) -->
-              <div class="field" th:if="${isEdit}">
+              <div class="field" th:if="${isEdit and originalMember != null}">
                 <label>로그인 방식</label>
                 <input type="text" th:value="${originalMember.provider}" class="readonly-field" readonly/>
                 <div class="help">로그인 방식은 변경할 수 없습니다.</div>
               </div>
 
-              <div class="field" th:if="${isEdit and originalMember.providerId != null and !originalMember.providerId.isEmpty()}">
+              <div class="field" th:if="${isEdit and originalMember != null and originalMember.providerId != null and !originalMember.providerId.isEmpty()}">
                 <label>소셜 ID</label>
                 <input type="text" th:value="${originalMember.providerId}" class="readonly-field" readonly/>
                 <div class="help">소셜 로그인 ID는 변경할 수 없습니다.</div>
               </div>
 
-              <div class="field" th:if="${isEdit}">
+              <div class="field" th:if="${isEdit and originalMember != null}">
                 <label>계정 상태</label>
                 <input type="text" th:value="${originalMember.isActive ? '활성' : '비활성'}" class="readonly-field" readonly/>
                 <div class="help">계정 상태는 별도 메뉴에서 변경하세요.</div>

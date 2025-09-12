@@ -25,7 +25,7 @@ import java.util.List;
 public class AdminMemberController {
 
     private final MemberService memberService;
-    private final PasswordEncoder passwordEncoder; // ✅ 생성 시 비번 인코딩용
+    private final PasswordEncoder passwordEncoder;
 
     // 목록
     @GetMapping
@@ -75,7 +75,6 @@ public class AdminMemberController {
         return "admin/members/list";
     }
 
-    /* ===================== 생성 (폼/처리) ===================== */
 
     // 생성 폼 (뷰만 반환)
     @GetMapping("/form")
@@ -114,7 +113,6 @@ public class AdminMemberController {
             return "admin/members/form";
         }
 
-        // ✅ 서비스 시그니처에 맞는 생성 DTO 구성 (비번은 인코딩해서 넣기)
         MemberCreationRequestDto createDto = new MemberCreationRequestDto(
                 req.email(),
                 passwordEncoder.encode(req.password()), // encodedPassword
@@ -129,8 +127,6 @@ public class AdminMemberController {
         ra.addFlashAttribute("message", "멤버 '" + created.name() + "' 등록 완료");
         return "redirect:/admin/members";
     }
-
-    /* ===================== 상세/수정/토글/삭제 ===================== */
 
     // 상세 (숫자만 매칭)
     @GetMapping("/{userId:\\d+}")
