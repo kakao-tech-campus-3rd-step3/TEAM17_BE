@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>멤버 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    :root { --primary:#4F46E5; --muted:#f6f7fb; --danger:#dc2626; --border:#e5e7eb; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:#111827; }
+    .admin-shell { display:grid; grid-template-columns: 260px 1fr; min-height:100vh; }
+    main.admin-content { padding:24px; }
+    .container{ max-width:1100px; margin:0 auto; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .toolbar{ display:flex; gap:12px; align-items:center; margin:12px 0; flex-wrap:wrap; }
+    .toolbar .spacer{ flex:1; }
+    .filter select, .filter input{ padding:10px 12px; border:1px solid var(--border); border-radius:10px; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    table { width:100%; border-collapse: collapse; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    thead th { background:#fafafa; font-weight:700; }
+    th, td { padding:12px 12px; border-bottom:1px solid var(--border); text-align:left; }
+    .empty { text-align:center; color:#888; padding:32px 0; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+    .badge.email { background:#e3f2fd; color:#1d4ed8; }
+    .badge.kakao { background:#fff3e0; color:#b45309; }
+    .status-active { color:#16a34a; font-weight:700; }
+    .status-inactive { color:#dc2626; font-weight:700; }
+    .toast { margin-bottom:12px; padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; }
+    .pagination { display:flex; gap:6px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+    .pagination a, .pagination span { padding:8px 12px; border:1px solid var(--border); border-radius:8px; text-decoration:none; color:#111827; }
+    .pagination .current{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    .pagination .disabled{ color:#9ca3af; }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
+
+  <!-- 본문 -->
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">멤버 관리</h1>
+        <a th:href="@{/admin/members/form}" class="btn btn-primary">새 멤버 등록</a>
+      </div>
+
+      <div th:if="${message}" class="toast" th:text="${message}">성공 메시지</div>
+
+      <div class="card">
+        <!-- 검색/필터 -->
+        <form th:action="@{/admin/members}" method="get" class="toolbar filter">
+          <div>
+            <label style="display:block;font-weight:700;margin-bottom:6px;">검색</label>
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="이름/이메일 검색…"/>
+          </div>
+          <div>
+            <label style="display:block;font-weight:700;margin-bottom:6px;">로그인 방식</label>
+            <select name="provider">
+              <option value="">전체</option>
+              <option th:each="provider : ${providers}"
+                      th:value="${provider}"
+                      th:text="${provider}"
+                      th:selected="${provider == selectedProvider}"></option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-weight:700;margin-bottom:6px;">상태</label>
+            <select name="isActive">
+              <option value="">전체</option>
+              <option value="true" th:selected="${selectedIsActive == true}">활성</option>
+              <option value="false" th:selected="${selectedIsActive == false}">비활성</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-weight:700;margin-bottom:6px;">정렬</label>
+            <div style="display:flex; gap:8px;">
+              <select name="sortBy">
+                <option value="createdAt" th:selected="${sortBy == 'createdAt'}">가입일</option>
+                <option value="name" th:selected="${sortBy == 'name'}">이름</option>
+                <option value="email" th:selected="${sortBy == 'email'}">이메일</option>
+              </select>
+              <select name="sortOrder">
+                <option value="asc" th:selected="${sortOrder == 'asc'}">오름차순</option>
+                <option value="desc" th:selected="${sortOrder == 'desc'}">내림차순</option>
+              </select>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div>
+            <button type="submit" class="btn">적용</button>
+            <a th:href="@{/admin/members}" class="btn">초기화</a>
+          </div>
+        </form>
+
+        <!-- 결과 개요 -->
+        <div style="color:#6b7280; font-size:14px; margin:8px 4px 12px;">
+          <span th:if="${keyword != null and !keyword.isEmpty()}">'<b th:text="${keyword}"></b>' 검색 </span>
+          <span th:if="${selectedProvider != null}">/ 로그인 방식 필터 </span>
+          <span th:if="${selectedIsActive != null}">/ 상태 필터 </span>
+          총 <b th:text="${#lists.size(members)}">0</b>건
+        </div>
+
+        <!-- 빈 결과 -->
+        <div th:if="${#lists.isEmpty(members)}" class="empty">
+          검색 결과가 없습니다. <a th:href="@{/admin/members}">전체 보기</a>
+        </div>
+
+        <!-- 테이블 -->
+        <table th:if="${!#lists.isEmpty(members)}">
+          <thead>
+          <tr>
+            <th style="width:90px;">ID</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th style="width:140px;">로그인 방식</th>
+            <th style="width:120px;">상태</th>
+            <th style="width:180px;">가입일</th>
+            <th style="width:220px;">관리</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="m : ${members}">
+            <td th:text="${m.userId}">1</td>
+            <td>
+              <a th:href="@{/admin/members/{id}(id=${m.userId})}" style="text-decoration:none; color:#111827; font-weight:700;"
+                 th:text="${m.name}">홍길동</a>
+            </td>
+            <td th:text="${m.email}">user@example.com</td>
+            <td th:with="prov=${m.provider?.name() ?: (m.provider ?: 'EMAIL')}">
+              <span class="badge"
+                    th:classappend="${#strings.equalsIgnoreCase(prov,'email')} ? ' email' : ' kakao'"
+                    th:text="${prov}">EMAIL</span>
+            </td>
+
+            <td>
+              <span th:class="${m.isActive} ? 'status-active' : 'status-inactive'"
+                    th:text="${m.isActive} ? '활성' : '비활성'">활성</span>
+            </td>
+            <td th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
+            <td>
+              <a th:href="@{/admin/members/{id}(id=${m.userId})}" class="btn">상세</a>
+              <a th:href="@{/admin/members/{id}/edit(id=${m.userId})}" class="btn">수정</a>
+              <form th:action="@{/admin/members/{id}/toggle-active(id=${m.userId})}" method="post" style="display:inline;">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn"
+                        th:text="${m.isActive} ? '비활성화' : '활성화'"
+                        th:onclick="'return confirm(\'' + (${m.isActive} ? '비활성화' : '활성화') + '하시겠습니까?\');'">비활성화</button>
+              </form>
+              <form th:action="@{/admin/members/{id}/delete(id=${m.userId})}" method="post" style="display:inline;">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <!-- 페이징(있다면 노출; 기존 구현과 연결) -->
+        <div class="pagination" th:if="${page != null}">
+          <span th:classappend="${page.first} ? 'disabled' : ''">
+            <a th:if="${!page.first}" th:href="@{/admin/members(page=${page.number-1},keyword=${keyword},provider=${selectedProvider},isActive=${selectedIsActive},sortBy=${sortBy},sortOrder=${sortOrder})}">이전</a>
+            <span th:if="${page.first}">이전</span>
+          </span>
+          <span class="current" th:text="${page.number+1}">1</span>
+          <span>/</span>
+          <span th:text="${page.totalPages}">1</span>
+          <span th:classappend="${page.last} ? 'disabled' : ''">
+            <a th:if="${!page.last}" th:href="@{/admin/members(page=${page.number+1},keyword=${keyword},provider=${selectedProvider},isActive=${selectedIsActive},sortBy=${sortBy},sortOrder=${sortOrder})}">다음</a>
+            <span th:if="${page.last}">다음</span>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

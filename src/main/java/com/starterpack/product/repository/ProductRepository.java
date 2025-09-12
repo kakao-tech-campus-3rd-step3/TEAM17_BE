@@ -1,6 +1,7 @@
 package com.starterpack.product.repository;
 
 import com.starterpack.product.entity.Product;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -18,13 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByNameContainingIgnoreCase(String keyword, Pageable pageable);
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
     Page<Product> findByNameContainingIgnoreCaseAndCategoryId(String keyword, Long categoryId, Pageable pageable);
-    
-    // 정렬을 위한 메서드들
-    List<Product> findAllByOrderByIdAsc();
-    List<Product> findAllByOrderByNameAsc();
-    List<Product> findAllByOrderByCostAsc();
-    List<Product> findAllByOrderByCostDesc();
-    List<Product> findAllByOrderByCategoryNameAsc();
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category")
     @Override

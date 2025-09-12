@@ -22,6 +22,8 @@ public record ProductDetailResponseDto(
                 .map(PackInfo::from)
                 .toList();
 
+        Long categoryId = (product.getCategory() != null) ? product.getCategory().getId() : null;
+        String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "미지정";
         return new ProductDetailResponseDto(
                 product.getId(),
                 product.getName(),
@@ -30,8 +32,8 @@ public record ProductDetailResponseDto(
                 product.getSrc(),
                 product.getCost(),
                 product.getLikeCount(),
-                product.getCategory().getId(),
-                product.getCategory().getName(),
+                categoryId,
+                categoryName,
                 packInfos
         );
     }
@@ -41,7 +43,7 @@ public record ProductDetailResponseDto(
             String name
     ) {
         public static PackInfo from(Pack pack) {
-            return new PackInfo(pack.getId(), pack.getDescription());
+            return new PackInfo(pack.getId(), pack.getName()); // ← description 말고 name
         }
     }
 }

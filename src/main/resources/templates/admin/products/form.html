@@ -1,52 +1,91 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:with="isEdit=${productId != null}">
 <head>
-  <title>상품 등록/수정</title>
+  <meta charset="UTF-8"/>
+  <title th:text="${isEdit} ? '상품 수정' : '상품 등록'">상품 등록/수정</title>
   <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
-  <style>.error { color: red; }</style>
+  <style>
+    :root { --primary:#4F46E5; --muted:#f6f7fb; --danger:#dc2626; --border:#e5e7eb; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:#111827; }
+    .container{ max-width:800px; margin:32px auto; padding:0 16px; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .tag{ padding:3px 10px; font-size:12px; border-radius:999px; background:#EEF2FF; color:#3730A3; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .field{ margin-bottom:14px; }
+    label{ font-weight:600; display:block; margin-bottom:6px; }
+    input[type="text"], input[type="number"], input[type="url"], select{
+      width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; background:#fff;
+    }
+    .error{ color:var(--danger); font-size:12px; margin-top:6px; }
+    .invalid{ border-color: var(--danger) !important; background:#FEF2F2; }
+    .btnbar{ display:flex; gap:8px; margin-top:18px; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  </style>
 </head>
 <body>
-<h1 th:text="${productId == null} ? '새 상품 등록' : '상품 수정'">상품 폼</h1>
+<div class="admin-shell">
+  <!-- 사이드바 추가 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
 
-<form th:action="${productId == null} ? @{/admin/products/add} : @{/admin/products/{id}/edit(id=${productId})}"
-      th:object="${productDto}" method="post">
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title" th:text="${isEdit} ? '상품 수정' : '상품 등록'">상품 등록/수정</h1>
+        <span class="tag" th:text="${isEdit} ? 'UPDATE' : 'CREATE'">CREATE</span>
+      </div>
 
-  <input type="hidden" name="id" th:value="${productId}" />
+      <div class="card">
+        <form th:action="${isEdit} ? @{/admin/products/{id}/edit(id=${productId})} : @{/admin/products/add}"
+              th:object="${productDto}" method="post">
 
-  <div>
-    <label for="name">상품 이름:</label>
-    <input type="text" id="name" th:field="*{name}" />
-    <div class="error" th:errors="*{name}"></div>
-  </div>
-  <div>
-    <label for="categoryId">카테고리:</label>
-    <select id="categoryId" th:field="*{categoryId}">
-      <option value="">-- 카테고리 선택 --</option>
-      <option th:each="category : ${categories}"
-              th:value="${category.id}"
-              th:text="${category.name}">카테고리명</option>
-    </select>
-  </div>
-  <div>
-    <label for="cost">가격:</label>
-    <input type="number" id="cost" th:field="*{cost}" />
-    <div class="error" th:errors="*{cost}"></div>
-  </div>
-  <div>
-    <label for="productType">상품 타입:</label>
-    <input type="text" id="productType" th:field="*{productType}" />
-  </div>
-  <div>
-    <label for="link">상품 링크:</label>
-    <input type="url" id="link" th:field="*{link}" />
-  </div>
-  <div>
-    <label for="src">이미지 SRC:</label>
-    <input type="text" id="src" th:field="*{src}" />
-  </div>
+          <input type="hidden" name="id" th:value="${productId}" />
 
-  <button type="submit" class="btn-like-link">저장</button>
-  <a th:href="@{/admin/products}" class="btn-like-link">취소</a>
-</form>
+          <div class="field">
+            <label for="name">상품 이름</label>
+            <input type="text" id="name" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'invalid'"/>
+            <div class="error" th:errors="*{name}"></div>
+          </div>
+
+          <div class="field">
+            <label for="categoryId">카테고리</label>
+            <select id="categoryId" th:field="*{categoryId}" th:classappend="${#fields.hasErrors('categoryId')} ? 'invalid'">
+              <option value="">-- 카테고리 선택 --</option>
+              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+            </select>
+            <div class="error" th:errors="*{categoryId}"></div>
+          </div>
+
+          <div class="field">
+            <label for="cost">가격</label>
+            <input type="number" id="cost" th:field="*{cost}" th:classappend="${#fields.hasErrors('cost')} ? 'invalid'"/>
+            <div class="error" th:errors="*{cost}"></div>
+          </div>
+
+          <div class="field">
+            <label for="productType">상품 타입</label>
+            <input type="text" id="productType" th:field="*{productType}"/>
+          </div>
+
+          <div class="field">
+            <label for="link">상품 링크</label>
+            <input type="url" id="link" th:field="*{link}"/>
+          </div>
+
+          <div class="field">
+            <label for="src">이미지 SRC</label>
+            <input type="text" id="src" th:field="*{src}"/>
+          </div>
+
+          <div class="btnbar">
+            <button type="submit" class="btn btn-primary">저장</button>
+            <a th:href="@{/admin/products}" class="btn">취소</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
 </body>
 </html>

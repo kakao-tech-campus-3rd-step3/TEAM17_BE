@@ -13,8 +13,12 @@ import jakarta.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "category")
 public class Category {
 
@@ -33,14 +37,4 @@ public class Category {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Pack> packs = new ArrayList<>();
-
-    // --- getters/setters ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getSrc() { return src; }
-    public void setSrc(String src) { this.src = src; }
-    public List<Product> getProducts() { return products; }
-    public List<Pack> getPacks() { return packs; }
 }

@@ -14,7 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,27 +36,29 @@ public class AdminProductController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
             Model model) {
-        
+
         // 정렬 설정
-        Sort.Direction direction = "desc".equals(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
-        
+
         Page<ProductAdminListDto> productPage;
-        
-        // 검색과 필터링
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            if (categoryId != null) {
-                productPage = productService.searchProductsForAdminWithCategoryAndPagination(keyword.trim(), categoryId, pageable);
-            } else {
-                productPage = productService.searchProductsForAdminWithPagination(keyword.trim(), pageable);
-            }
-        } else if (categoryId != null) {
+
+        if (hasKeyword(keyword)) {
+            String kw = keyword.trim();
+            productPage = (categoryId == null)
+                    ? productService.searchProductsForAdmin(kw, pageable)
+                    : productService.searchProductsForAdminWithCategory(kw, categoryId, pageable);
+
+            // 키워드가 없고 카테고리만 있는 경우
+        } else if (hasCategoryId(categoryId)) {
             productPage = productService.getProductsForAdminByCategoryWithPagination(categoryId, pageable);
+
+            // 전체 조회
         } else {
             productPage = productService.getProductsForAdminWithPagination(pageable);
         }
-        
+
         model.addAttribute("productPage", productPage);
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("categories", categoryService.findAllCategories());
@@ -146,5 +147,14 @@ public class AdminProductController {
         productService.deleteProduct(id);
         redirectAttributes.addFlashAttribute("message", "상품 삭제 완료");
         return "redirect:/admin/products";
+    }
+
+    //검색을 위한 키워드가 포함되어 있는지 체크하는 메서드
+    private boolean hasKeyword(String keyword) {
+        return keyword != null && !keyword.trim().isEmpty();
+    }
+    //카테고리로 필터링을 할 categoryId가 포함되어 있는지 체크하는 메서드
+    private boolean hasCategoryId(Long categoryId) {
+        return categoryId != null;
     }
 }
