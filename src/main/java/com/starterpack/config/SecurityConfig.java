@@ -31,7 +31,12 @@ public class SecurityConfig {
             "/", // 루트 경로
             "/api/auth/**", // 로그인, 회원가입 등 인증 관련 API
             "/admin/**",
-            "/actuator/**"
+            "/actuator/**",
+            "/css/**",
+            "/js/**",
+            "/images/**",
+            "/webjars/",
+            "/favicon.ico"
     };
 
     @Bean
