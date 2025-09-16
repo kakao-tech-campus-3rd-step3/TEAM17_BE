@@ -26,10 +26,8 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     // 모든 멤버 조회
-    public List<MemberResponseDto> findAllMembers() {
-        return memberRepository.findAll().stream()
-                .map(MemberResponseDto::new)
-                .collect(Collectors.toList());
+    public List<Member> findAllMembers() {
+        return memberRepository.findAll();
     }
 
     // ID로 멤버 조회
