@@ -29,7 +29,7 @@ public class FeedService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public FeedResponseDto addFeed(
+    public Feed addFeed(
             Member member,
             FeedCreateRequestDto createDto) {
         Category category = getCategory(createDto.categoryId());
@@ -46,25 +46,21 @@ public class FeedService {
             createDto.products().forEach(productDto -> addProductToFeed(feed, productDto));
         }
 
-        return FeedResponseDto.from(feedRepository.save(feed));
+        return feedRepository.save(feed);
     }
 
     @Transactional(readOnly = true)
-    public FeedResponseDto getFeed(Long feedId) {
-        Feed feed = getFeedByIdWithDetails(feedId);
-
-        return FeedResponseDto.from(feed);
+    public Feed getFeed(Long feedId) {
+        return getFeedByIdWithDetails(feedId);
     }
 
     @Transactional(readOnly = true)
-    public Page<FeedResponseDto> getAllFeeds(Pageable pageable) {
-        Page<Feed> feedPage = feedRepository.findAll(pageable);
-
-        return feedPage.map(FeedResponseDto::from);
+    public Page<Feed> getAllFeeds(Pageable pageable) {
+        return feedRepository.findAll(pageable);
     }
 
     @Transactional
-    public FeedResponseDto updateFeed(
+    public Feed updateFeed(
             Long feedId,
             Member member,
             FeedUpdateRequestDto updateDto
@@ -79,7 +75,7 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
-        return FeedResponseDto.from(feed);
+        return feed;
     }
 
     @Transactional
