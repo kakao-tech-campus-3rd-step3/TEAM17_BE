@@ -4,6 +4,9 @@ import com.starterpack.auth.service.AuthService;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
+@Tag(name = "Member", description = "회원 관리 API")
 public class MemberController {
     private final MemberService memberService;
     private final AuthService authService;
@@ -22,15 +26,17 @@ public class MemberController {
         this.authService = authService;
     }
 
-    // 모든 멤버 조회
     @GetMapping
+    @Operation(summary = "회원 목록 조회", description = "모든 회원 목록을 조회합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
         List<MemberResponseDto> members = memberService.findAllMembers();
         return ResponseEntity.status(HttpStatus.OK).body(members);
     }
 
-    // ID로 멤버 조회
     @GetMapping("/{userId}")
+    @Operation(summary = "회원 상세 조회", description = "ID로 특정 회원의 상세 정보를 조회합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<MemberResponseDto> getMemberById(
             @PathVariable Long userId
     ) {
@@ -38,8 +44,9 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    // 이메일로 멤버 조회
     @GetMapping("/email/{email}")
+    @Operation(summary = "이메일로 회원 조회", description = "이메일로 특정 회원의 정보를 조회합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<MemberResponseDto> getMemberByEmail(
             @PathVariable String email
     ) {
@@ -47,8 +54,9 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    // 멤버 정보 수정
     @PutMapping("/{userId}")
+    @Operation(summary = "회원 정보 수정", description = "기존 회원의 정보를 수정합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<MemberResponseDto> updateMember(
             @PathVariable Long userId,
             @Valid @RequestBody MemberUpdateRequestDto requestDto
@@ -57,8 +65,9 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    // 멤버 삭제 (소프트 삭제)
     @DeleteMapping("/{userId}")
+    @Operation(summary = "회원 삭제", description = "회원을 소프트 삭제합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Void> deleteMember(
             @PathVariable Long userId
     ) {
@@ -66,8 +75,9 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 멤버 완전 삭제
     @DeleteMapping("/{userId}/permanent")
+    @Operation(summary = "회원 완전 삭제", description = "회원을 데이터베이스에서 완전히 삭제합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<Void> deleteMemberPermanently(
             @PathVariable Long userId
     ) {
@@ -75,8 +85,9 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 멤버 활성화 상태 변경
     @PatchMapping("/{userId}/active")
+    @Operation(summary = "회원 활성화 상태 변경", description = "회원의 활성화 상태를 변경합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<MemberResponseDto> updateMemberActiveStatus(
             @PathVariable Long userId,
             @RequestParam Boolean isActive
