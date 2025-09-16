@@ -15,10 +15,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     
     // 프로바이더와 프로바이더 ID로 멤버 조회 (소셜 로그인용)
     Optional<Member> findByProviderAndProviderId(Member.Provider provider, String providerId);
-    
-    // 활성화된 멤버만 조회
-    Optional<Member> findByEmailAndIsActiveTrue(String email);
-    
-    // 활성화된 멤버만 프로바이더와 프로바이더 ID로 조회
-    Optional<Member> findByProviderAndProviderIdAndIsActiveTrue(Member.Provider provider, String providerId);
+
 }
