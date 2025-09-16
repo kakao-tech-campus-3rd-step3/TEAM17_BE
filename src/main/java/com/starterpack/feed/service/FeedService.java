@@ -71,7 +71,7 @@ public class FeedService {
     ){
         Feed feed = getFeedByIdWithDetails(feedId);
 
-        checkFeedOwner(member, feed);
+        feed.validateOwner(member);
 
         Category category = getCategory(updateDto.categoryId());
 
@@ -86,7 +86,7 @@ public class FeedService {
     public void deleteFeed(Long feedId, Member member) {
         Feed feed = getFeedByIdWithDetails(feedId);
 
-        checkFeedOwner(member, feed);
+        feed.validateOwner(member);
 
         feedRepository.delete(feed);
     }
@@ -116,12 +116,6 @@ public class FeedService {
                 .build();
 
         feed.getFeedProducts().add(feedProduct);
-    }
-
-    private void checkFeedOwner(Member member, Feed feed) {
-        if (!feed.getUser().getUserId().equals(member.getUserId())) {
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
-        }
     }
 
     private Feed getFeedByIdWithDetails(Long feedId) {
