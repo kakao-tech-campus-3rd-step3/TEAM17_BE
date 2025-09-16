@@ -10,4 +10,7 @@ public record FeedCreateRequestDto(
     Long categoryId,
     List<ProductTagRequestDto> products
 ) {
+    public boolean isInfoFeedWithProducts() {
+        return this.feedType() == FeedType.INFO && this.products() != null && !this.products().isEmpty();
+    }
 }

@@ -42,7 +42,7 @@ public class FeedService {
                 .category(category)
                 .build();
 
-        if (isInfoFeedWithProducts(createDto)) {
+        if (createDto.isInfoFeedWithProducts()) {
             createDto.products().forEach(productDto -> addProductToFeed(feed, productDto));
         }
 
@@ -95,10 +95,6 @@ public class FeedService {
         return categoryRepository
                 .findById(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
-    private boolean isInfoFeedWithProducts(FeedCreateRequestDto createDto) {
-        return createDto.feedType() == FeedType.INFO && createDto.products() != null && !createDto.products().isEmpty();
     }
 
     private void addProductToFeed(Feed feed, ProductTagRequestDto productDto) {
