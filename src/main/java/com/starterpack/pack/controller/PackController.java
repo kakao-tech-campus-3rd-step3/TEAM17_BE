@@ -4,6 +4,7 @@ import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
+import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.service.PackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,7 +31,13 @@ public class PackController {
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
     public Map<String, List<PackResponseDto>> getAllPacks() {
-        return Map.of("packs", packService.getPacks());
+        List<Pack> packs = packService.getPacks();
+
+        List<PackResponseDto> responseDto = packs.stream()
+                .map(PackResponseDto::from)
+                .toList();
+
+        return Map.of("packs", responseDto);
     }
 
     @GetMapping("/categories/{categoryId}/packs")

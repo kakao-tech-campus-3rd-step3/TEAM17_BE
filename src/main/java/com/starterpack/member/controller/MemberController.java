@@ -3,6 +3,7 @@ package com.starterpack.member.controller;
 import com.starterpack.auth.service.AuthService;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
+import com.starterpack.member.entity.Member;
 import com.starterpack.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,8 +31,13 @@ public class MemberController {
     @Operation(summary = "회원 목록 조회", description = "모든 회원 목록을 조회합니다.")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
-        List<MemberResponseDto> members = memberService.findAllMembers();
-        return ResponseEntity.status(HttpStatus.OK).body(members);
+        List<Member> members = memberService.findAllMembers();
+
+        List<MemberResponseDto> responseDto = members.stream()
+                .map(MemberResponseDto::new)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping("/{userId}")

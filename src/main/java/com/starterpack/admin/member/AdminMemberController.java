@@ -43,7 +43,11 @@ public class AdminMemberController {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort); // (현재 예제에선 페이징 직접 안 씀)
 
-        List<MemberResponseDto> members = memberService.findAllMembers();
+        List<Member> memberList = memberService.findAllMembers();
+
+        List<MemberResponseDto> members = memberList.stream()
+                .map(MemberResponseDto::new)
+                .toList();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             members = members.stream()
