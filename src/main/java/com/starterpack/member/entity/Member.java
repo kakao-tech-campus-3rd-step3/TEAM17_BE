@@ -64,6 +64,20 @@ public class Member {
         this.isActive = true;
     }
 
+    // 일반 사용자 생성
+    public static Member createUser(String email, String password, String name, Provider provider, String providerId) {
+        Member member = new Member(email, password, name, provider, providerId);
+        member.setRole(Role.USER);
+        return member;
+    }
+
+    // 관리자 생성
+    public static Member createAdmin(String email, String password, String name, Provider provider, String providerId) {
+        Member member = new Member(email, password, name, provider, providerId);
+        member.setRole(Role.ADMIN);
+        return member;
+    }
+
     // Provider 열거형
     public enum Provider {
         EMAIL, KAKAO
