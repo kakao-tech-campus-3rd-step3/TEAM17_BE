@@ -3,7 +3,9 @@ package com.starterpack.admin.pack;
 import com.starterpack.category.service.CategoryService;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
+import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
+import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.service.PackService;
 import com.starterpack.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -29,7 +31,13 @@ public class AdminPackController {
     @GetMapping
     public String listAll(Model model){
         model.addAttribute("categories", categoryService.findAllCategories());
-        model.addAttribute("packs", packService.getPacks());
+
+        List<Pack> packList = packService.getPacks();
+        List<PackResponseDto> packs = packList.stream()
+                .map(PackResponseDto::from)
+                .toList();
+
+        model.addAttribute("packs", packs);
         return "admin/packs/list";
     }
 
