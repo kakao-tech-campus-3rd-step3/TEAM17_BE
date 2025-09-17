@@ -4,6 +4,7 @@ import com.starterpack.auth.CustomMemberDetails;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
+import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,20 +36,29 @@ public class FeedController {
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
             @RequestBody FeedCreateRequestDto feedCreateDto
     ) {
-        FeedResponseDto responseDto = feedService.addFeed(customMemberDetails.getMember(), feedCreateDto);
+        Feed feed = feedService.addFeed(customMemberDetails.getMember(), feedCreateDto);
+
+        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{feedId}")
     public ResponseEntity<FeedResponseDto> getFeed (@PathVariable Long feedId) {
-        FeedResponseDto responseDto = feedService.getFeed(feedId);
+        Feed feed = feedService.getFeed(feedId);
+
+        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping
     public ResponseEntity<Page<FeedResponseDto>> getAllFeeds(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<FeedResponseDto> responseDto = feedService.getAllFeeds(pageable);
+        Page<Feed> feedPage = feedService.getAllFeeds(pageable);
+
+        Page<FeedResponseDto> responseDto = feedPage.map(FeedResponseDto::from);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
@@ -58,7 +68,10 @@ public class FeedController {
             @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
             @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
     ) {
-        FeedResponseDto responseDto = feedService.updateFeed(feedId, customMemberDetails.getMember(), feedUpdateRequestDto);
+        Feed feed = feedService.updateFeed(feedId, customMemberDetails.getMember(), feedUpdateRequestDto);
+
+        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
