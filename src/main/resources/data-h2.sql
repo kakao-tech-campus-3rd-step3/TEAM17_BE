@@ -1,8 +1,8 @@
 -- ------------------------------------------------------------
-INSERT INTO member (email, password, name, is_active, role)
+INSERT INTO member (email, password, name, is_active, role, provider)
 VALUES
-('admin@test.com', '{noop}pass', '관리자', TRUE, 'ADMIN'),
-('user@test.com',  '{noop}pass', '일반사용자', TRUE, 'USER');
+('admin@test.com', '{noop}pass', '관리자', TRUE, 'ADMIN', 'EMAIL'),
+('user@test.com',  '{noop}pass', '일반사용자', TRUE, 'USER', 'EMAIL');
 
 -- ------------------------------------------------------------
 -- 1) 카테고리 (Category) Mock 데이터 (6개)

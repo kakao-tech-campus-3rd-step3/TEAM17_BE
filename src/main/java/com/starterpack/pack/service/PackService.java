@@ -27,10 +27,8 @@ public class PackService {
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public List<PackResponseDto> getPacks() {
-        return packRepository.findAll().stream()
-                .map(PackResponseDto::from)
-                .toList();
+    public List<Pack> getPacks() {
+        return packRepository.findAll();
     }
 
     @Transactional(readOnly = true)

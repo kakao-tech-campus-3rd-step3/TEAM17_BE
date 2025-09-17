@@ -26,10 +26,8 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     // 모든 멤버 조회
-    public List<MemberResponseDto> findAllMembers() {
-        return memberRepository.findAll().stream()
-                .map(MemberResponseDto::new)
-                .collect(Collectors.toList());
+    public List<Member> findAllMembers() {
+        return memberRepository.findAll();
     }
 
     // ID로 멤버 조회
@@ -65,7 +63,8 @@ public class MemberService {
             throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
         }
 
-        Member member = new Member(
+        // 일반 사용자 생성
+        Member member = Member.createUser(
                 request.email(),
                 request.encodedPassword(),
                 request.name(),
@@ -76,10 +75,6 @@ public class MemberService {
         if (request.profileImageUrl() != null) {
             member.setProfileImageUrl(request.profileImageUrl());
         }
-        
-        // API를 통해 생성되는 멤버는 반드시 기본 권한
-        member.setRole(Role.USER);
-        
 
         return new MemberResponseDto(memberRepository.save(member));
     }

@@ -29,7 +29,7 @@ public class FeedService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public FeedResponseDto addFeed(
+    public Feed addFeed(
             Member member,
             FeedCreateRequestDto createDto) {
         Category category = getCategory(createDto.categoryId());
@@ -42,36 +42,32 @@ public class FeedService {
                 .category(category)
                 .build();
 
-        if (isInfoFeedWithProducts(createDto)) {
+        if (createDto.isInfoFeedWithProducts()) {
             createDto.products().forEach(productDto -> addProductToFeed(feed, productDto));
         }
 
-        return FeedResponseDto.from(feedRepository.save(feed));
+        return feedRepository.save(feed);
     }
 
     @Transactional(readOnly = true)
-    public FeedResponseDto getFeed(Long feedId) {
-        Feed feed = getFeedByIdWithDetails(feedId);
-
-        return FeedResponseDto.from(feed);
+    public Feed getFeed(Long feedId) {
+        return getFeedByIdWithDetails(feedId);
     }
 
     @Transactional(readOnly = true)
-    public Page<FeedResponseDto> getAllFeeds(Pageable pageable) {
-        Page<Feed> feedPage = feedRepository.findAll(pageable);
-
-        return feedPage.map(FeedResponseDto::from);
+    public Page<Feed> getAllFeeds(Pageable pageable) {
+        return feedRepository.findAll(pageable);
     }
 
     @Transactional
-    public FeedResponseDto updateFeed(
+    public Feed updateFeed(
             Long feedId,
             Member member,
             FeedUpdateRequestDto updateDto
     ){
         Feed feed = getFeedByIdWithDetails(feedId);
 
-        checkFeedOwner(member, feed);
+        feed.validateOwner(member);
 
         Category category = getCategory(updateDto.categoryId());
 
@@ -79,14 +75,14 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
-        return FeedResponseDto.from(feed);
+        return feed;
     }
 
     @Transactional
     public void deleteFeed(Long feedId, Member member) {
         Feed feed = getFeedByIdWithDetails(feedId);
 
-        checkFeedOwner(member, feed);
+        feed.validateOwner(member);
 
         feedRepository.delete(feed);
     }
@@ -95,10 +91,6 @@ public class FeedService {
         return categoryRepository
                 .findById(categoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
-    }
-
-    private boolean isInfoFeedWithProducts(FeedCreateRequestDto createDto) {
-        return createDto.feedType() == FeedType.INFO && createDto.products() != null && !createDto.products().isEmpty();
     }
 
     private void addProductToFeed(Feed feed, ProductTagRequestDto productDto) {
@@ -120,12 +112,6 @@ public class FeedService {
                 .build();
 
         feed.getFeedProducts().add(feedProduct);
-    }
-
-    private void checkFeedOwner(Member member, Feed feed) {
-        if (!feed.getUser().getUserId().equals(member.getUserId())) {
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
-        }
     }
 
     private Feed getFeedByIdWithDetails(Long feedId) {

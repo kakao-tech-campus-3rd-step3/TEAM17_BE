@@ -1,6 +1,8 @@
 package com.starterpack.feed.entity;
 
 import com.starterpack.category.entity.Category;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -85,6 +87,12 @@ public class Feed {
         }
         if (category != null) {
             this.category = category;
+        }
+    }
+
+    public void validateOwner(Member member) {
+        if (!this.user.getUserId().equals(member.getUserId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
     }
 }
