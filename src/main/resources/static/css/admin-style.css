@@ -23,3 +23,78 @@
 .btn-like-link:hover {
   background-color: #e0e0e0;
 }
+/* ===== Sidebar modern style only ===== */
+.admin-shell{
+  display:flex;
+  gap:0;
+}
+
+/* 사이드바: admin-shell의 첫 번째 자식 div 가정 */
+.admin-shell > div:first-child{
+  background:#111827;        /* 네이비톤 다크 */
+  border-right:1px solid #e5e7eb;
+  min-width:240px;           /* 사이드바 넓이 확보 */
+  padding:20px 0;            /* 위아래 패딩 */
+  display:flex;
+  flex-direction:column;
+}
+
+/* 사이드바 내부 링크 버튼 스타일 */
+.admin-shell > div:first-child a,
+.admin-shell > div:first-child button,
+.admin-shell > div:first-child .nav-item,
+.admin-shell > div:first-child .menu-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 18px;
+  margin:4px 12px;
+  border-radius:10px;
+  text-decoration:none;
+  color:#e5e7eb;
+  background:transparent;
+  border:1px solid transparent;
+  transition:.2s ease;
+  cursor:pointer;
+  font-weight:500;
+}
+
+/* hover 효과 */
+.admin-shell > div:first-child a:hover,
+.admin-shell > div:first-child button:hover,
+.admin-shell > div:first-child .nav-item:hover,
+.admin-shell > div:first-child .menu-item:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.12);
+  transform:translateY(-1px);
+}
+
+/* active(선택됨) 상태 */
+.admin-shell > div:first-child .is-active,
+.admin-shell > div:first-child [aria-current="page"]{
+  background:linear-gradient(180deg, #374151, #1f2937);
+  color:#fff !important;
+  border-color:#4F46E5;
+  box-shadow:inset 0 0 0 1px rgba(79,70,229,.35);
+}
+
+/* 사이드바 안의 제목 */
+.admin-shell > div:first-child h1,
+.admin-shell > div:first-child h2,
+.admin-shell > div:first-child .section-title{
+  font-size:14px;
+  font-weight:700;
+  color:#9CA3AF;
+  padding:10px 18px 6px;
+  margin:0;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+/* 메인 컨텐츠는 원래대로 */
+.admin-content{
+  flex:1;
+  background:#fff;
+  color:#111827;
+  padding:24px;
+}

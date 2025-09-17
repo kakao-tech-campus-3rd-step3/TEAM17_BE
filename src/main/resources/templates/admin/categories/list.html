@@ -1,38 +1,97 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+  <meta charset="UTF-8"/>
   <title>카테고리 관리</title>
   <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    :root { --primary:#4F46E5; --border:#e5e7eb; --text:#111827; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:var(--text); }
+    .container{ max-width:1000px; margin:32px auto; padding:0 16px; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .tag{ padding:3px 10px; font-size:12px; border-radius:999px; background:#EEF2FF; color:#3730A3; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .top-actions{ display:flex; justify-content:flex-end; margin-bottom:10px; }
+
+    /* 테이블 */
+    .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; }
+    thead th{
+      position:sticky; top:0; background:#fafafa; border-bottom:1px solid var(--border);
+      text-align:left; font-weight:700; padding:12px 14px; white-space:nowrap;
+    }
+    tbody td{ border-bottom:1px solid var(--border); padding:12px 14px; vertical-align:middle; }
+    tbody tr:last-child td{ border-bottom:none; }
+    .thumb{ width:56px; height:56px; border-radius:8px; object-fit:cover; background:#f3f4f6; }
+    .src-text{ color:#374151; word-break:break-all; font-size:12px; }
+    .actions{ white-space:nowrap; display:flex; gap:8px; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  </style>
 </head>
 <body>
-<h1>카테고리 목록</h1>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
 
-<div th:if="${message}" th:text="${message}" class="alert alert-success"></div>
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">카테고리 목록</h1>
+        <span class="tag">LIST</span>
+      </div>
 
-<a href="/admin/categories/add" class="btn-like-link">새 카테고리 등록</a>
+      <!-- 메시지 -->
+      <div class="card" th:if="${message}">
+        <div th:text="${message}" class="alert alert-success">성공 메시지</div>
+      </div>
 
-<table border="1">
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>이름</th>
-    <th>이미지 SRC</th>
-    <th>관리</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="category : ${categories}">
-    <td th:text="${category.id}">1</td>
-    <td th:text="${category.name}">의류</td>
-    <td th:text="${category.src}">/img/category/cloth.png</td>
-    <td>
-      <a th:href="@{/admin/categories/{id}/edit(id=${category.id})}" class="btn-like-link">수정</a>
-      <form th:action="@{/admin/categories/{id}/delete(id=${category.id})}" method="post" style="display:inline;">
-        <button type="submit" class="btn-like-link" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
-      </form>
-    </td>
-  </tr>
-  </tbody>
-</table>
+      <!-- 상단 버튼 -->
+      <div class="card">
+        <div class="top-actions">
+          <a th:href="@{/admin/categories/add}" class="btn btn-primary">새 카테고리 등록</a>
+        </div>
+
+        <!-- 목록 테이블 -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th style="width:90px;">ID</th>
+              <th>이름</th>
+              <th style="width:380px;">이미지</th>
+              <th style="width:160px;">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="category : ${categories}">
+              <td th:text="${category.id}">1</td>
+              <td th:text="${category.name}">의류</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <img class="thumb"
+                       th:src="${category.src}"
+                       th:onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIGZpbGw9IiNGM0Y0RjYiLz48L3N2Zz4='"/>
+                  <span class="src-text" th:text="${category.src}">/img/category/cloth.png</span>
+                </div>
+              </td>
+              <td class="actions">
+                <a th:href="@{/admin/categories/{id}/edit(id=${category.id})}" class="btn">수정</a>
+                <form th:action="@{/admin/categories/{id}/delete(id=${category.id})}" method="post"
+                      onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <button type="submit" class="btn">삭제</button>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
 </body>
 </html>

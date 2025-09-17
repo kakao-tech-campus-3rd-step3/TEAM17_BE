@@ -38,6 +38,10 @@ out/
 
 ### Cursor ###
 .cursor/
+RAILWAY_DEPLOYMENT.md
 
 ### Mac OS ###
 .DS_Store
+
+### Application Secrets ###
+.env

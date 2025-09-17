@@ -28,7 +28,7 @@
     .muted{ color:#6b7280; }
     .small{ font-size:12px; }
     .list{ border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; }
-    .list-header{ display:flex; gap:10px; align-items:center; padding:10px 12px; background:#fafafa; border-bottom:1px solid var(--border); }
+    .list-header{ position:relative; display:flex; gap:10px; align-items:center; padding:10px 12px; background:#fafafa; border-bottom:1px solid var(--border); }
     .list-body{ max-height:420px; overflow:auto; }
     .row{ display:grid; grid-template-columns: 1fr 120px 90px; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border); }
     .row:last-child{ border-bottom:none; }
@@ -39,122 +39,138 @@
     .image-preview img{ width:100%; height:100%; object-fit:cover; }
     .basket-summary{ display:flex; justify-content:space-between; padding:10px 12px; background:#fafafa; border-top:1px solid var(--border); }
     .pill{ display:inline-block; padding:2px 8px; border-radius:999px; background:#F1F5F9; font-size:12px; }
+
+    /* ▼ 타입 드롭다운 */
+    .type-dropdown{ position:relative; }
+    .type-menu{
+      position:absolute; top:100%; right:0;
+      width:200px; max-height:260px; overflow:auto;
+      background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 24px rgba(0,0,0,.08);
+      padding:6px; margin-top:6px; z-index:30; display:none;
+    }
+    .type-menu.open{ display:block; }
+    .type-item{
+      padding:8px 10px; border-radius:8px; cursor:pointer;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .type-item:hover{ background:#f3f4f6; }
+    .type-item.active{ background:#EEF2FF; color:#3730A3; font-weight:700; }
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="titlebar">
-    <h1 class="title" th:text="${isEdit} ? '패키지 수정' : '패키지 등록'">패키지 등록/수정</h1>
-    <span class="tag" th:text="${isEdit} ? 'UPDATE' : 'CREATE'">CREATE</span>
-  </div>
 
-  <div class="card">
-    <form th:action="${isEdit} ? @{/admin/packs/{id}/edit(id=${packId})} : @{/admin/packs/add}"
-          th:object="${packDto}" method="post" onsubmit="return beforeSubmit();">
-      <!-- (선택) Spring Security 사용 시 CSRF -->
-      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-      <input type="hidden" name="id" th:value="${packId}"/>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
 
-      <!-- 기본 정보 -->
-      <div class="grid-2">
-        <div>
-          <div class="field">
-            <label for="name">패키지 이름</label>
-            <input type="text" id="name" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'invalid'"/>
-            <div class="error" th:errors="*{name}"></div>
-          </div>
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title" th:text="${isEdit} ? '패키지 수정' : '패키지 등록'">패키지 등록/수정</h1>
+        <span class="tag" th:text="${isEdit} ? 'UPDATE' : 'CREATE'">CREATE</span>
+      </div>
 
-          <div class="field">
-            <label for="categoryId">카테고리</label>
-            <select id="categoryId" th:field="*{categoryId}" th:classappend="${#fields.hasErrors('categoryId')} ? 'invalid'">
-              <option value="">-- 카테고리 선택 --</option>
-              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
-            </select>
-            <div class="error" th:errors="*{categoryId}"></div>
-          </div>
+      <div class="card">
+        <form th:action="${isEdit} ? @{/admin/packs/{id}/edit(id=${packId})} : @{/admin/packs/add}"
+              th:object="${packDto}" method="post" onsubmit="return beforeSubmit();">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="id" th:value="${packId}"/>
 
-          <div class="field">
-            <label for="totalCost">총 비용</label>
-            <div style="display:flex; gap:8px;">
-              <input type="number" id="totalCost" th:field="*{totalCost}" step="1" th:classappend="${#fields.hasErrors('totalCost')} ? 'invalid'"/>
-              <button type="button" class="btn" onclick="fillCostBySum()">선택 합계로 채우기</button>
-            </div>
-            <div class="error" th:errors="*{totalCost}"></div>
-            <div class="small muted">※ 합계로 채운 뒤 필요하면 직접 수정하세요.</div>
-          </div>
+          <div class="grid-2">
+            <div>
+              <div class="field">
+                <label for="name">패키지 이름</label>
+                <input type="text" id="name" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'invalid'"/>
+                <div class="error" th:errors="*{name}"></div>
+              </div>
 
-          <div class="field">
-            <label for="src">대표 이미지 URL</label>
-            <input type="text" id="src" th:field="*{src}" placeholder="https://..." oninput="previewImage()"
-                   th:classappend="${#fields.hasErrors('src')} ? 'invalid'"/>
-            <div class="error" th:errors="*{src}"></div>
-            <div class="image-preview" id="imagePreview" style="margin-top:8px;"><span class="small muted">미리보기</span></div>
-          </div>
+              <div class="field">
+                <label for="categoryId">카테고리</label>
+                <select id="categoryId" th:field="*{categoryId}" th:classappend="${#fields.hasErrors('categoryId')} ? 'invalid'">
+                  <option value="">-- 카테고리 선택 --</option>
+                  <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                </select>
+                <div class="error" th:errors="*{categoryId}"></div>
+              </div>
 
-          <div class="field">
-            <label for="description">설명</label>
-            <textarea id="description" th:field="*{description}" th:classappend="${#fields.hasErrors('description')} ? 'invalid'"></textarea>
-            <div class="error" th:errors="*{description}"></div>
-          </div>
-        </div>
-
-        <!-- 상품 선택 (장바구니 스타일) -->
-        <div>
-          <!-- 좌: 전체 상품 -->
-          <div class="list" style="margin-bottom:16px;">
-            <div class="list-header">
-              <strong>상품 목록</strong>
-              <input type="text" class="search" id="productFilter" placeholder="상품 검색(이름/가격)" oninput="filterProducts()"/>
-              <span class="pill small" id="allCount"></span>
-            </div>
-            <div class="list-body" id="productList">
-              <!-- 서버에서 내려준 products를 행으로 렌더링 -->
-              <div class="row"
-                   th:each="p : ${products}"
-                   th:attr="data-id=${p.id}, data-name=${p.name}, data-price=${p.cost}">
-                <div th:text="${p.name}">상품명</div>
-                <div class="price" th:text="${p.cost}">0</div>
-                <div class="actions">
-                  <button type="button" class="btn" th:attr="data-id=${p.id}" onclick="addToCart(this)">추가</button>
+              <div class="field">
+                <label for="totalCost">총 비용</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="number" id="totalCost" th:field="*{totalCost}" step="1" th:classappend="${#fields.hasErrors('totalCost')} ? 'invalid'"/>
+                  <button type="button" class="btn" onclick="fillCostBySum()">선택 합계로 채우기</button>
                 </div>
+                <div class="error" th:errors="*{totalCost}"></div>
+                <div class="small muted">※ 합계로 채운 뒤 필요하면 직접 수정하세요.</div>
+              </div>
+
+              <div class="field">
+                <label for="src">대표 이미지 URL</label>
+                <input type="text" id="src" th:field="*{src}" placeholder="https://..." oninput="previewImage()"
+                       th:classappend="${#fields.hasErrors('src')} ? 'invalid'"/>
+                <div class="error" th:errors="*{src}"></div>
+                <div class="image-preview" id="imagePreview" style="margin-top:8px;"><span class="small muted">미리보기</span></div>
+              </div>
+
+              <div class="field">
+                <label for="description">설명</label>
+                <textarea id="description" th:field="*{description}" th:classappend="${#fields.hasErrors('description')} ? 'invalid'"></textarea>
+                <div class="error" th:errors="*{description}"></div>
               </div>
             </div>
+
+            <div>
+              <div class="list" style="margin-bottom:16px;">
+                <div class="list-header">
+                  <strong>상품 목록</strong>
+                  <input type="text" class="search" id="productFilter" placeholder="상품 검색(이름/가격)" oninput="filterProducts()"/>
+                  <!-- ▼ 추가: 타입 드롭다운 -->
+                  <div class="type-dropdown">
+                    <button type="button" class="btn" id="typeMenuBtn" aria-haspopup="listbox" aria-expanded="false">타입: 전체</button>
+                    <div class="type-menu" id="typeMenu" role="listbox" aria-labelledby="typeMenuBtn"></div>
+                  </div>
+                  <span class="pill small" id="allCount"></span>
+                </div>
+                <div class="list-body" id="productList">
+                  <div class="row"
+                       th:each="p : ${products}"
+                       th:attr="data-id=${p.id}, data-name=${p.name}, data-price=${p.cost}, data-type=${p.productType}">
+                    <div th:text="${p.name}">상품명</div>
+                    <div class="price" th:text="${p.cost}">0</div>
+                    <div class="actions">
+                      <button type="button" class="btn" th:attr="data-id=${p.id}" onclick="addToCart(this)">추가</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="list">
+                <div class="list-header">
+                  <strong>선택한 상품</strong>
+                  <span class="pill small" id="selCount">0개</span>
+                </div>
+                <div class="list-body" id="cartList"></div>
+                <div class="basket-summary">
+                  <div class="small muted">※ 동일 상품은 중복 추가되지 않습니다.</div>
+                  <div><b>합계:</b> <span id="sumPrice">0</span></div>
+                </div>
+              </div>
+
+              <div id="hiddenInputs"></div>
+              <div class="small muted" style="margin-top:8px;">폼 제출 시 선택한 상품들의 ID가 <code>productIds</code>로 전송됩니다.</div>
+            </div>
           </div>
 
-          <!-- 우: 선택된 상품(장바구니) -->
-          <div class="list">
-            <div class="list-header">
-              <strong>선택한 상품</strong>
-              <span class="pill small" id="selCount">0개</span>
-            </div>
-            <div class="list-body" id="cartList">
-              <!-- 선택한 상품 행이 여기 들어감 -->
-            </div>
-            <div class="basket-summary">
-              <div class="small muted">※ 동일 상품은 중복 추가되지 않습니다.</div>
-              <div><b>합계:</b> <span id="sumPrice">0</span></div>
-            </div>
+          <div class="btnbar">
+            <button id="submitBtn" type="submit" class="btn btn-primary">저장</button>
+            <a th:href="@{/admin/packs}" class="btn">취소</a>
           </div>
-
-          <!-- 폼 제출용 hidden inputs (productIds) -->
-          <div id="hiddenInputs"></div>
-          <div class="small muted" style="margin-top:8px;">폼 제출 시 선택한 상품들의 ID가 <code>productIds</code>로 전송됩니다.</div>
-        </div>
+        </form>
       </div>
-
-      <div class="btnbar">
-        <button id="submitBtn" type="submit" class="btn btn-primary">저장</button>
-        <a th:href="@{/admin/packs}" class="btn">취소</a>
-      </div>
-    </form>
-  </div>
+    </div>
+  </main>
 </div>
 
-<!-- 초기화/동작 스크립트 -->
 <script th:inline="javascript">
-  // 수정 화면이면 기존 선택값이 들어옴 (없으면 빈 배열)
   const presetIds = /*[[${packDto.productIds}]]*/ [];
-  // DOM 캐시
   const $productList = document.getElementById('productList');
   const $cartList    = document.getElementById('cartList');
   const $hidden      = document.getElementById('hiddenInputs');
@@ -166,123 +182,114 @@
   const $src         = document.getElementById('src');
   const $imagePreview= document.getElementById('imagePreview');
 
+  // ▼ 타입 드롭다운 관련
+  const $typeBtn  = document.getElementById('typeMenuBtn');
+  const $typeMenu = document.getElementById('typeMenu');
+  let productTypes = [];      // 수집된 타입들
+  let selectedType = '';      // '' 이면 전체
+
   function formatInt(n){ return Number(n||0); }
-
-  function readRow(el){
-    return {
-      id:   formatInt(el.getAttribute('data-id')),
-      name: el.getAttribute('data-name'),
-      price: formatInt(el.getAttribute('data-price'))
-    };
-  }
-
-  function cartHas(id){
-    return !!$cartList.querySelector(`[data-id="${id}"]`);
-  }
-
+  function readRow(el){ return { id:formatInt(el.getAttribute('data-id')), name:el.getAttribute('data-name'), price:formatInt(el.getAttribute('data-price')) }; }
+  function cartHas(id){ return !!$cartList.querySelector(`[data-id="${id}"]`); }
   function updateHiddenInputs(){
     $hidden.innerHTML = '';
     const ids = Array.from($cartList.querySelectorAll('.row')).map(r => r.getAttribute('data-id'));
-    ids.forEach(id => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'productIds';
-      input.value = id;
-      $hidden.appendChild(input);
-    });
+    ids.forEach(id => { const i=document.createElement('input'); i.type='hidden'; i.name='productIds'; i.value=id; $hidden.appendChild(i); });
     $selCount.textContent = ids.length + '개';
   }
-
-  function updateSum(){
-    const sum = Array.from($cartList.querySelectorAll('.row'))
-      .reduce((acc, r) => acc + formatInt(r.getAttribute('data-price')), 0);
-    $sumPrice.textContent = sum;
-  }
-
-  function disableAddButton(id, disabled){
-    const btn = $productList.querySelector(`button[data-id="${id}"]`);
-    if(!btn) return;
-    btn.disabled = !!disabled;
-    btn.textContent = disabled ? '추가됨' : '추가';
-  }
-
+  function updateSum(){ const sum = Array.from($cartList.querySelectorAll('.row')).reduce((a,r)=>a+formatInt(r.getAttribute('data-price')),0); $sumPrice.textContent = sum; }
+  function disableAddButton(id, d){ const btn=$productList.querySelector(`button[data-id="${id}"]`); if(!btn) return; btn.disabled=!!d; btn.textContent=d?'추가됨':'추가'; }
   function addToCart(btn){
-    const row = btn.closest('.row');
-    const item = readRow(row);
-    if (cartHas(item.id)) return;
-
-    const el = document.createElement('div');
-    el.className = 'row';
-    el.setAttribute('data-id', item.id);
-    el.setAttribute('data-name', item.name);
-    el.setAttribute('data-price', item.price);
-    el.innerHTML = `
-      <div>${item.name}</div>
-      <div class="price">${item.price}</div>
-      <div class="actions">
-        <button type="button" class="btn btn-danger" onclick="removeFromCart(${item.id})">제거</button>
-      </div>
-    `;
-    $cartList.appendChild(el);
-
-    disableAddButton(item.id, true);
-    updateHiddenInputs();
-    updateSum();
+    const row=btn.closest('.row'); const item=readRow(row); if(cartHas(item.id)) return;
+    const el=document.createElement('div'); el.className='row'; el.setAttribute('data-id',item.id); el.setAttribute('data-name',item.name); el.setAttribute('data-price',item.price);
+    el.innerHTML=`<div>${item.name}</div><div class="price">${item.price}</div><div class="actions"><button type="button" class="btn btn-danger" onclick="removeFromCart(${item.id})">제거</button></div>`;
+    $cartList.appendChild(el); disableAddButton(item.id,true); updateHiddenInputs(); updateSum();
   }
+  function removeFromCart(id){ const el=$cartList.querySelector(`.row[data-id="${id}"]`); if(el) el.remove(); disableAddButton(id,false); updateHiddenInputs(); updateSum(); }
 
-  function removeFromCart(id){
-    const el = $cartList.querySelector(`.row[data-id="${id}"]`);
-    if (el) el.remove();
-    disableAddButton(id, false);
-    updateHiddenInputs();
-    updateSum();
-  }
-
+  // 검색 + 타입 동시 적용
   function filterProducts(){
-    const q = ($filter.value || '').toLowerCase().trim();
-    const rows = $productList.querySelectorAll('.row');
-    rows.forEach(r => {
-      const name = (r.getAttribute('data-name') || '').toLowerCase();
-      const price = (r.getAttribute('data-price') || '').toString();
-      r.style.display = (name.includes(q) || price.includes(q)) ? '' : 'none';
+    const q=($filter.value||'').toLowerCase().trim();
+    $productList.querySelectorAll('.row').forEach(r=>{
+      const n=(r.getAttribute('data-name')||'').toLowerCase();
+      const p=(r.getAttribute('data-price')||'').toString();
+      const t=(r.getAttribute('data-type')||'');
+      const matchesKeyword = (n.includes(q) || p.includes(q));
+      const matchesType = !selectedType || t === selectedType;
+      r.style.display = (matchesKeyword && matchesType) ? '' : 'none';
     });
   }
 
-  function fillCostBySum(){
-    const sum = Array.from($cartList.querySelectorAll('.row'))
-      .reduce((acc, r) => acc + formatInt(r.getAttribute('data-price')), 0);
-    if (!isNaN(sum) && $totalCost){ $totalCost.value = sum; }
+  // ▼ 타입 드롭다운
+  function collectTypes(){
+    const set = new Set();
+    $productList.querySelectorAll('.row').forEach(r=>{
+      const t = (r.getAttribute('data-type')||'').trim();
+      if (t) set.add(t);
+    });
+    productTypes = Array.from(set).sort();
   }
-
-  function previewImage(){
-    const url = $src && $src.value && $src.value.trim();
-    if(!url){ $imagePreview.innerHTML = '<span class="small muted">미리보기</span>'; return; }
-    const img = new Image();
-    img.onload = () => { $imagePreview.innerHTML=''; $imagePreview.appendChild(img); };
-    img.onerror = () => { $imagePreview.innerHTML = '<span class="error small">이미지를 불러올 수 없습니다.</span>'; };
-    img.src = url;
+  function updateTypeButtonLabel(){
+    $typeBtn.textContent = '타입: ' + (selectedType || '전체');
+    $typeBtn.setAttribute('aria-expanded', $typeMenu.classList.contains('open') ? 'true' : 'false');
   }
-
-  function beforeSubmit(){
-    const submitBtn = document.getElementById('submitBtn');
-    if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = '저장 중...'; }
-    return true;
+  function openTypeMenu(){
+    buildTypeMenu();
+    $typeMenu.classList.add('open');
+    updateTypeButtonLabel();
   }
+  function closeTypeMenu(){
+    $typeMenu.classList.remove('open');
+    updateTypeButtonLabel();
+  }
+  function toggleTypeMenu(){
+    if ($typeMenu.classList.contains('open')) closeTypeMenu(); else openTypeMenu();
+  }
+  function buildTypeMenu(){
+    // 메뉴 아이템 구성: 전체 + 타입들
+    const items = [''].concat(productTypes);
+    $typeMenu.innerHTML = items.map(t => {
+      const active = (t === selectedType);
+      const label = t || '전체';
+      return `<div class="type-item ${active?'active':''}" role="option" data-type="${t}">${label}</div>`;
+    }).join('');
+  }
+  $typeMenu?.addEventListener('click', (e)=>{
+    const item = e.target.closest('.type-item');
+    if (!item) return;
+    selectedType = item.getAttribute('data-type') || '';
+    filterProducts();
+    closeTypeMenu();
+    updateTypeButtonLabel();
+  });
 
-  // 초기화
+  // 외부 클릭/ESC 닫기
+  document.addEventListener('click', (e)=>{
+    const within = e.target.closest('.type-dropdown');
+    if (!within) closeTypeMenu();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') closeTypeMenu();
+  });
+
+  function fillCostBySum(){ const sum=Array.from($cartList.querySelectorAll('.row')).reduce((a,r)=>a+formatInt(r.getAttribute('data-price')),0); if(!isNaN(sum)&&$totalCost){$totalCost.value=sum;} }
+  function previewImage(){ const url=$src&&$src.value&&$src.value.trim(); if(!url){ $imagePreview.innerHTML='<span class="small muted">미리보기</span>'; return;} const img=new Image(); img.onload=()=>{$imagePreview.innerHTML=''; $imagePreview.appendChild(img);}; img.onerror=()=>{$imagePreview.innerHTML='<span class="error small">이미지를 불러올 수 없습니다.</span>';}; img.src=url; }
+  function beforeSubmit(){ const b=document.getElementById('submitBtn'); if(b){ b.disabled=true; b.textContent='저장 중...'; } return true; }
+
   (function init(){
-    // 전체 개수 표시
     $allCount.textContent = ($productList.querySelectorAll('.row').length) + '개';
-    // 수정 화면이면 기존 선택값을 장바구니에 채우기
-    if (Array.isArray(presetIds)) {
-      presetIds.forEach(id => {
-        const row = $productList.querySelector(`.row[data-id="${id}"]`);
-        if (row){
-          const btn = row.querySelector('button[data-id]');
-          if (btn) addToCart(btn);
-        }
+
+    if(Array.isArray(presetIds)){
+      presetIds.forEach(id=>{
+        const row=$productList.querySelector(`.row[data-id="${id}"]`);
+        if(row){ const btn=row.querySelector('button[data-id]'); if(btn) addToCart(btn); }
       });
     }
+
+    collectTypes();
+    updateTypeButtonLabel();
+    $typeBtn?.addEventListener('click', toggleTypeMenu);
+
     previewImage();
   })();
 </script>

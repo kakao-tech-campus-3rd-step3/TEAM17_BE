@@ -17,8 +17,12 @@ import jakarta.persistence.Table;
 
 import java.util.HashSet;
 import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "pack")
 public class Pack {
 
@@ -62,21 +66,4 @@ public class Pack {
         products.remove(p);
         p.getPacks().remove(this);
     }
-
-    // --- getters/setters ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Integer getTotalCost() { return totalCost; }
-    public void setTotalCost(Integer totalCost) { this.totalCost = totalCost; }
-    public Integer getPackLikeCount() { return packLikeCount; }
-    public void setPackLikeCount(Integer packLikeCount) { this.packLikeCount = packLikeCount; }
-    public String getSrc() { return src; }
-    public void setSrc(String src) { this.src = src; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public Set<Product> getProducts() { return products; }
 }
