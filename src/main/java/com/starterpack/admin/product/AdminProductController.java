@@ -8,6 +8,7 @@ import com.starterpack.product.dto.ProductUpdateRequestDto;
 import com.starterpack.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/admin/products")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminProductController {
 
