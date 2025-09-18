@@ -1,11 +1,13 @@
 package com.starterpack.feed.controller;
 
 import com.starterpack.auth.CustomMemberDetails;
+import com.starterpack.auth.login.Login;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedService;
+import com.starterpack.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,10 +35,10 @@ public class FeedController {
 
     @PostMapping
     public ResponseEntity<FeedResponseDto> addFeed (
-            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
+            @Login Member member,
             @RequestBody FeedCreateRequestDto feedCreateDto
     ) {
-        Feed feed = feedService.addFeed(customMemberDetails.getMember(), feedCreateDto);
+        Feed feed = feedService.addFeed(member, feedCreateDto);
 
         FeedResponseDto responseDto = FeedResponseDto.from(feed);
 
@@ -65,10 +67,10 @@ public class FeedController {
     @PutMapping("/{feedId}")
     public ResponseEntity<FeedResponseDto> updateFeed(
             @PathVariable Long feedId,
-            @AuthenticationPrincipal CustomMemberDetails customMemberDetails,
+            @Login Member member,
             @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
     ) {
-        Feed feed = feedService.updateFeed(feedId, customMemberDetails.getMember(), feedUpdateRequestDto);
+        Feed feed = feedService.updateFeed(feedId, member, feedUpdateRequestDto);
 
         FeedResponseDto responseDto = FeedResponseDto.from(feed);
 
