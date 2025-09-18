@@ -155,6 +155,28 @@ CREATE TABLE feed_product (
               ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 7) 피드 좋아요 (Feed Like)
+-- ------------------------------------------------------------
+CREATE TABLE feed_like (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   feed_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_feed_like_member (feed_id, member_id),
+   KEY idx_fl_member (member_id),
+   CONSTRAINT fk_fl_feed
+       FOREIGN KEY (feed_id)
+           REFERENCES feed(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_fl_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
