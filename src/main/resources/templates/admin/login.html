@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 로그인</title>
+</head>
+<body>
+<h1>관리자 로그인</h1>
+<div th:if="${param.error}" style="color: red;">
+  <p>이메일 또는 비밀번호가 올바르지 않습니다.</p>
+</div>
+
+<form th:action="@{/admin/login}" method="post">
+  <div>
+    <label for="email">이메일:</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  <div>
+    <label for="password">비밀번호:</label>
+    <input type="password" id="password" name="password" required>
+  </div>
+  <div>
+    <button type="submit">로그인</button>
+  </div>
+</form>
+</body>
+</html>
