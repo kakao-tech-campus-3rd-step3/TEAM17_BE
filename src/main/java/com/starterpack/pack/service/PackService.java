@@ -4,7 +4,8 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
-import com.starterpack.pack.dto.*;
+import com.starterpack.pack.dto.PackCreateRequestDto;
+import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.repository.PackRepository;
 import com.starterpack.product.entity.Product;
@@ -32,21 +33,18 @@ public class PackService {
     }
 
     @Transactional(readOnly = true)
-    public List<PackResponseDto> getPacksByCategory(Long categoryId) {
-        return packRepository.findAllByCategoryIdWithProducts(categoryId).stream()
-                .map(PackResponseDto::from)
-                .toList();
+    public List<Pack> getPacksByCategory(Long categoryId) {
+        return packRepository.findAllByCategoryIdWithProducts(categoryId);
     }
 
     @Transactional(readOnly = true)
-    public PackDetailResponseDto getPackDetail(Long id) {
-        Pack pack = packRepository.findWithProductsById(id)
+    public Pack getPackDetail(Long id) {
+        return packRepository.findWithProductsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
-        return PackDetailResponseDto.from(pack);
     }
 
     @Transactional
-    public PackDetailResponseDto create(PackCreateRequestDto req) {
+    public Pack create(PackCreateRequestDto req) {
 
         Category category = categoryRepository.findById(req.categoryId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -70,18 +68,16 @@ public class PackService {
             pack.addProduct(p);
         }
 
-        Pack saved = packRepository.save(pack);
-        return PackDetailResponseDto.from(saved);
+        return packRepository.save(pack);
     }
 
     @Transactional
-    public PackDetailResponseDto update(Long id, PackUpdateRequestDto req) {
+    public Pack update(Long id, PackUpdateRequestDto req) {
         Pack pack = findPackById(id);
-        
+
         validateUpdateRequest(req);
         updatePackFields(pack, req);
-        
-        return PackDetailResponseDto.from(pack);
+        return pack;
     }
 
     // Pack 조회 메서드
@@ -108,16 +104,16 @@ public class PackService {
         if (req.name() != null) {
             pack.setName(req.name());
         }
-        
+
         if (req.categoryId() != null) {
             Category category = findCategoryById(req.categoryId());
             pack.setCategory(category);
         }
-        
+
         if (req.description() != null) {
             pack.setDescription(req.description());
         }
-        
+
         if (req.src() != null) {
             pack.setSrc(req.src());
         }
@@ -139,7 +135,7 @@ public class PackService {
         for (Product product : new HashSet<>(pack.getProducts())) {
             pack.removeProduct(product);
         }
-        
+
         // 새 제품 추가
         Set<Product> products = loadProducts(productIds);
         for (Product product : products) {
@@ -149,9 +145,9 @@ public class PackService {
 
     // 총 비용 업데이트
     private void updateTotalCost(Pack pack, Integer requestedTotalCost) {
-        int totalCost = (requestedTotalCost != null) 
-            ? requestedTotalCost 
-            : calcTotalCost(pack.getProducts());
+        int totalCost = (requestedTotalCost != null)
+                ? requestedTotalCost
+                : calcTotalCost(pack.getProducts());
         pack.setTotalCost(totalCost);
     }
 
@@ -170,7 +166,6 @@ public class PackService {
         }
         packRepository.delete(pack);
     }
-
 
     private Set<Product> loadProducts(List<Long> productIds) {
         List<Product> found = productRepository.findAllById(productIds);
