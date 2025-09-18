@@ -4,6 +4,7 @@ import com.starterpack.auth.CustomMemberDetails;
 import com.starterpack.auth.login.Login;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
+import com.starterpack.feed.dto.FeedLikerResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
@@ -96,6 +97,20 @@ public class FeedController {
             @Login Member member
     ){
         FeedLikeResponseDto responseDto = feedService.toggleFeedLike(feedId, member);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/{feedId}/likes")
+    @Operation(summary = "피드 좋아요 목록 조회", description = "피드에 좋아요를 누른 사용자 목록을 페이지로 반환합니다.")
+    public ResponseEntity<Page<FeedLikerResponseDto>> getFeedLikers(
+            @PathVariable
+            Long feedId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ){
+        Page<Member> likers = feedService.getFeedLikers(feedId, pageable);
+        Page<FeedLikerResponseDto> responseDto = likers.map(FeedLikerResponseDto::from);
+
         return ResponseEntity.ok(responseDto);
     }
 }

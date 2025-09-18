@@ -9,11 +9,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name="feed_like")
+@Table(name="feed_like", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_feed_like_member",
+                columnNames = {"feed_id", "member_id"}
+        )
+})
+@Getter
 public class FeedLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
