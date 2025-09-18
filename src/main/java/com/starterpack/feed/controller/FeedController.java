@@ -3,11 +3,13 @@ package com.starterpack.feed.controller;
 import com.starterpack.auth.CustomMemberDetails;
 import com.starterpack.auth.login.Login;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
+import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedService;
 import com.starterpack.member.entity.Member;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -87,4 +89,13 @@ public class FeedController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{feedId}/like")
+    @Operation(summary = "피드 좋아요 토글", description = "피드의 좋아요를 추가하거나 취소합니다.")
+    public ResponseEntity<FeedLikeResponseDto> toggleFeedLike(
+            @PathVariable Long feedId,
+            @Login Member member
+    ){
+        FeedLikeResponseDto responseDto = feedService.toggleFeedLike(feedId, member);
+        return ResponseEntity.ok(responseDto);
+    }
 }

@@ -5,12 +5,13 @@ import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
-import com.starterpack.feed.dto.FeedResponseDto;
+import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.dto.ProductTagRequestDto;
 import com.starterpack.feed.entity.Feed;
+import com.starterpack.feed.entity.FeedLike;
 import com.starterpack.feed.entity.FeedProduct;
-import com.starterpack.feed.entity.FeedType;
+import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
@@ -27,6 +28,7 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final FeedLikeRepository feedLikeRepository;
 
     @Transactional
     public Feed addFeed(
@@ -85,6 +87,24 @@ public class FeedService {
         feed.validateOwner(member);
 
         feedRepository.delete(feed);
+    }
+
+    @Transactional
+    public FeedLikeResponseDto toggleFeedLike(Long feedId, Member liker) {
+        Feed feed = feedRepository.findById(feedId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
+
+        boolean exists = feedLikeRepository.existsByFeedAndMember(feed, liker);
+
+        if (exists) {
+            feedLikeRepository.deleteByFeedAndMember(feed, liker);
+            feed.decrementLikeCount();
+        } else {
+            feedLikeRepository.save(new FeedLike(feed, liker));
+            feed.incrementLikeCount();
+        }
+
+        return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);
     }
 
     private Category getCategory(Long categoryId) {

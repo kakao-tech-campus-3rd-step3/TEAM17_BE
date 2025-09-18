@@ -32,4 +32,9 @@ public class FeedLike {
     private LocalDateTime createdAt;
 
     protected FeedLike() {}
+
+    public FeedLike(Feed feed, Member member) {
+        this.feed = feed;
+        this.member = member;
+    }
 }
