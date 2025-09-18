@@ -16,6 +16,7 @@ import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ public class FeedService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final FeedLikeRepository feedLikeRepository;
+    private final EntityManager entityManager;
 
     @Transactional
     public Feed addFeed(
@@ -91,8 +93,7 @@ public class FeedService {
 
     @Transactional
     public FeedLikeResponseDto toggleFeedLike(Long feedId, Member liker) {
-        Feed feed = feedRepository.findById(feedId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
+        Feed feed = getFeedById(feedId);
 
         boolean exists = feedLikeRepository.existsByFeedAndMember(feed, liker);
 
@@ -104,7 +105,17 @@ public class FeedService {
             feedRepository.incrementLikeCount(feedId);
         }
 
+        entityManager.refresh(feed);
+
         return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Member> getFeedLikers(Long feedId, Pageable pageable) {
+        Feed feed = getFeedById(feedId);
+        Page<FeedLike> feedLikes = feedLikeRepository.findByFeed(feed, pageable);
+
+        return feedLikes.map(FeedLike::getMember);
     }
 
     private Category getCategory(Long categoryId) {
@@ -139,4 +150,8 @@ public class FeedService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
     }
 
+    private Feed getFeedById(Long feedId) {
+        return feedRepository.findById(feedId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
+    }
 }
