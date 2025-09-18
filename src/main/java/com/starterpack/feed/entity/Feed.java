@@ -56,7 +56,7 @@ public class Feed {
     private Category category;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount = 0;
+    private long likeCount = 0;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedProduct> feedProducts = new ArrayList<>();
@@ -93,6 +93,16 @@ public class Feed {
     public void validateOwner(Member member) {
         if (!this.user.getUserId().equals(member.getUserId())) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+    }
+
+    public void incrementLikeCount() {
+        likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (likeCount > 0) {
+            likeCount--;
         }
     }
 }
