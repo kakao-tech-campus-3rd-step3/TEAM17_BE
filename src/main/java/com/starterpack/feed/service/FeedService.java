@@ -98,10 +98,10 @@ public class FeedService {
 
         if (exists) {
             feedLikeRepository.deleteByFeedAndMember(feed, liker);
-            feed.decrementLikeCount();
+            feedRepository.decrementLikeCount(feedId);
         } else {
             feedLikeRepository.save(new FeedLike(feed, liker));
-            feed.incrementLikeCount();
+            feedRepository.incrementLikeCount(feedId);
         }
 
         return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);

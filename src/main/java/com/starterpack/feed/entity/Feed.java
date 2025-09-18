@@ -95,14 +95,4 @@ public class Feed {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
     }
-
-    public void incrementLikeCount() {
-        likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (likeCount > 0) {
-            likeCount--;
-        }
-    }
 }
