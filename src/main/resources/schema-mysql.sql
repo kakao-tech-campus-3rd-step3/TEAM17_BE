@@ -115,7 +115,7 @@ CREATE TABLE feed (
     image_url   VARCHAR(500)        NOT NULL, -- 일상: 일상사진, 정보공유: 대표사진
     feed_type   ENUM('INFO', 'DAILY') NOT NULL,
     category_id BIGINT UNSIGNED     NULL,
-    like_count  INT     UNSIGNED    NOT NULL DEFAULT 0,
+    like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -153,6 +153,28 @@ CREATE TABLE feed_product (
               REFERENCES product(id)
               ON UPDATE CASCADE
               ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 7) 피드 좋아요 (Feed Like)
+-- ------------------------------------------------------------
+CREATE TABLE feed_like (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   feed_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_feed_like_member (feed_id, member_id),
+   KEY idx_fl_member (member_id),
+   CONSTRAINT fk_fl_feed
+       FOREIGN KEY (feed_id)
+           REFERENCES feed(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_fl_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
