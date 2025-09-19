@@ -2,19 +2,7 @@ package com.starterpack.pack.entity;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.product.entity.Product;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -65,5 +53,67 @@ public class Pack {
     public void removeProduct(Product p) {
         products.remove(p);
         p.getPacks().remove(this);
+    }
+    public void changeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Pack name must not be blank");
+        }
+        this.name = name;
+    }
+
+    public int calcTotalCost() {
+        int sum = 0;
+        for (Product pr : this.products) {
+            if (pr.getCost() != null) sum += pr.getCost();
+        }
+        return sum;
+    }
+
+    public static Pack create(Category category,
+            String name,
+            String description,
+            String src,
+            Set<Product> products,
+            Integer requestedTotalCost) {
+        Pack p = new Pack();
+        if (category == null) {
+            throw new IllegalArgumentException("Category must not be null");
+        }
+        p.setCategory(category);
+        p.changeName(name);
+        p.setDescription(description);
+        p.setSrc(src);
+        p.setPackLikeCount(0);
+
+        if (products != null) {
+            for (Product pr : products) {
+                p.addProduct(pr);
+            }
+        }
+        p.setTotalCost(requestedTotalCost != null ? requestedTotalCost : p.calcTotalCost());
+        return p;
+    }
+    public void applyUpdate(Category newCategory,
+            String newName,
+            Set<Product> newProducts,
+            Integer requestedTotalCost,
+            String newDescription,
+            String newSrc) {
+        if (newCategory != null) this.setCategory(newCategory);
+        if (newName != null)     this.changeName(newName);
+        if (newDescription != null) this.setDescription(newDescription);
+        if (newSrc != null)         this.setSrc(newSrc);
+
+        if (newProducts != null) {
+            for (Product pr : new java.util.HashSet<>(this.products)) {
+                this.removeProduct(pr);
+            }
+            for (Product pr : newProducts) {
+                this.addProduct(pr);
+            }
+            this.setTotalCost(requestedTotalCost != null ? requestedTotalCost : this.calcTotalCost());
+        } else if (requestedTotalCost != null) {
+            this.setTotalCost(requestedTotalCost);
+        }
     }
 }

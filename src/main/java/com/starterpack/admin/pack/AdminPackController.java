@@ -43,12 +43,16 @@ public class AdminPackController {
         return "admin/packs/list";
     }
 
-
     @GetMapping("/filter")
     public String list(@RequestParam Long categoryId, Model model) {
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("categoryId", categoryId);
-        model.addAttribute("packs", packService.getPacksByCategory(categoryId)); // 필터 결
+
+        List<PackResponseDto> packs = packService.getPacksByCategory(categoryId).stream()
+                .map(PackResponseDto::from)
+                .toList();
+
+        model.addAttribute("packs", packs);
         return "admin/packs/list";
     }
 
@@ -75,15 +79,18 @@ public class AdminPackController {
             return "admin/packs/form";
         }
 
-        PackDetailResponseDto created = packService.create(createDto);
-        redirectAttributes.addFlashAttribute("message", "패키지 '" + created.name() + "' 등록 완료");
+        Pack created = packService.create(createDto);
+        PackDetailResponseDto dto = PackDetailResponseDto.from(created);
+
+        redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 등록 완료");
         return "redirect:/admin/packs";
     }
 
     /** 수정 폼 */
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        PackDetailResponseDto detail = packService.getPackDetail(id);
+        Pack pack = packService.getPackDetail(id);
+        PackDetailResponseDto detail = PackDetailResponseDto.from(pack);
 
         List<Long> productIds = detail.parts().stream()
                 .map(PackDetailResponseDto.PartDto::productId)
@@ -121,8 +128,10 @@ public class AdminPackController {
             return "admin/packs/form";
         }
 
-        PackDetailResponseDto updated = packService.update(id, updateDto);
-        redirectAttributes.addFlashAttribute("message", "패키지 '" + updated.name() + "' 수정 완료");
+        Pack updated = packService.update(id, updateDto);
+        PackDetailResponseDto dto = PackDetailResponseDto.from(updated);
+
+        redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 수정 완료");
         return "redirect:/admin/packs";
     }
 
