@@ -17,7 +17,5 @@ public record LocalSignUpRequestDto(
 
         @NotBlank(message = "이름은 필수입니다")
         @Size(max = 50, message = "이름은 50자를 초과할 수 없습니다")
-        String name,
-
-        String profileImageUrl
+        String name
 ) {}
