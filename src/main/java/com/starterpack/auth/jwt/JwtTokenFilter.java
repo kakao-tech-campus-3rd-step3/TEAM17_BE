@@ -2,9 +2,11 @@ package com.starterpack.auth.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtil jwtTokenUtil;
     private final List<String> publicUrls;
+    private final JwtTokenResolver jwtTokenResolver;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
@@ -41,20 +44,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
+        jwtTokenResolver.resolveRequest(request)
+                .ifPresent(this::authenticate);
 
-        final String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        filterChain.doFilter(request, response);
+    }
 
-        // 유효하지 않은 토큰이라면 Security Context에 등록하지 않고 다음 필터로 넘김
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            log.warn("Authorization 헤더가 없거나 Bearer 타입이 아닙니다. URI: {}", request.getRequestURI());
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authorizationHeader.substring(7);
-
-        // 유효한 토큰이라면 email을 통해 MemberDetails(유저 정보)를 가져와서 authentication 등록
-        // authentication을 Security Context에 저장하고 다음 필터로 넘김
+    private void authenticate(String token){
         if (jwtTokenUtil.validateToken(token)) {
             String email = jwtTokenUtil.getEmail(token);
 
@@ -67,11 +63,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("Security Context에 '{}' 인증 정보를 저장했습니다. URI: {}", email, request.getRequestURI());
+            log.info("Security Context에 '{}' 인증 정보를 저장했습니다.", email);
         }
-
-        filterChain.doFilter(request, response);
     }
-
 
 }

@@ -13,13 +13,14 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     List<Pack> findByCategory_Id(Long categoryId);
 
     @Override
-    @EntityGraph(attributePaths = {"products"})
+    @EntityGraph(attributePaths = {"products", "category"})
     List<Pack> findAll();
 
     @Query("""
         select distinct p
         from Pack p
         left join fetch p.products
+        left join fetch p.category
         where p.category.id = :categoryId
     """)
     List<Pack> findAllByCategoryIdWithProducts(@Param("categoryId") Long categoryId);
@@ -28,8 +29,8 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
         select distinct p
         from Pack p
         left join fetch p.products
+        left join fetch p.category
         where p.id = :id
     """)
     Optional<Pack> findWithProductsById(@Param("id") Long id);
 }
-

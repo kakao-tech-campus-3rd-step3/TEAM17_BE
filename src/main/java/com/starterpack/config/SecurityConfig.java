@@ -3,14 +3,17 @@ package com.starterpack.config;
 import com.starterpack.auth.exception.CustomAccessDeniedHandler;
 import com.starterpack.auth.exception.CustomAuthenticationEntryPoint;
 import com.starterpack.auth.jwt.JwtTokenFilter;
+import com.starterpack.auth.jwt.JwtTokenResolver;
 import com.starterpack.auth.jwt.JwtTokenUtil;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,22 +29,26 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final JwtTokenResolver jwtTokenResolver;
 
     private static final String[] PUBLIC_URLS = {
             "/", // 루트 경로
             "/api/auth/**", // 로그인, 회원가입 등 인증 관련 API
-            "/admin/**",
             "/actuator/**",
-            "/css/**",
-            "/js/**",
-            "/images/**",
-            "/webjars/",
-            "/favicon.ico",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
-            "/v3/api-docs"
+            "/v3/api-docs",
+            "/admin/login",
+            "/error",
     };
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .requestMatchers("/favicon.ico", "/.well-known/**");
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,7 +73,7 @@ public class SecurityConfig {
 
         // 커스텀 필터 적용 (Spring Security의 기본 필터인 UsernamePasswordAuthenticationFilter 앞에 JwtTokenFilter 배치)
         http.addFilterBefore(
-                new JwtTokenFilter(userDetailsService, jwtTokenUtil, Arrays.asList(PUBLIC_URLS)),
+                new JwtTokenFilter(userDetailsService, jwtTokenUtil, Arrays.asList(PUBLIC_URLS), jwtTokenResolver),
                 UsernamePasswordAuthenticationFilter.class
         );
 

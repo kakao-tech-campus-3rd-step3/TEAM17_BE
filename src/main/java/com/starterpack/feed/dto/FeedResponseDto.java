@@ -14,7 +14,7 @@ public record FeedResponseDto(
         String imageUrl,
         FeedType feedType,
         CategoryResponseDto category,
-        int likeCount,
+        Long likeCount,
         LocalDateTime createdAt,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)

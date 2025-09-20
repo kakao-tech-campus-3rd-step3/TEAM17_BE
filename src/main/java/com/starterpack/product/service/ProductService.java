@@ -33,7 +33,7 @@ public class ProductService {
     public ProductDetailResponseDto createProduct(ProductCreateRequestDto productCreateRequestDto) {
         Category category = getCategoryByCategoryId(productCreateRequestDto.categoryId());
 
-        Product product = new Product(
+        Product product = Product.create(
                 productCreateRequestDto.name(),
                 productCreateRequestDto.link(),
                 productCreateRequestDto.productType(),
@@ -112,7 +112,6 @@ public class ProductService {
         return productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword, categoryId, pageable)
                 .map(ProductAdminListDto::from);
     }
-
 
     @Transactional(readOnly = true)
     public List<ProductAdminListDto> searchProductsForAdmin(String keyword) {

@@ -2,17 +2,7 @@ package com.starterpack.product.entity;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.pack.entity.Pack;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -69,9 +59,30 @@ public class Product {
         this(null, name, link, productType, src, cost, category);
     }
 
+    public static Product create(String name, String link, String productType, String src, Integer cost, Category category) {
+        if (category == null) throw new IllegalArgumentException("Category must not be null");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Product name must not be blank");
+        Product p = new Product();
+        p.setName(name);
+        p.setLink(link);
+        p.setProductType(productType);
+        p.setSrc(src);
+        p.setCost(cost);
+        p.setCategory(category);
+        p.setLikeCount(0);
+        return p;
+    }
+
+    public void changeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Product name must not be blank");
+        }
+        this.name = name;
+    }
+
     public void update(String name, String link, String productType, String src, Integer cost, Category category) {
-        if (name != null && !name.isBlank()) {
-            this.name = name;
+        if (name != null) {
+            changeName(name); // 이름 규칙을 도메인에서 보장
         }
         if (link != null && !link.isBlank()) {
             this.link = link;
@@ -83,6 +94,7 @@ public class Product {
             this.src = src;
         }
         if (cost != null) {
+            if (cost < 0) throw new IllegalArgumentException("Product cost must be >= 0");
             this.cost = cost;
         }
         if (category != null) {

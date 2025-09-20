@@ -31,12 +31,10 @@ public class PackController {
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
     public Map<String, List<PackResponseDto>> getAllPacks() {
-        List<Pack> packs = packService.getPacks();
-
+        List<Pack> packs = packService.getPacks(); // 엔티티 반환
         List<PackResponseDto> responseDto = packs.stream()
                 .map(PackResponseDto::from)
                 .toList();
-
         return Map.of("packs", responseDto);
     }
 
@@ -45,13 +43,18 @@ public class PackController {
     public Map<String, List<PackResponseDto>> listByCategory(
             @PathVariable @Positive Long categoryId
     ) {
-        return Map.of("packs", packService.getPacksByCategory(categoryId));
+        List<Pack> packs = packService.getPacksByCategory(categoryId); // 엔티티 반환
+        List<PackResponseDto> responseDto = packs.stream()
+                .map(PackResponseDto::from)
+                .toList();
+        return Map.of("packs", responseDto);
     }
 
     @GetMapping("/packs/{id}")
     @Operation(summary = "스타터팩 상세 조회", description = "특정 스타터팩의 상세 정보를 조회합니다.")
     public PackDetailResponseDto detail(@PathVariable @Positive Long id) {
-        return packService.getPackDetail(id);
+        Pack pack = packService.getPackDetail(id); // 엔티티 반환
+        return PackDetailResponseDto.from(pack);
     }
 
     @PostMapping("/packs")
@@ -60,10 +63,11 @@ public class PackController {
     public ResponseEntity<PackDetailResponseDto> create(
             @RequestBody @Valid PackCreateRequestDto req
     ) {
-        PackDetailResponseDto created = packService.create(req);
+        Pack created = packService.create(req); // 엔티티 반환
+        PackDetailResponseDto body = PackDetailResponseDto.from(created);
         return ResponseEntity
-                .created(URI.create("/api/v1/packs/" + created.id()))
-                .body(created);
+                .created(URI.create("/api/starterPack/packs/" + body.id())) // base path 정합성
+                .body(body);
     }
 
     @PatchMapping("/packs/{id}")
@@ -73,7 +77,8 @@ public class PackController {
             @PathVariable @Positive Long id,
             @RequestBody @Valid PackUpdateRequestDto req
     ) {
-        return ResponseEntity.ok(packService.update(id, req));
+        Pack updated = packService.update(id, req); // 엔티티 반환
+        return ResponseEntity.ok(PackDetailResponseDto.from(updated));
     }
 
     @DeleteMapping("/packs/{id}")

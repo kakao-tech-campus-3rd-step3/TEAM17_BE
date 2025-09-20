@@ -47,7 +47,10 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED,
             "S003",
             "인증이 필요합니다."),
-    //Loin
+    INVALID_AUTH_PRINCIPAL(HttpStatus.UNAUTHORIZED,
+            "S004",
+            "인증 정보가 올바르지 않습니다."),
+    //Login
     INVALID_LOGIN_PROVIDER(HttpStatus.BAD_REQUEST,
             "L001",
             "이메일 회원가입 유저가 아닙니다."),
