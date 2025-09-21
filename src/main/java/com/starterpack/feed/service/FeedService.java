@@ -155,6 +155,16 @@ public class FeedService {
         return feedRepository.findAll(spec, pageable);
     }
 
+    @Transactional
+    public void updateFeedByAdmin(Long feedId, FeedUpdateRequestDto request) {
+        Feed feed = getFeedById(feedId);
+
+        Category category = getCategory(request.categoryId());
+
+
+        feed.update(request.description(), request.imageUrl(), category);
+    }
+
     private Feed getFeedByIdWithDetails(Long feedId) {
         return feedRepository.findByIdWithDetails(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));

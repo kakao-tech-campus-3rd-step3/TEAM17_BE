@@ -2,9 +2,14 @@ package com.starterpack.admin.feed;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.service.CategoryService;
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
+import com.starterpack.feed.dto.FeedCreateRequestDto;
+import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedType;
 import com.starterpack.feed.service.FeedService;
+import com.starterpack.member.entity.Member;
 import com.starterpack.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +19,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -48,6 +54,33 @@ public class AdminFeedController {
         return "admin/feed/list";
     }
 
+    @GetMapping("/add")
+    public String showAddForm(Model model) {
+        List<Member> members = memberService.findAllMembers();
+        List<Category> categories = categoryService.findAllCategories();
+
+        model.addAttribute("members", members);
+        model.addAttribute("categories", categories);
+        model.addAttribute("feedTypes", FeedType.values());
+
+        return "admin/feed/form";
+    }
+
+    @PostMapping("/add")
+    public String addFeed(@ModelAttribute FeedCreateRequestDto request,
+            @RequestParam Long userId,
+            RedirectAttributes redirectAttributes) {
+        Member member = memberService.findAllMembers().stream()
+                .filter(m -> m.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        feedService.addFeed(member, request);
+
+        redirectAttributes.addFlashAttribute("message", "Feed가 성공적으로 등록되었습니다.");
+        return "redirect:/admin/feeds";
+    }
+
     @GetMapping("/{id}")
     public String showFeed(@PathVariable Long id, Model model) {
         Feed feed = feedService.getFeed(id);
@@ -55,4 +88,26 @@ public class AdminFeedController {
         return "admin/feed/detail";
     }
 
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        Feed feed = feedService.getFeed(id);
+        List<Category> categories = categoryService.findAllCategories();
+
+        model.addAttribute("feed", feed);
+        model.addAttribute("feedId", id);
+        model.addAttribute("categories", categories);
+
+        return "admin/feed/form";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String updateFeed(@PathVariable Long id,
+            @ModelAttribute FeedUpdateRequestDto request,
+            RedirectAttributes redirectAttributes) {
+
+        feedService.updateFeedByAdmin(id, request);
+
+        redirectAttributes.addFlashAttribute("message", "Feed가 성공적으로 수정되었습니다.");
+        return "redirect:/admin/feeds/" + id;
+    }
 }
