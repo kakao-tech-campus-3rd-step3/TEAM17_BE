@@ -165,6 +165,12 @@ public class FeedService {
         feed.update(request.description(), request.imageUrl(), category);
     }
 
+    @Transactional
+    public void deleteFeedByAdmin(Long feedId) {
+        Feed feed = getFeedById(feedId);
+        feedRepository.delete(feed);
+    }
+
     private Feed getFeedByIdWithDetails(Long feedId) {
         return feedRepository.findByIdWithDetails(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));

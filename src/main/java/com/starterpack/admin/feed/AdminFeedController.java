@@ -110,4 +110,12 @@ public class AdminFeedController {
         redirectAttributes.addFlashAttribute("message", "Feed가 성공적으로 수정되었습니다.");
         return "redirect:/admin/feeds/" + id;
     }
+
+    @PostMapping("/{id}/delete")
+    public String deleteFeed(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        feedService.deleteFeedByAdmin(id);
+
+        redirectAttributes.addFlashAttribute("message", "Feed가 성공적으로 삭제되었습니다.");
+        return "redirect:/admin/feeds";
+    }
 }
