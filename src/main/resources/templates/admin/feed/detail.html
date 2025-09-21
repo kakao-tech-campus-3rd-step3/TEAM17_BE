@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Feed 상세보기</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/feed-style.css}" />
+</head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
+
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">Feed 상세보기</h1>
+        <span class="tag">DETAIL</span>
+      </div>
+
+      <div class="card">
+        <div class="grid">
+          <div>
+            <div class="imagebox">
+              <img th:if="${feed.imageUrl != null and !feed.imageUrl.isEmpty()}"
+                   th:src="${feed.imageUrl}"
+                   alt="Feed 이미지"/>
+              <span th:unless="${feed.imageUrl != null and !feed.imageUrl.isEmpty()}"
+                    style="color:#9ca3af;">이미지 없음</span>
+            </div>
+          </div>
+
+          <div>
+            <dl class="kv">
+              <dt>ID</dt>
+              <dd th:text="${feed.id}">1</dd>
+
+              <dt>작성자</dt>
+              <dd th:text="${feed.user.email}">user@example.com</dd>
+
+              <dt>피드 타입</dt>
+              <dd th:text="${feed.feedType}">INFO</dd>
+
+              <dt>카테고리</dt>
+              <dd th:text="${feed.category != null ? feed.category.name : '미지정'}">카테고리</dd>
+
+              <dt>좋아요 수</dt>
+              <dd th:text="${feed.likeCount}">0</dd>
+
+              <dt>작성일</dt>
+              <dd th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</dd>
+
+              <dt>수정일</dt>
+              <dd th:text="${#temporals.format(feed.updatedAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</dd>
+            </dl>
+
+            <div class="btnbar">
+              <a th:href="@{/admin/feeds}" class="btn">목록으로</a>
+              <a th:href="@{/admin/feeds/{id}/edit(id=${feed.id})}" class="btn btn-primary">수정</a>
+              <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?');" style="display:inline;">
+                <button type="submit" class="btn btn-danger">삭제</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-box">
+          <div class="meta-info">설명</div>
+          <div th:text="${feed.description}" style="white-space: pre-wrap; line-height: 1.6;">Feed 설명이 여기에 표시됩니다.</div>
+        </div>
+
+        <div th:if="${feed.feedType.toString() == 'INFO' and !#lists.isEmpty(feed.feedProducts)}" style="margin-top:20px;">
+          <div class="meta-info">연관 상품</div>
+          <div th:each="feedProduct : ${feed.feedProducts}" style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px; background:#f9fafb;">
+            <img style="width:48px; height:48px; border-radius:6px; object-fit:cover; background:#f3f4f6;"
+                 th:src="${feedProduct.product.src}"
+                 th:alt="${feedProduct.product.name}"
+                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIGZpbGw9IiNGM0Y0RjYiLz48L3N2Zz4='"/>
+            <div>
+              <div style="font-weight:600;" th:text="${feedProduct.product.name}">상품명</div>
+              <div style="font-size:12px; color:#6b7280;" th:text="${feedProduct.description}">FeedProduct 설명</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

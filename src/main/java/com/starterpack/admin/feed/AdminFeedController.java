@@ -47,4 +47,12 @@ public class AdminFeedController {
 
         return "admin/feed/list";
     }
+
+    @GetMapping("/{id}")
+    public String showFeed(@PathVariable Long id, Model model) {
+        Feed feed = feedService.getFeed(id);
+        model.addAttribute("feed", feed);
+        return "admin/feed/detail";
+    }
+
 }
