@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Feed 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/feed-style.css}" />
+</head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
+
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">Feed 관리</h1>
+        <span class="tag">LIST</span>
+      </div>
+
+      <div class="card" th:if="${message}">
+        <div th:text="${message}">성공 메시지</div>
+      </div>
+
+      <div class="card">
+        <form th:action="@{/admin/feeds}" method="get">
+          <div class="filterbar">
+            <div class="field" style="flex:1 1 220px;">
+              <label>검색</label>
+              <input type="text" name="keyword" th:value="${keyword}" placeholder="작성자 이메일로 검색..."/>
+            </div>
+            <div class="field">
+              <label>카테고리</label>
+              <select name="categoryId">
+                <option value="">전체</option>
+                <option th:each="category : ${categories}"
+                        th:value="${category.id}"
+                        th:text="${category.name}"
+                        th:selected="${category.id == selectedCategoryId}"></option>
+              </select>
+            </div>
+            <div class="field">
+              <label>정렬</label>
+              <select name="sort">
+                <option value="id,desc" th:selected="${feedPage.sort.toString().contains('id')}">ID</option>
+                <option value="createdAt,desc" th:selected="${feedPage.sort.toString().contains('createdAt')}">작성일</option>
+                <option value="likeCount,desc" th:selected="${feedPage.sort.toString().contains('likeCount')}">좋아요</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>페이지 크기</label>
+              <select name="size">
+                <option value="10" th:selected="${feedPage.size == 10}">10개</option>
+                <option value="20" th:selected="${feedPage.size == 20}">20개</option>
+                <option value="50" th:selected="${feedPage.size == 50}">50개</option>
+              </select>
+            </div>
+            <div class="field" style="display:flex; gap:8px;">
+              <button type="submit" class="btn btn-primary">적용</button>
+              <a th:href="@{/admin/feeds}" class="btn btn-ghost">초기화</a>
+            </div>
+          </div>
+        </form>
+        <div class="top-actions">
+          <a th:href="@{/admin/feeds/add}" class="btn btn-primary">새 Feed 작성</a>
+        </div>
+      </div>
+
+      <div class="card" th:if="${feedPage.totalElements == 0}">
+        <div style="text-align:center; color:#666; padding:24px;">
+          <p>검색 결과가 없습니다.</p>
+          <a th:href="@{/admin/feeds}" class="btn">전체 Feed 보기</a>
+        </div>
+      </div>
+
+      <div class="card" th:if="${feedPage.totalElements > 0}">
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th style="width:80px;">ID</th>
+              <th>내용</th>
+              <th style="width:160px;">작성자</th>
+              <th style="width:120px;">타입</th>
+              <th style="width:100px; text-align:center;">좋아요</th>
+              <th style="width:160px;">작성일</th>
+              <th style="width:180px;">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="feed : ${feeds}">
+              <td th:text="${feed.id}">1</td>
+              <td>
+                <a th:href="@{/admin/feeds/{id}(id=${feed.id})}" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:#111827;">
+                  <img class="img" th:src="${feed.imageUrl}" alt="Feed 이미지"/>
+                  <div>
+                    <div th:text="${#strings.abbreviate(feed.description, 50)}">Feed 설명...</div>
+                  </div>
+                </a>
+              </td>
+              <td th:text="${feed.user.email}">user@example.com</td>
+              <td th:text="${feed.feedType}">INFO</td>
+              <td style="text-align:center;" th:text="${feed.likeCount}">0</td>
+              <td th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
+              <td class="actions">
+                <a th:href="@{/admin/feeds/{id}/edit(id=${feed.id})}" class="btn-like-link">수정</a>
+                <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                  <button type="submit" class="btn-like-link">삭제</button>
+                </form>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="meta">
+          총 <b th:text="${feedPage.totalElements}">0</b>개 중
+          <b th:text="${feedPage.number * feedPage.size + 1}">1</b>-
+          <b th:text="${feedPage.numberOfElements > 0 ? feedPage.number * feedPage.size + feedPage.numberOfElements : feedPage.totalElements}">10</b>개 표시
+          (페이지 <b th:text="${feedPage.number + 1}">1</b>/<b th:text="${feedPage.totalPages}">1</b>)
+        </div>
+
+        <div class="pagination" th:if="${feedPage.totalPages > 1}">
+          <a th:if="${feedPage.hasPrevious()}"
+             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number - 1}, size=${feedPage.size})}">이전</a>
+          <span th:unless="${feedPage.hasPrevious()}" class="disabled">이전</span>
+
+          <th:block th:each="pageNum : ${#numbers.sequence(0, feedPage.totalPages - 1)}">
+            <a th:if="${pageNum != feedPage.number}"
+               th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${pageNum}, size=${feedPage.size})}"
+               th:text="${pageNum + 1}">1</a>
+            <span th:if="${pageNum == feedPage.number}" class="current" th:text="${pageNum + 1}">1</span>
+          </th:block>
+
+          <a th:if="${feedPage.hasNext()}"
+             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number + 1}, size=${feedPage.size})}">다음</a>
+          <span th:unless="${feedPage.hasNext()}" class="disabled">다음</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -4,6 +4,7 @@ import com.starterpack.feed.entity.Feed;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -32,4 +33,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Modifying
     @Query("UPDATE Feed f SET f.likeCount = f.likeCount - 1 WHERE f.id = :feedId")
     void decrementLikeCount(@Param("feedId") Long id);
+
+    @EntityGraph(attributePaths = {"user", "category"})
+    Page<Feed> findAll(Specification<Feed> spec, Pageable pageable);
 }
