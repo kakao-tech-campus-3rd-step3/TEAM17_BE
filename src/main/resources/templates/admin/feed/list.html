@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <title>Feed 관리</title>
   <link rel="stylesheet" th:href="@{/css/admin-style.css}"/>
-  <link rel="stylesheet" th:href="@{/css/feed-style.css}" />
+  <link rel="stylesheet" th:href="@{/css/feed-style.css}"/>
 </head>
 <body>
 <div class="admin-shell">
@@ -24,7 +24,7 @@
       <div class="card">
         <form th:action="@{/admin/feeds}" method="get">
           <div class="filterbar">
-            <div class="field" style="flex:1 1 220px;">
+            <div class="field search-field">
               <label>검색</label>
               <input type="text" name="keyword" th:value="${keyword}" placeholder="작성자 이메일로 검색..."/>
             </div>
@@ -33,8 +33,7 @@
               <select name="categoryId">
                 <option value="">전체</option>
                 <option th:each="category : ${categories}"
-                        th:value="${category.id}"
-                        th:text="${category.name}"
+                        th:value="${category.id}" th:text="${category.name}"
                         th:selected="${category.id == selectedCategoryId}"></option>
               </select>
             </div>
@@ -54,7 +53,7 @@
                 <option value="50" th:selected="${feedPage.size == 50}">50개</option>
               </select>
             </div>
-            <div class="field" style="display:flex; gap:8px;">
+            <div class="field filter-buttons">
               <button type="submit" class="btn btn-primary">적용</button>
               <a th:href="@{/admin/feeds}" class="btn btn-ghost">초기화</a>
             </div>
@@ -66,7 +65,7 @@
       </div>
 
       <div class="card" th:if="${feedPage.totalElements == 0}">
-        <div style="text-align:center; color:#666; padding:24px;">
+        <div class="no-results">
           <p>검색 결과가 없습니다.</p>
           <a th:href="@{/admin/feeds}" class="btn">전체 Feed 보기</a>
         </div>
@@ -77,13 +76,13 @@
           <table>
             <thead>
             <tr>
-              <th style="width:80px;">ID</th>
+              <th class="col-id">ID</th>
               <th>내용</th>
-              <th style="width:160px;">작성자</th>
-              <th style="width:120px;">타입</th>
-              <th style="width:100px; text-align:center;">좋아요</th>
-              <th style="width:160px;">작성일</th>
-              <th style="width:180px;">관리</th>
+              <th class="col-author">작성자</th>
+              <th class="col-type">타입</th>
+              <th class="col-likes">좋아요</th>
+              <th class="col-date">작성일</th>
+              <th class="col-actions">관리</th>
             </tr>
             </thead>
             <tbody>
@@ -91,7 +90,7 @@
               <td th:text="${feed.id}">1</td>
               <td>
                 <a th:href="@{/admin/feeds/{id}(id=${feed.id})}" class="feed-row">
-                  <img class="img" th:src="${feed.imageUrl}" alt="Feed 이미지"/>
+                  <img class="thumb thumb-56" th:src="${feed.imageUrl}" alt="Feed 이미지"/>
                   <div class="feed-row__text">
                     <div class="description-text" th:text="${feed.description}">Feed 설명...</div>
                   </div>
@@ -99,11 +98,12 @@
               </td>
               <td th:text="${feed.user.email}">user@example.com</td>
               <td th:text="${feed.feedType}">INFO</td>
-              <td style="text-align:center;" th:text="${feed.likeCount}">0</td>
+              <td class="text-center" th:text="${feed.likeCount}">0</td>
               <td th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
               <td class="actions">
                 <a th:href="@{/admin/feeds/{id}/edit(id=${feed.id})}" class="btn-like-link">수정</a>
-                <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post"
+                      onsubmit="return confirm('정말로 삭제하시겠습니까?');" class="inline-form">
                   <button type="submit" class="btn-like-link">삭제</button>
                 </form>
               </td>

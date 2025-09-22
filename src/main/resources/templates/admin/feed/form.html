@@ -40,20 +40,19 @@
           <div id="productSection" style="display:none;" th:unless="${isEdit}">
             <div class="field">
               <label>연관 상품</label>
-              <div id="productList">
-              </div>
-              <button type="button" onclick="addProduct()" class="btn" style="margin-top:8px;">상품 추가</button>
+              <div id="productList"></div>
+              <button type="button" onclick="addProduct()" class="btn btn-ghost add-product-btn">상품 추가</button>
             </div>
           </div>
 
           <div th:if="${isEdit and feed.feedType.toString() == 'INFO' and !#lists.isEmpty(feed.feedProducts)}">
             <div class="field">
               <label>연관 상품 (수정 불가)</label>
-              <div th:each="feedProduct : ${feed.feedProducts}" style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#f9fafb;">
-                <div style="font-weight:600;" th:text="${feedProduct.product.name}">상품명</div>
-                <div style="font-size:12px; color:#6b7280; margin-top:4px;" th:text="${feedProduct.description}">상품 설명</div>
+              <div th:each="feedProduct : ${feed.feedProducts}" class="readonly-product">
+                <div class="readonly-product-name" th:text="${feedProduct.product.name}">상품명</div>
+                <div class="readonly-product-desc" th:text="${feedProduct.description}">상품 설명</div>
               </div>
-              <div style="font-size:12px; color:#6b7280; margin-top:8px;">
+              <div class="info-text">
                 💡 상품 정보 수정은 별도 상품 관리에서 진행해주세요.
               </div>
             </div>
@@ -88,19 +87,21 @@
   </main>
 </div>
 
+
 <template id="product-item-template">
-  <div class="product-item" style="border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:8px; background:#f9fafb;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+  <div class="product-item">
+    <div class="product-item-header">
       <strong class="product-title">상품</strong>
-      <button type="button" class="remove-product-btn" style="background:#dc2626; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">삭제</button>
+      <button type="button" class="remove-product-btn">삭제</button>
     </div>
-    <div style="display:grid; gap:8px;">
-      <input type="text" class="product-name" placeholder="상품명" style="width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:8px;" required>
-      <input type="url" class="product-image-url" placeholder="상품 이미지 URL" style="width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:8px;">
-      <textarea class="product-description" placeholder="상품 설명" rows="2" style="width:100%; border:1px solid #e5e7eb; border-radius:6px; padding:8px; resize:vertical;"></textarea>
+    <div class="product-fields">
+      <input type="text" class="product-name" placeholder="상품명" required>
+      <input type="url" class="product-image-url" placeholder="상품 이미지 URL">
+      <textarea class="product-description" placeholder="상품 설명" rows="2"></textarea>
     </div>
   </div>
 </template>
+
 
 <script th:if="${!isEdit}">
   function toggleProductSection() {
