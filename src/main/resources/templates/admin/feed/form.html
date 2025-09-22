@@ -21,7 +21,7 @@
         <form method="post" th:attr="action=${isEdit ? '/admin/feeds/' + feedId + '/edit' : '/admin/feeds/add'}">
           <div class="field">
             <label for="description">설명</label>
-            <textarea id="description" name="description" th:text="${isEdit ? feed.description : ''}" placeholder="Feed 설명을 입력하세요"></textarea>
+            <textarea id="description" name="description" placeholder="Feed 설명을 입력하세요">[[${isEdit ? feed.description : ''}]]</textarea>
           </div>
 
           <div class="field">
