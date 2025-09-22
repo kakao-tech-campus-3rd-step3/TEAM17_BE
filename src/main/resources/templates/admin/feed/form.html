@@ -102,7 +102,7 @@
   </div>
 </template>
 
-<script>
+<script th:if="${!isEdit}">
   function toggleProductSection() {
     const feedType = document.getElementById('feedType').value;
     const productSection = document.getElementById('productSection');
