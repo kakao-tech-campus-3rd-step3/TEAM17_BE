@@ -56,7 +56,7 @@ public class Feed {
     private Category category;
 
     @Column(name = "like_count", nullable = false)
-    private int likeCount = 0;
+    private long likeCount = 0;
 
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedProduct> feedProducts = new ArrayList<>();
