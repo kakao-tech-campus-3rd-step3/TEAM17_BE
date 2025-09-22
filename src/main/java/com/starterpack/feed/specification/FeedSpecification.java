@@ -13,7 +13,7 @@ public class FeedSpecification {
                 return criteriaBuilder.conjunction();
             }
 
-            Join<Feed, Member> userJoin = root.join("user", JoinType.LEFT);
+            Join<Feed, Member> userJoin = root.join("user", JoinType.INNER);
             String pattern = "%" + keyword.toUpperCase() + "%";
 
             return criteriaBuilder.like(
