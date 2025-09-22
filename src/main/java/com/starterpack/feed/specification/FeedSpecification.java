@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class FeedSpecification {
     public static Specification<Feed> hasKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
-            if (keyword == null || keyword.trim().isEmpty()) {
+            if (isEmptyKeyword(keyword)) {
                 return criteriaBuilder.conjunction();
             }
 
@@ -19,6 +19,10 @@ public class FeedSpecification {
             return criteriaBuilder.like(
                             criteriaBuilder.upper(userJoin.get("email")), pattern);
         };
+    }
+
+    private static boolean isEmptyKeyword(String keyword) {
+        return keyword == null || keyword.trim().isEmpty();
     }
 
     public static Specification<Feed> hasCategory(Long categoryId) {
