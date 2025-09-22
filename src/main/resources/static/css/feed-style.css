@@ -272,3 +272,27 @@ tbody tr:last-child td {
   font-size: 14px;
   margin-bottom: 10px;
 }
+
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #111827;
+}
+
+.feed-row__text {
+  flex: 0 0 auto;
+  width: 10ch;
+  min-width: 12ch;
+}
+
+.description-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-all;
+  line-height: 1.4;
+}

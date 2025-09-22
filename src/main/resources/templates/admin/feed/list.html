@@ -41,9 +41,9 @@
             <div class="field">
               <label>정렬</label>
               <select name="sort">
-                <option value="id,desc" th:selected="${feedPage.sort.toString().contains('id')}">ID</option>
-                <option value="createdAt,desc" th:selected="${feedPage.sort.toString().contains('createdAt')}">작성일</option>
-                <option value="likeCount,desc" th:selected="${feedPage.sort.toString().contains('likeCount')}">좋아요</option>
+                <option value="id,desc" th:selected="${sort == 'id,desc'}">ID 최신순</option>
+                <option value="createdAt,desc" th:selected="${sort == 'createdAt,desc'}">작성일 최신순</option>
+                <option value="likeCount,desc" th:selected="${sort == 'likeCount,desc'}">좋아요순</option>
               </select>
             </div>
             <div class="field">
@@ -90,10 +90,10 @@
             <tr th:each="feed : ${feeds}">
               <td th:text="${feed.id}">1</td>
               <td>
-                <a th:href="@{/admin/feeds/{id}(id=${feed.id})}" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:#111827;">
+                <a th:href="@{/admin/feeds/{id}(id=${feed.id})}" class="feed-row">
                   <img class="img" th:src="${feed.imageUrl}" alt="Feed 이미지"/>
-                  <div>
-                    <div th:text="${#strings.abbreviate(feed.description, 50)}">Feed 설명...</div>
+                  <div class="feed-row__text">
+                    <div class="description-text" th:text="${feed.description}">Feed 설명...</div>
                   </div>
                 </a>
               </td>
@@ -121,18 +121,18 @@
 
         <div class="pagination" th:if="${feedPage.totalPages > 1}">
           <a th:if="${feedPage.hasPrevious()}"
-             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number - 1}, size=${feedPage.size})}">이전</a>
+             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number - 1}, size=${feedPage.size}, sort=${sort})}">이전</a>
           <span th:unless="${feedPage.hasPrevious()}" class="disabled">이전</span>
 
           <th:block th:each="pageNum : ${#numbers.sequence(0, feedPage.totalPages - 1)}">
             <a th:if="${pageNum != feedPage.number}"
-               th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${pageNum}, size=${feedPage.size})}"
+               th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${pageNum}, size=${feedPage.size}, sort=${sort})}"
                th:text="${pageNum + 1}">1</a>
             <span th:if="${pageNum == feedPage.number}" class="current" th:text="${pageNum + 1}">1</span>
           </th:block>
 
           <a th:if="${feedPage.hasNext()}"
-             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number + 1}, size=${feedPage.size})}">다음</a>
+             th:href="@{/admin/feeds(keyword=${keyword}, categoryId=${selectedCategoryId}, page=${feedPage.number + 1}, size=${feedPage.size}, sort=${sort})}">다음</a>
           <span th:unless="${feedPage.hasNext()}" class="disabled">다음</span>
         </div>
       </div>

@@ -37,6 +37,7 @@ public class AdminFeedController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false, defaultValue = "id,desc") String sort,
             Model model) {
 
         Page<Feed> feedPage = feedService.searchFeeds(keyword, categoryId, pageable);
@@ -50,6 +51,8 @@ public class AdminFeedController {
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategoryId", categoryId);
+
+        model.addAttribute("sort", sort);
 
         return "admin/feed/list";
     }
