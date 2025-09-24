@@ -26,6 +26,7 @@ CREATE TABLE member (
   email              VARCHAR(100) NOT NULL,
   password           VARCHAR(255),
   name               VARCHAR(50)  NOT NULL,
+  nickname           VARCHAR(50)  NOT NULL,
   provider           VARCHAR(20),
   provider_id        VARCHAR(100),
   profile_image_url  VARCHAR(500),
@@ -37,6 +38,7 @@ CREATE TABLE member (
 );
 
 CREATE UNIQUE INDEX uk_member_email       ON member(email);
+CREATE UNIQUE INDEX uk_member_nickname    ON member(nickname);
 CREATE UNIQUE INDEX uk_member_provider_id ON member(provider, provider_id);
 CREATE INDEX        idx_member_provider   ON member(provider);
 CREATE INDEX        idx_member_is_active  ON member(is_active);

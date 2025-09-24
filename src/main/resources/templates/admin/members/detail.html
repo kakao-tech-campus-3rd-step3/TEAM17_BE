@@ -58,6 +58,7 @@
             <div th:if="${member.profileImageUrl == null or member.profileImageUrl.isEmpty()}"
                  class="avatar" style="display:flex;align-items:center;justify-content:center;color:#6b7280;">No Image</div>
             <div style="font-weight:800; font-size:18px;" th:text="${member.name}">홍길동</div>
+            <div style="color:#6b7280; font-weight:700;" th:text="'@' + ${member.nickname}">@nickname</div>
             <div class="badge" th:classappend="${member.provider.toString().toLowerCase() == 'email'} ? ' email' : ' kakao'"
                  th:text="${member.provider}">EMAIL</div>
           </div>
@@ -69,6 +70,9 @@
 
             <div class="k">이메일</div>
             <div class="v" th:text="${member.email}">user@example.com</div>
+
+            <div class="k">닉네임</div>
+            <div class="v" th:text="${member.nickname}">제빵사1234567</div>
 
             <div class="k">로그인 방식</div>
             <div class="v">

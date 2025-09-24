@@ -15,6 +15,7 @@ CREATE TABLE member (
   email             VARCHAR(100)    NOT NULL,
   password          VARCHAR(255)    NULL,
   name              VARCHAR(50)     NOT NULL,
+  nickname          VARCHAR(50)     NOT NULL,
   provider          VARCHAR(20)     NULL,
   provider_id       VARCHAR(100)    NULL,
   profile_image_url VARCHAR(500)    NULL,
@@ -23,6 +24,7 @@ CREATE TABLE member (
   updated_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id),
   UNIQUE KEY uk_member_email (email),
+  UNIQUE KEY uk_member_nickname (nickname),
   UNIQUE KEY uk_member_provider_id (provider, provider_id),
   KEY idx_member_provider (provider),
   KEY idx_member_is_active (is_active)

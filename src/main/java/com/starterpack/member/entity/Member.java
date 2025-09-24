@@ -28,6 +28,9 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(nullable = false, unique = true, length = 50)
+    private String nickname;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Provider provider;
@@ -55,27 +58,33 @@ public class Member {
 
     public Member() {}
 
-    public Member(String email, String password, String name, Provider provider, String providerId) {
+    public Member(String email, String password, String name, String nickname, Provider provider, String providerId) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.nickname = nickname;
         this.provider = provider;
         this.providerId = providerId;
         this.isActive = true;
     }
 
     // 일반 사용자 생성
-    public static Member createUser(String email, String password, String name, Provider provider, String providerId) {
-        Member member = new Member(email, password, name, provider, providerId);
+    public static Member createUser(String email, String password, String name, String nickname, Provider provider, String providerId) {
+        Member member = new Member(email, password, name, nickname, provider, providerId);
         member.setRole(Role.USER);
         return member;
     }
 
     // 관리자 생성
-    public static Member createAdmin(String email, String password, String name, Provider provider, String providerId) {
-        Member member = new Member(email, password, name, provider, providerId);
+    public static Member createAdmin(String email, String password, String name, String nickname, Provider provider, String providerId) {
+        Member member = new Member(email, password, name, nickname, provider, providerId);
         member.setRole(Role.ADMIN);
         return member;
+    }
+
+    // 닉네임 설정 메서드
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     // Provider 열거형
