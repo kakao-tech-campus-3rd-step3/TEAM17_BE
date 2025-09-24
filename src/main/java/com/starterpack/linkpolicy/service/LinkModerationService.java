@@ -35,12 +35,24 @@ public class LinkModerationService {
         if (url == null) {
             return null;
         }
-        String sanitized = url
-                .replace("<", "")
-                .replace(">", "")
-                .replace("\\\\", "")
+        // HTML 태그 제거 - <로 시작해서 >로 끝나는 모든 태그 제거
+        String sanitized = url;
+        while (sanitized.contains("<") && sanitized.contains(">")) {
+            int start = sanitized.indexOf("<");
+            int end = sanitized.indexOf(">", start);
+            if (start != -1 && end != -1) {
+                sanitized = sanitized.substring(0, start) + sanitized.substring(end + 1);
+            } else {
+                break;
+            }
+        }
+        
+        // 추가 위험 문자 제거
+        sanitized = sanitized
+                .replace("\\", "")
                 .replace("\"", "")
                 .replace("'", "");
+        
         // javascript:, data: 스킴 방지 (대소문자 무시)
         String lower = sanitized.toLowerCase();
         if (lower.startsWith("javascript:") || lower.startsWith("data:")) {
