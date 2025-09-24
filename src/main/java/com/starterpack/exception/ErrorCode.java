@@ -67,6 +67,9 @@ public enum ErrorCode {
     URL_SHORTENER_BLOCKED(HttpStatus.BAD_REQUEST,
             "U003",
             "단축 링크 도메인은 허용되지 않습니다."),
+    URL_BLACKLIST_BLOCKED(HttpStatus.BAD_REQUEST,
+            "U004",
+            "차단된 도메인입니다."),
     //Link Policy
     LINK_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND,
             "LP001",

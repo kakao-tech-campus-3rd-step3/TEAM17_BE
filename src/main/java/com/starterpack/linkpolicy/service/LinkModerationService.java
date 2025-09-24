@@ -19,7 +19,7 @@ public class LinkModerationService {
         this.linkPolicyService = linkPolicyService;
     }
 
-    // 허용 스킴: http, https
+    // 허용 스킴: http, https (더 유연한 패턴)
     private static final Pattern URL_PATTERN = Pattern.compile(
             "^(?i)(https?)://[A-Za-z0-9.-]+(?::\\d+)?(?:/.*)?$"
     );
@@ -110,8 +110,23 @@ public class LinkModerationService {
             throw new BusinessException(ErrorCode.URL_SHORTENER_BLOCKED);
         }
         if (isUrlBlockedByBlacklist(sanitized)) {
+            throw new BusinessException(ErrorCode.URL_BLACKLIST_BLOCKED);
+        }
+    }
+
+    // 종합 검사 + sanitized URL 반환
+    public String validateAndSanitizeProductLink(String url) {
+        String sanitized = sanitizeHtmlFromUrl(url);
+        if (!validateUrlByRegex(sanitized)) {
+            throw new BusinessException(ErrorCode.URL_INVALID_FORMAT);
+        }
+        if (isShortenedUrlBlocked(sanitized)) {
             throw new BusinessException(ErrorCode.URL_SHORTENER_BLOCKED);
         }
+        if (isUrlBlockedByBlacklist(sanitized)) {
+            throw new BusinessException(ErrorCode.URL_BLACKLIST_BLOCKED);
+        }
+        return sanitized;
     }
 
     private String extractHost(String url) {

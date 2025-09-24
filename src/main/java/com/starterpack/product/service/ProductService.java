@@ -37,11 +37,10 @@ public class ProductService {
     public ProductDetailResponseDto createProduct(ProductCreateRequestDto productCreateRequestDto) {
         Category category = getCategoryByCategoryId(productCreateRequestDto.categoryId());
 
-        // 링크 검수: sanitize + validate + shortener block
+        // 링크 검수: sanitize + validate + shortener block + blacklist check
         String rawLink = productCreateRequestDto.link();
         if (rawLink != null && !rawLink.isBlank()) {
-            linkModerationService.assertSafeProductLink(rawLink);
-            rawLink = linkModerationService.sanitizeHtmlFromUrl(rawLink);
+            rawLink = linkModerationService.validateAndSanitizeProductLink(rawLink);
         }
 
         Product product = Product.create(
@@ -163,8 +162,7 @@ public class ProductService {
 
         String rawLink = productUpdateRequestDto.link();
         if (rawLink != null && !rawLink.isBlank()) {
-            linkModerationService.assertSafeProductLink(rawLink);
-            rawLink = linkModerationService.sanitizeHtmlFromUrl(rawLink);
+            rawLink = linkModerationService.validateAndSanitizeProductLink(rawLink);
         }
 
         product.update(

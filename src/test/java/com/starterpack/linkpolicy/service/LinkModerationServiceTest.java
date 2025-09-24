@@ -223,7 +223,7 @@ class LinkModerationServiceTest {
         // When & Then
         assertThatThrownBy(() -> linkModerationService.assertSafeProductLink(blockedUrl))
                 .isInstanceOf(BusinessException.class)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.URL_SHORTENER_BLOCKED);
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.URL_BLACKLIST_BLOCKED);
     }
 
     @Test
@@ -250,5 +250,42 @@ class LinkModerationServiceTest {
 
         // Then
         assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("validateAndSanitizeProductLink - 정상 URL")
+    void validateAndSanitizeProductLink_ValidUrl() {
+        // Given
+        String validUrl = "https://example.com/product";
+
+        // When
+        String result = linkModerationService.validateAndSanitizeProductLink(validUrl);
+
+        // Then
+        assertThat(result).isEqualTo("https://example.com/product");
+    }
+
+    @Test
+    @DisplayName("validateAndSanitizeProductLink - HTML 태그 제거")
+    void validateAndSanitizeProductLink_HtmlSanitization() {
+        // Given
+        String urlWithHtml = "https://example.com<script>alert('xss')</script>";
+
+        // When & Then - HTML 태그 제거 후 URL이 유효하지 않으므로 예외 발생
+        assertThatThrownBy(() -> linkModerationService.validateAndSanitizeProductLink(urlWithHtml))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.URL_INVALID_FORMAT);
+    }
+
+    @Test
+    @DisplayName("validateAndSanitizeProductLink - 차단된 URL")
+    void validateAndSanitizeProductLink_BlockedUrl() {
+        // Given
+        String blockedUrl = "https://malicious.com/evil";
+
+        // When & Then
+        assertThatThrownBy(() -> linkModerationService.validateAndSanitizeProductLink(blockedUrl))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.URL_BLACKLIST_BLOCKED);
     }
 }
