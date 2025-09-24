@@ -20,13 +20,10 @@ public record MemberUpdateRequestDto(
 
         String profileImageUrl,
 
-        @NotNull(message = "생년월일은 필수입니다.")
         LocalDate birthDate,
 
-        @NotNull(message = "성별은 필수입니다.")
         Gender gender,
 
-        @NotNull(message = "전화번호는 필수입니다.")
         @Size(max = 20)
         @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다. (010-1234-5678)")
         String phoneNumber
