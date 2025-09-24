@@ -32,9 +32,13 @@ CREATE TABLE member (
   profile_image_url  VARCHAR(500),
   is_active          BOOLEAN      NOT NULL DEFAULT TRUE,
   role               VARCHAR(20)  NOT NULL DEFAULT 'USER',
+  birth_date         DATE,
+  gender             VARCHAR(10),
+  phone_number       VARCHAR(20),
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT chk_member_role CHECK (role IN ('USER','ADMIN')) -- (선택) Enum 보호
+  CONSTRAINT chk_member_role CHECK (role IN ('USER','ADMIN')), -- (선택) Enum 보호
+  CONSTRAINT chk_member_gender CHECK (gender IN ('MALE', 'FEMALE'))
 );
 
 CREATE UNIQUE INDEX uk_member_email       ON member(email);
