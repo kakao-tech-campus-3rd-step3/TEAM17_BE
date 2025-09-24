@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -20,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
                 columnNames = {"pack_id", "member_id"}
         )
 })
+@Getter
 public class PackLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

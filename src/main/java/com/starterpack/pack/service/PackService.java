@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,6 +144,7 @@ public class PackService {
         return new HashSet<>(found);
     }
 
+    @Transactional
     public PackLikeResponseDto togglePackLike(Long id, Member member) {
         Pack pack = findPackById(id);
 
@@ -158,5 +161,13 @@ public class PackService {
         entityManager.refresh(pack);
 
         return PackLikeResponseDto.of(pack.getPackLikeCount(), !exists);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Member> getPackLikers(Long id, Pageable pageable) {
+        Pack pack = findPackById(id);
+        Page<PackLike> packLikes = packLikeRepository.findByPack(pack, pageable);
+
+        return packLikes.map(PackLike::getMember);
     }
 }
