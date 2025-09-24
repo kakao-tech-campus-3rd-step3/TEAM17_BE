@@ -57,6 +57,16 @@ public enum ErrorCode {
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED,
             "L002",
             "비밀번호가 틀렸습니다."),
+    //URL/Link Validation
+    URL_INVALID_FORMAT(HttpStatus.BAD_REQUEST,
+            "U001",
+            "유효하지 않은 URL 형식입니다."),
+    URL_FORBIDDEN_SCHEME(HttpStatus.BAD_REQUEST,
+            "U002",
+            "허용되지 않은 URL 스킴입니다."),
+    URL_SHORTENER_BLOCKED(HttpStatus.BAD_REQUEST,
+            "U003",
+            "단축 링크 도메인은 허용되지 않습니다."),
     //feed
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND,
             "F001",

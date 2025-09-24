@@ -1,5 +1,7 @@
 package com.starterpack.common.service;
 
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -15,7 +17,7 @@ public class LinkModerationService {
             "^(?i)(https?)://[A-Za-z0-9.-]+(?::\\d+)?(?:/.*)?$"
     );
 
-    // 기본 단축링크 차단 호스트 목록 (필요 시 확장)
+    // 기본 단축링크 차단 호스트 목록
     private static final Set<String> SHORTENER_BLOCKLIST = Set.of(
             "bit.ly", "t.co", "tinyurl.com", "goo.gl", "ow.ly", "is.gd", "rebrand.ly", "buff.ly",
             "lnkd.in", "cutt.ly", "soo.gd", "v.gd", "shrtco.de", "shorturl.at"
@@ -35,7 +37,7 @@ public class LinkModerationService {
         // javascript:, data: 스킴 방지 (대소문자 무시)
         String lower = sanitized.toLowerCase();
         if (lower.startsWith("javascript:") || lower.startsWith("data:")) {
-            throw new IllegalArgumentException("URL uses a forbidden scheme");
+            throw new BusinessException(ErrorCode.URL_FORBIDDEN_SCHEME);
         }
         return sanitized.trim();
     }
@@ -58,14 +60,14 @@ public class LinkModerationService {
         return SHORTENER_BLOCKLIST.contains(normalized);
     }
 
-    // 종합 검사: 안전하지 않으면 예외
+    // 종합 검사: 안전하지 않으면 예외를 던짐
     public void assertSafeProductLink(String url) {
         String sanitized = sanitizeHtmlFromUrl(url);
         if (!validateUrlByRegex(sanitized)) {
-            throw new IllegalArgumentException("Invalid URL format");
+            throw new BusinessException(ErrorCode.URL_INVALID_FORMAT);
         }
         if (isShortenedUrlBlocked(sanitized)) {
-            throw new IllegalArgumentException("Shortened URLs are not allowed");
+            throw new BusinessException(ErrorCode.URL_SHORTENER_BLOCKED);
         }
     }
 
