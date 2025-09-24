@@ -20,7 +20,7 @@ public class LinkPolicyService {
     }
 
     public LinkPolicyResponseDto add(LinkPolicyCreateRequestDto request) {
-        LinkPolicy saved = repository.save(new LinkPolicy(request.pattern(), java.time.LocalDateTime.now()));
+        LinkPolicy saved = repository.save(new LinkPolicy(request.pattern(), request.description(), java.time.LocalDateTime.now()));
         return LinkPolicyResponseDto.from(saved);
     }
 

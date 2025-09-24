@@ -69,6 +69,7 @@ CREATE TABLE product (
 CREATE TABLE link_policy (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   pattern     VARCHAR(500)    NOT NULL,
+  description VARCHAR(1000),
   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;

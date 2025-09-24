@@ -30,9 +30,9 @@ class LinkModerationServiceTest {
     void setUp() {
         // 기본 블랙리스트 패턴 설정 (lenient로 설정하여 불필요한 stubbing 경고 방지)
         lenient().when(linkPolicyService.getAll()).thenReturn(List.of(
-                new LinkPolicyResponseDto(1L, "malicious.com", LocalDateTime.now()),
-                new LinkPolicyResponseDto(2L, "evil.org", LocalDateTime.now()),
-                new LinkPolicyResponseDto(3L, "spam.net", LocalDateTime.now())
+                new LinkPolicyResponseDto(1L, "malicious.com", "악성 사이트", LocalDateTime.now()),
+                new LinkPolicyResponseDto(2L, "evil.org", "피싱 사이트", LocalDateTime.now()),
+                new LinkPolicyResponseDto(3L, "spam.net", "스팸 사이트", LocalDateTime.now())
         ));
     }
 

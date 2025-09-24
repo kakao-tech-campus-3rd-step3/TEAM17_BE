@@ -30,7 +30,7 @@ public class AdminLinkPolicyController {
     // 링크 정책 추가 폼 페이지
     @GetMapping("/form")
     public String form(Model model) {
-        model.addAttribute("policy", new LinkPolicyCreateRequestDto(""));
+        model.addAttribute("policy", new LinkPolicyCreateRequestDto("", ""));
         return "admin/link-policies/form";
     }
 

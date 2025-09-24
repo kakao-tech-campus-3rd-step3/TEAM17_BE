@@ -60,9 +60,24 @@
                    class="form-input" 
                    placeholder="예: malicious.com, evil.org, spam.net"
                    required
-                   maxlength="255"/>
+                   maxlength="500"/>
             <div class="form-help">
               이 패턴이 포함된 URL은 상품 등록 시 차단됩니다. 부분 문자열 매칭으로 작동합니다.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="form-label">차단 이유 설명</label>
+            <textarea id="description" 
+                      name="description" 
+                      th:field="*{description}"
+                      class="form-input" 
+                      placeholder="예: 악성 사이트, 피싱 사이트, 스팸 사이트 등"
+                      rows="3"
+                      maxlength="1000"
+                      style="resize: vertical; min-height: 80px;"></textarea>
+            <div class="form-help">
+              이 패턴을 차단하는 이유를 설명해주세요. 관리자가 나중에 참고할 수 있습니다.
             </div>
           </div>
 

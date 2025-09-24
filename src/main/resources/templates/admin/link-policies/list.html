@@ -71,6 +71,7 @@
           <tr>
             <th style="width:80px;">ID</th>
             <th>패턴</th>
+            <th>설명</th>
             <th style="width:180px;">생성일</th>
             <th style="width:120px;">관리</th>
           </tr>
@@ -80,6 +81,17 @@
             <td th:text="${policy.id}">1</td>
             <td>
               <div class="pattern-cell" th:text="${policy.pattern}">malicious.com</div>
+            </td>
+            <td>
+              <div th:if="${policy.description != null and !policy.description.isEmpty()}" 
+                   th:text="${policy.description}" 
+                   style="color:#6b7280; font-size:13px; max-width:300px; word-break: break-word;">
+                악성 사이트 차단
+              </div>
+              <div th:if="${policy.description == null or policy.description.isEmpty()}" 
+                   style="color:#9ca3af; font-size:13px; font-style:italic;">
+                설명 없음
+              </div>
             </td>
             <td th:text="${#temporals.format(policy.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
             <td>
