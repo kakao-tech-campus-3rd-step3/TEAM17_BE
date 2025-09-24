@@ -72,7 +72,10 @@ public class MemberService {
                 request.name(),
                 randomNickname,
                 request.provider(),
-                request.providerId()
+                request.providerId(),
+                request.birthDate(),
+                request.gender(),
+                request.phoneNumber()
         );
 
         if (request.profileImageUrl() != null) {
