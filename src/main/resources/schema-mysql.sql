@@ -64,6 +64,16 @@ CREATE TABLE product (
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
+-- 2.5) 링크 정책 (Link Policy - Blacklist)
+-- ------------------------------------------------------------
+CREATE TABLE link_policy (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pattern     VARCHAR(500)    NOT NULL,
+  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
 -- 3) 스타터팩 (Pack)
 -- ------------------------------------------------------------
 CREATE TABLE pack (

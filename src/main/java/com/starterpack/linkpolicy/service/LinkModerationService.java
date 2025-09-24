@@ -1,4 +1,4 @@
-package com.starterpack.common.service;
+package com.starterpack.linkpolicy.service;
 
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
@@ -6,11 +6,18 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
 public class LinkModerationService {
+
+    private final LinkPolicyService linkPolicyService;
+
+    public LinkModerationService(LinkPolicyService linkPolicyService) {
+        this.linkPolicyService = linkPolicyService;
+    }
 
     // 허용 스킴: http, https
     private static final Pattern URL_PATTERN = Pattern.compile(
@@ -60,6 +67,27 @@ public class LinkModerationService {
         return SHORTENER_BLOCKLIST.contains(normalized);
     }
 
+    // DB 블랙리스트 검사
+    public boolean isUrlBlockedByBlacklist(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
+        
+        List<String> blacklistPatterns = linkPolicyService.getAll().stream()
+                .map(dto -> dto.pattern())
+                .toList();
+        
+        String normalizedUrl = url.toLowerCase().trim();
+        
+        for (String pattern : blacklistPatterns) {
+            if (normalizedUrl.contains(pattern.toLowerCase())) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     // 종합 검사: 안전하지 않으면 예외를 던짐
     public void assertSafeProductLink(String url) {
         String sanitized = sanitizeHtmlFromUrl(url);
@@ -67,6 +95,9 @@ public class LinkModerationService {
             throw new BusinessException(ErrorCode.URL_INVALID_FORMAT);
         }
         if (isShortenedUrlBlocked(sanitized)) {
+            throw new BusinessException(ErrorCode.URL_SHORTENER_BLOCKED);
+        }
+        if (isUrlBlockedByBlacklist(sanitized)) {
             throw new BusinessException(ErrorCode.URL_SHORTENER_BLOCKED);
         }
     }

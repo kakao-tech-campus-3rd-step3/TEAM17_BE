@@ -66,7 +66,7 @@ public class SecurityConfig {
 
         // API 엔드포인트별 접근 권한 설정
         http.authorizeHttpRequests(auth -> auth
-                        // .requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
+                        //.requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
                         .requestMatchers(PUBLIC_URLS).permitAll() // 배포 환경에선 아래 둘 주석 해제하기
                         .anyRequest().authenticated()
         );

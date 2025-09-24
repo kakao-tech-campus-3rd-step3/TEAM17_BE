@@ -3,7 +3,7 @@ package com.starterpack.product.service;
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 
-import com.starterpack.common.service.LinkModerationService;
+import com.starterpack.linkpolicy.service.LinkModerationService;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.product.dto.*;
