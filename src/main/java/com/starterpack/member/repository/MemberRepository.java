@@ -15,5 +15,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     
     // 프로바이더와 프로바이더 ID로 멤버 조회 (소셜 로그인용)
     Optional<Member> findByProviderAndProviderId(Member.Provider provider, String providerId);
+    
+    // 닉네임 존재 여부 확인
+    boolean existsByNickname(String nickname);
 
 }
