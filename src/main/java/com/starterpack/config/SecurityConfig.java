@@ -42,7 +42,9 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/admin/login",
             "/error",
-            "/h2-console/**"
+            "/h2-console/**",
+            "/api/feeds/*/likes",
+            "/api/starterPack/packs/*/likes"
     };
 
     @Bean
