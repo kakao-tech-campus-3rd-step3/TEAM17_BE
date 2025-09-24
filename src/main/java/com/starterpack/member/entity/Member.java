@@ -86,6 +86,7 @@ public class Member {
     public static Member createUser(String email, String password, String name, String nickname, Provider provider, String providerId, LocalDate birthDate, Gender gender, String phoneNumber) {
         Member member = new Member(email, password, name, nickname, provider, providerId, birthDate, gender, phoneNumber);
         member.setRole(Role.USER);
+        member.setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/12225/12225935.png");
         return member;
     }
 

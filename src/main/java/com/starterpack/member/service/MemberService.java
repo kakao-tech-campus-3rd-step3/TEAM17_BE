@@ -78,10 +78,6 @@ public class MemberService {
                 request.phoneNumber()
         );
 
-        if (request.profileImageUrl() != null) {
-            member.setProfileImageUrl(request.profileImageUrl());
-        }
-
         return new MemberResponseDto(memberRepository.save(member));
     }
 
