@@ -1,10 +1,13 @@
 package com.starterpack.admin.linkpolicy;
 
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.linkpolicy.dto.LinkPolicyCreateRequestDto;
 import com.starterpack.linkpolicy.dto.LinkPolicyDeleteRequestDto;
 import com.starterpack.linkpolicy.dto.LinkPolicyResponseDto;
 import com.starterpack.linkpolicy.service.LinkPolicyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +17,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/link-policies")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminLinkPolicyController {
 
@@ -37,24 +41,16 @@ public class AdminLinkPolicyController {
     // 링크 정책 추가 처리
     @PostMapping
     public String create(@ModelAttribute LinkPolicyCreateRequestDto request, RedirectAttributes redirectAttributes) {
-        try {
-            linkPolicyService.create(request);
-            redirectAttributes.addFlashAttribute("message", "링크 정책이 성공적으로 추가되었습니다.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "링크 정책 추가 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        linkPolicyService.create(request);
+        redirectAttributes.addFlashAttribute("message", "링크 정책이 성공적으로 추가되었습니다.");
         return "redirect:/admin/link-policies";
     }
 
     // 링크 정책 삭제 처리
     @PostMapping("/delete")
     public String delete(@ModelAttribute LinkPolicyDeleteRequestDto request, RedirectAttributes redirectAttributes) {
-        try {
-            linkPolicyService.delete(request);
-            redirectAttributes.addFlashAttribute("message", "링크 정책이 성공적으로 삭제되었습니다.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "링크 정책 삭제 중 오류가 발생했습니다: " + e.getMessage());
-        }
+        linkPolicyService.delete(request);
+        redirectAttributes.addFlashAttribute("message", "링크 정책이 성공적으로 삭제되었습니다.");
         return "redirect:/admin/link-policies";
     }
 }

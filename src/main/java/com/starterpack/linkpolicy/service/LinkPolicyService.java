@@ -1,5 +1,7 @@
 package com.starterpack.linkpolicy.service;
 
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
 import com.starterpack.linkpolicy.dto.LinkPolicyCreateRequestDto;
 import com.starterpack.linkpolicy.dto.LinkPolicyDeleteRequestDto;
 import com.starterpack.linkpolicy.dto.LinkPolicyResponseDto;
@@ -45,7 +47,7 @@ public class LinkPolicyService {
 
     public void delete(LinkPolicyDeleteRequestDto request) {
         if (!delete(request.id())) {
-            throw new RuntimeException("링크 정책을 찾을 수 없습니다. ID: " + request.id());
+            throw new BusinessException(ErrorCode.LINK_POLICY_NOT_FOUND);
         }
     }
 }
