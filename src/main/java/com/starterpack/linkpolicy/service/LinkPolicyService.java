@@ -1,6 +1,7 @@
 package com.starterpack.linkpolicy.service;
 
 import com.starterpack.linkpolicy.dto.LinkPolicyCreateRequestDto;
+import com.starterpack.linkpolicy.dto.LinkPolicyDeleteRequestDto;
 import com.starterpack.linkpolicy.dto.LinkPolicyResponseDto;
 import com.starterpack.linkpolicy.model.LinkPolicy;
 import com.starterpack.linkpolicy.repository.LinkPolicyRepository;
@@ -35,6 +36,17 @@ public class LinkPolicyService {
         return repository.findAll().stream()
                 .map(LinkPolicyResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    // 컨트롤러에서 사용하는 메서드들
+    public LinkPolicyResponseDto create(LinkPolicyCreateRequestDto request) {
+        return add(request);
+    }
+
+    public void delete(LinkPolicyDeleteRequestDto request) {
+        if (!delete(request.id())) {
+            throw new RuntimeException("링크 정책을 찾을 수 없습니다. ID: " + request.id());
+        }
     }
 }
 

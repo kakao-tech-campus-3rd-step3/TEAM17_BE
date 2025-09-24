@@ -92,5 +92,13 @@
       <span class="dot"></span>Feed 관리
     </a>
 
+    <div class="divider"></div>
+    <div class="section-title">시스템</div>
+    <a class="btn"
+       th:classappend="${#strings.contains(t, 'admin/link-policies')} ? ' active' : ''"
+       th:href="@{/admin/link-policies}">
+      <span class="dot"></span>링크 정책 관리
+    </a>
+
   </aside>
 </nav>
