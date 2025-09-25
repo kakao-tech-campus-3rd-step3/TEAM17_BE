@@ -126,7 +126,7 @@ public class PackController {
     @PostMapping("/packs/{id}/bookmark")
     @Operation(summary = "스타터팩 북마크 토글", description = "유저가 스타터팩에 북마크를 추가하거나 취소합니다.")
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<?> togglePackBookmark(
+    public ResponseEntity<PackBookmarkResponseDto> togglePackBookmark(
             @PathVariable Long id,
             @Login Member member
     ) {
