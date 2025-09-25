@@ -15,6 +15,10 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,
             "G002",
             "서버 내부 오류가 발생했습니다."),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,
+            "G003",
+            "입력값이 올바르지 않습니다."),
+
     //Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND,
             "P001",
