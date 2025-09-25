@@ -5,12 +5,15 @@ import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.member.entity.Member;
+import com.starterpack.pack.dto.PackBookmarkResponseDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.entity.PackLike;
 import com.starterpack.pack.repository.PackLikeRepository;
+import com.starterpack.pack.entity.PackBookmark;
+import com.starterpack.pack.repository.PackBookmarkRepository;
 import com.starterpack.pack.repository.PackRepository;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
@@ -34,6 +37,7 @@ public class PackService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final PackLikeRepository packLikeRepository;
+    private final PackBookmarkRepository packBookmarkRepository;
     private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
@@ -161,6 +165,22 @@ public class PackService {
         entityManager.refresh(pack);
 
         return PackLikeResponseDto.of(pack.getPackLikeCount(), !exists);
+    }
+
+    public PackBookmarkResponseDto togglePackBookmark(Long id, Member member) {
+        Pack pack = findPackById(id);
+
+        boolean exists = packBookmarkRepository.existsByPackAndMember(pack, member);
+
+        if (exists) {
+            packBookmarkRepository.deleteByPackAndMember(pack, member);
+            packRepository.decrementPackBookmarkCount(id);
+        } else {
+            packBookmarkRepository.save(new PackBookmark(pack, member));
+            packRepository.incrementPackBookmarkCount(id);
+        }
+
+        return PackBookmarkResponseDto.of(!exists);
     }
 
     @Transactional(readOnly = true)

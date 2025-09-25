@@ -39,4 +39,9 @@ public class PackBookmark {
     private LocalDateTime createdAt;
 
     protected PackBookmark() {}
+
+    public PackBookmark(Pack pack, Member member) {
+        this.pack = pack;
+        this.member = member;
+    }
 }

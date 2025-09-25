@@ -2,6 +2,7 @@ package com.starterpack.pack.controller;
 
 import com.starterpack.auth.login.Login;
 import com.starterpack.member.entity.Member;
+import com.starterpack.pack.dto.PackBookmarkResponseDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
@@ -119,6 +120,15 @@ public class PackController {
         Page<Member> likers = packService.getPackLikers(id, pageable);
         Page<PackLikerResponseDto> responseDto = likers.map(PackLikerResponseDto::from);
 
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/packs/{id}/bookmark")
+    public ResponseEntity<?> togglePackBookmark(
+            @PathVariable Long id,
+            @Login Member member
+    ) {
+        PackBookmarkResponseDto responseDto = packService.togglePackBookmark(id, member);
         return ResponseEntity.ok(responseDto);
     }
 }
