@@ -107,15 +107,18 @@ CREATE TABLE pack (
   category_id      BIGINT,
   total_cost       INT,
   pack_like_count  INT NOT NULL DEFAULT 0,
+  pack_bookmark_count INT NOT NULL DEFAULT 0,
   src              VARCHAR(500),
   description      CLOB
 );
 
 CREATE INDEX idx_pack_category ON pack(category_id);
 CREATE INDEX idx_pack_like     ON pack(pack_like_count);
+CREATE INDEX idx_pack_bookmark ON pack(pack_bookmark_count);
 
 ALTER TABLE pack ADD CONSTRAINT chk_pack_total_cost_nonneg CHECK (total_cost IS NULL OR total_cost >= 0);
 ALTER TABLE pack ADD CONSTRAINT chk_pack_like_nonneg       CHECK (pack_like_count >= 0);
+ALTER TABLE pack ADD CONSTRAINT chk_pack_bookmark_nonneg   CHECK (pack_bookmark_count >= 0);
 
 ALTER TABLE pack
   ADD CONSTRAINT fk_pack_category

@@ -30,6 +30,9 @@ public class Pack {
     @Column(name = "pack_like_count", nullable = false)
     private Integer packLikeCount = 0;
 
+    @Column(name = "pack_bookmark_count", nullable = false)
+    private Integer packBookmarkCount = 0;
+
     @Column(length = 500)
     private String src;
 
@@ -84,6 +87,7 @@ public class Pack {
         p.setDescription(description);
         p.setSrc(src);
         p.setPackLikeCount(0);
+        p.setPackBookmarkCount(0);
 
         if (products != null) {
             for (Product pr : products) {
