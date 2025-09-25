@@ -74,6 +74,15 @@
             <div class="k">닉네임</div>
             <div class="v" th:text="${member.nickname}">제빵사1234567</div>
 
+            <div class="k">생일</div>
+            <div class="v" th:text="${member.birthDate}">2002-12-25</div>
+
+            <div class="k">전화번호</div>
+            <div class="v" th:text="${member.phoneNumber}">010-1234-5678</div>
+
+            <div class="k">성별</div>
+            <div class="v" th:text="${member.gender}">남자</div>
+
             <div class="k">로그인 방식</div>
             <div class="v">
               <span class="badge" th:classappend="${member.provider.toString().toLowerCase() == 'email'} ? ' email' : ' kakao'"

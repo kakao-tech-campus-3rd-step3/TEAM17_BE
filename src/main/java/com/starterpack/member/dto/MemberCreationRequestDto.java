@@ -1,6 +1,8 @@
 package com.starterpack.member.dto;
 
+import com.starterpack.member.entity.Gender;
 import com.starterpack.member.entity.Member;
+import java.time.LocalDate;
 import lombok.Builder;
 
 // 멤버 생성을 위한 내부 DTO
@@ -11,5 +13,8 @@ public record MemberCreationRequestDto(
         String name,
         Member.Provider provider,
         String providerId,
-        String profileImageUrl
+        String profileImageUrl,
+        LocalDate birthDate,
+        Gender gender,
+        String phoneNumber
 ) {}

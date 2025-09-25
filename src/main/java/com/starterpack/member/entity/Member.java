@@ -1,6 +1,7 @@
 package com.starterpack.member.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,6 +46,16 @@ public class Member {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -58,7 +69,7 @@ public class Member {
 
     public Member() {}
 
-    public Member(String email, String password, String name, String nickname, Provider provider, String providerId) {
+    public Member(String email, String password, String name, String nickname, Provider provider, String providerId, LocalDate birthDate, Gender gender, String phoneNumber) {
         this.email = email;
         this.password = password;
         this.name = name;
@@ -66,18 +77,22 @@ public class Member {
         this.provider = provider;
         this.providerId = providerId;
         this.isActive = true;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.phoneNumber = phoneNumber;
     }
 
     // 일반 사용자 생성
-    public static Member createUser(String email, String password, String name, String nickname, Provider provider, String providerId) {
-        Member member = new Member(email, password, name, nickname, provider, providerId);
+    public static Member createUser(String email, String password, String name, String nickname, Provider provider, String providerId, LocalDate birthDate, Gender gender, String phoneNumber) {
+        Member member = new Member(email, password, name, nickname, provider, providerId, birthDate, gender, phoneNumber);
         member.setRole(Role.USER);
+        member.setProfileImageUrl("https://cdn-icons-png.flaticon.com/512/12225/12225935.png");
         return member;
     }
 
     // 관리자 생성
-    public static Member createAdmin(String email, String password, String name, String nickname, Provider provider, String providerId) {
-        Member member = new Member(email, password, name, nickname, provider, providerId);
+    public static Member createAdmin(String email, String password, String name, String nickname, Provider provider, String providerId, LocalDate birthDate, Gender gender, String phoneNumber) {
+        Member member = new Member(email, password, name, nickname, provider, providerId,  birthDate, gender, phoneNumber);
         member.setRole(Role.ADMIN);
         return member;
     }

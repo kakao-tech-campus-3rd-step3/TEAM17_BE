@@ -72,12 +72,11 @@ public class MemberService {
                 request.name(),
                 randomNickname,
                 request.provider(),
-                request.providerId()
+                request.providerId(),
+                request.birthDate(),
+                request.gender(),
+                request.phoneNumber()
         );
-
-        if (request.profileImageUrl() != null) {
-            member.setProfileImageUrl(request.profileImageUrl());
-        }
 
         return new MemberResponseDto(memberRepository.save(member));
     }
@@ -109,6 +108,17 @@ public class MemberService {
             member.setProfileImageUrl(requestDto.profileImageUrl());
         }
 
+        if (requestDto.birthDate() != null) {
+            member.setBirthDate(requestDto.birthDate());
+        }
+
+        if (requestDto.gender() != null) {
+            member.setGender(requestDto.gender());
+        }
+
+        if (requestDto.phoneNumber() != null) {
+            member.setPhoneNumber(requestDto.phoneNumber());
+        }
         Member updatedMember = memberRepository.save(member);
         return new MemberResponseDto(updatedMember);
     }
