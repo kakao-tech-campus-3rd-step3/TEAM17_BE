@@ -6,6 +6,8 @@ import com.starterpack.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,12 +41,15 @@ public class AdminLoginController {
             LocalLoginRequestDto loginRequestDto = new LocalLoginRequestDto(email, password);
             TokenResponseDto tokenResponseDto = authService.localLogin(loginRequestDto);
 
-            Cookie cookie = new Cookie("jwt_token", tokenResponseDto.accessToken());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60);
-            response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from("jwt_token", tokenResponseDto.accessToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(60 * 60)
+                    .sameSite("Lax")
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
             return "redirect:/admin/members";
         } catch (Exception e) {

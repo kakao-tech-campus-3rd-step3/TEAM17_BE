@@ -5,9 +5,12 @@ import com.starterpack.auth.dto.TokenResponseDto;
 import com.starterpack.auth.service.AuthService;
 import com.starterpack.auth.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,11 +39,25 @@ public class AuthController {
      * 로컬 로그인 API
      */
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> localLogin(
-            @Valid @RequestBody LocalLoginRequestDto requestDto
+    public ResponseEntity<Void> localLogin(
+            @Valid @RequestBody LocalLoginRequestDto requestDto,
+            HttpServletResponse  response
     ) {
         TokenResponseDto tokenResponseDto = authService.localLogin(requestDto);
-        return ResponseEntity.ok(tokenResponseDto);
+        String accessToken = tokenResponseDto.accessToken();
+
+        ResponseCookie cookie = ResponseCookie.from("jwt_token", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 60) // 1시간
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok().build();
+
     }
 
 }
