@@ -3,7 +3,6 @@ package com.starterpack.admin.login;
 import com.starterpack.auth.dto.LocalLoginRequestDto;
 import com.starterpack.auth.dto.TokenResponseDto;
 import com.starterpack.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class AdminLoginController {
     private final AuthService authService;
+    
 
     /**
      * 관리자 로그인 페이지를 보여주는 메서드
      */
     @GetMapping("/login")
     public String showLoginPage() {
-        return "admin/login"; //
+        return "admin/login";
     }
 
     /**
@@ -51,7 +51,8 @@ public class AdminLoginController {
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            return "redirect:/admin/members";
+            // 로그인 성공 시 스타터팩 관리 페이지로 리다이렉션
+            return "redirect:/admin/packs";
         } catch (Exception e) {
             return "redirect:/admin/login?error=true";
         }
