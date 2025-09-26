@@ -89,6 +89,7 @@ CREATE TABLE pack (
   category_id      BIGINT UNSIGNED NULL,
   total_cost       INT UNSIGNED    NULL,
   pack_like_count  INT UNSIGNED    NOT NULL DEFAULT 0,
+  pack_bookmark_count INT UNSIGNED NOT NULL DEFAULT 0,
   src              VARCHAR(500)    NULL,
   description      TEXT            NULL,
   PRIMARY KEY (id),
@@ -99,7 +100,8 @@ CREATE TABLE pack (
     ON UPDATE CASCADE
     ON DELETE SET NULL,
   CONSTRAINT chk_pack_total_cost_nonneg CHECK (total_cost IS NULL OR total_cost >= 0),
-  CONSTRAINT chk_pack_like_nonneg CHECK (pack_like_count >= 0)
+  CONSTRAINT chk_pack_like_nonneg CHECK (pack_like_count >= 0),
+  CONSTRAINT chk_pack_bookmark_nonneg CHECK (pack_bookmark_count >= 0)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
@@ -216,11 +218,32 @@ CREATE TABLE pack_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+CREATE TABLE pack_bookmark (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   pack_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_pack_bookmark_member (pack_id, member_id),
+   KEY idx_pb_member (member_id),
+   CONSTRAINT fk_pb_pack
+       FOREIGN KEY (pack_id)
+           REFERENCES pack(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_pb_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
 CREATE INDEX idx_product_like ON product(like_count DESC);
 CREATE INDEX idx_pack_like ON pack(pack_like_count DESC);
+CREATE INDEX idx_pack_bookmark ON pack(pack_bookmark_count DESC);
 
 -- 카테고리별 비용/정렬 조회가 많다면
 CREATE INDEX idx_product_category_cost ON product(category_id, cost);

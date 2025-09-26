@@ -35,13 +35,13 @@ INSERT INTO product (name, link, product_type, src, cost, like_count, category_i
 
 -- ------------------------------------------------------------
 -- 3) 스타터팩 (Pack) Mock 데이터 (6개)
-INSERT INTO pack (name, category_id, total_cost, pack_like_count, src, description) VALUES
-                                                                                        ('홈베이킹 기본 스타터팩', 1, 100000, 80, 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp', '베이킹 기본 스타터팩 설명입니다'),
-                                                                                        ('캠핑 기본 스타터팩', 2, 200000, 150, 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
-                                                                                        ('러닝 기본 스타터팩', 3, 333333, 210, 'https://cdn-icons-png.flaticon.com/512/4112/4112938.png', '런닝 기본 스타터팩 설명입니다'),
-                                                                                        ('독서 기본 스타터팩', 4, 444444, 110, 'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg', '독서 기본 스타터팩 설명입니다'),
-                                                                                        ('헬스 기본 스타터팩', 5, 555555, 180, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s', '헬스 기본 스타터팩 설명입니다'),
-                                                                                        ('요리 기본 스타터팩', 6, 666666, 160, 'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=', '요리 기본 스타터팩 설명입니다');
+INSERT INTO pack (name, category_id, total_cost, pack_like_count, pack_bookmark_count, src, description) VALUES
+                                                                                        ('홈베이킹 기본 스타터팩', 1, 100000, 80, 25, 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp', '베이킹 기본 스타터팩 설명입니다'),
+                                                                                        ('캠핑 기본 스타터팩', 2, 200000, 150, 45, 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
+                                                                                        ('러닝 기본 스타터팩', 3, 333333, 210, 80,'https://cdn-icons-png.flaticon.com/512/4112/4112938.png', '런닝 기본 스타터팩 설명입니다'),
+                                                                                        ('독서 기본 스타터팩', 4, 444444, 110, 30,'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg', '독서 기본 스타터팩 설명입니다'),
+                                                                                        ('헬스 기본 스타터팩', 5, 555555, 180, 95,'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s', '헬스 기본 스타터팩 설명입니다'),
+                                                                                        ('요리 기본 스타터팩', 6, 666666, 160, 70,'https://media.istockphoto.com/id/1081422898/ko/%EC%82%AC%EC%A7%84/%ED%8C%AC-%ED%8A%80%EA%B9%80-%EC%98%A4%EB%A6%AC.jpg?s=612x612&w=0&k=20&c=OZBRZbLLnwfUO9NNjwzkK03C4iwtFv4kmey3pHhrJwQ=', '요리 기본 스타터팩 설명입니다');
 
 -- ------------------------------------------------------------
 -- 4) 상품_스타터팩 매핑 (PtoP) Mock 데이터
