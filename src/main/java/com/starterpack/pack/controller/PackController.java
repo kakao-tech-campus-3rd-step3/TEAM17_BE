@@ -68,7 +68,7 @@ public class PackController {
 
     @PostMapping("/packs")
     @Operation(summary = "스타터팩 생성", description = "새로운 스타터팩을 생성합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> create(
             @RequestBody @Valid PackCreateRequestDto req
     ) {
@@ -81,7 +81,7 @@ public class PackController {
 
     @PatchMapping("/packs/{id}")
     @Operation(summary = "스타터팩 수정", description = "기존 스타터팩 정보를 수정합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> update(
             @PathVariable @Positive Long id,
             @RequestBody @Valid PackUpdateRequestDto req
@@ -92,7 +92,7 @@ public class PackController {
 
     @DeleteMapping("/packs/{id}")
     @Operation(summary = "스타터팩 삭제", description = "스타터팩을 삭제합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         packService.delete(id);
         return ResponseEntity.noContent().build();
@@ -100,7 +100,7 @@ public class PackController {
 
     @PostMapping("/packs/{id}/like")
     @Operation(summary = "스타터팩 좋아요 토글", description = "스타터팩의 좋아요를 추가하거나 취소합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackLikeResponseDto> togglePackLike(
             @PathVariable Long id,
             @Login Member member
@@ -125,7 +125,7 @@ public class PackController {
 
     @PostMapping("/packs/{id}/bookmark")
     @Operation(summary = "스타터팩 북마크 토글", description = "유저가 스타터팩에 북마크를 추가하거나 취소합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackBookmarkResponseDto> togglePackBookmark(
             @PathVariable Long id,
             @Login Member member
