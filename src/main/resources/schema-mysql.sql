@@ -194,6 +194,43 @@ CREATE TABLE feed_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 8) 피드 댓글 (Feed Comment)
+-- ------------------------------------------------------------
+CREATE TABLE feed_comment (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  feed_id     BIGINT UNSIGNED NOT NULL,
+  author_id   BIGINT UNSIGNED NOT NULL,
+  content     VARCHAR(500)    NOT NULL,
+  parent_id   BIGINT UNSIGNED NULL,
+  depth       INT             NOT NULL DEFAULT 0,
+  is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
+  deleted_by  ENUM('USER', 'ADMIN') NULL,
+  deleted_at  TIMESTAMP       NULL,
+  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_comment_feed (feed_id),
+  KEY idx_comment_author (author_id),
+  KEY idx_comment_parent (parent_id),
+  KEY idx_comment_created_at (created_at),
+  CONSTRAINT fk_comment_feed
+    FOREIGN KEY (feed_id)
+    REFERENCES feed(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_comment_author
+    FOREIGN KEY (author_id)
+    REFERENCES member(user_id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_comment_parent
+    FOREIGN KEY (parent_id)
+    REFERENCES feed_comment(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
