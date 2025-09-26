@@ -3,6 +3,7 @@ package com.starterpack.feed.controller;
 import com.starterpack.auth.login.Login;
 import com.starterpack.feed.dto.FeedCommentAddRequestDto;
 import com.starterpack.feed.dto.FeedCommentResponseDto;
+import com.starterpack.feed.dto.FeedCommentUpdateRequestDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedLikerResponseDto;
@@ -168,5 +169,21 @@ public class FeedController {
         feedCommentService.deleteComment(commentId, member);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/comments/{commentId}")
+    @Operation(
+            summary = "댓글 수정",
+            description = "댓글 내용을 수정합니다. 작성자 본인 또는 관리자만 가능합니다."
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<FeedCommentResponseDto> updateComment(
+            @PathVariable Long commentId,
+            @Login Member member,
+            @Valid @RequestBody FeedCommentUpdateRequestDto requestDto
+    ) {
+        FeedCommentResponseDto responseDto = feedCommentService.updateComment(commentId, member, requestDto);
+        return ResponseEntity.ok(responseDto);
+    }
+
 
 }

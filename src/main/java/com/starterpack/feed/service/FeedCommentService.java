@@ -4,6 +4,7 @@ import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedCommentAddRequestDto;
 import com.starterpack.feed.dto.FeedCommentResponseDto;
+import com.starterpack.feed.dto.FeedCommentUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedComment;
 import com.starterpack.feed.entity.FeedComment.DeletedBy;
@@ -87,6 +88,21 @@ public class FeedCommentService {
             return false;
         }
     }
+    @Transactional
+    public FeedCommentResponseDto updateComment(Long commentId, Member member, FeedCommentUpdateRequestDto requestDto) {
+        FeedComment comment = feedCommentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if (comment.isDeleted()) {
+            throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED);
+        }
+
+        comment.validateOwner(member);
+        comment.updateContent(requestDto.content());
+
+        boolean isMine = comment.getAuthor().getUserId().equals(member.getUserId());
+        return FeedCommentResponseDto.from(comment, isMine);
+    }
 
     /** 간단한 서버측 sanitize 훅 (필요시 확장) */
     private static String sanitize(String raw) {
@@ -94,4 +110,5 @@ public class FeedCommentService {
         String trimmed = raw.trim();
         return trimmed.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     }
+
 }

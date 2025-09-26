@@ -108,6 +108,20 @@ public class FeedComment {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content length must be <= 500");
         }
     }
+    //댓글 수정
+    public void updateContent(String newContent) {
+        if (this.deleted) {
+            throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED, "삭제된 댓글은 수정할 수 없습니다.");
+        }
+        if (newContent == null || newContent.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content must not be blank");
+        }
+        String trimmed = newContent.strip();
+        if (trimmed.length() > 500) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content length must be <= 500");
+        }
+        this.content = trimmed;
+    }
 
 
     //도메인 로직
