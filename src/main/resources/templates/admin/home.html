@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>관리자 페이지</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    :root { --primary:#4F46E5; --muted:#f6f7fb; --danger:#dc2626; --border:#e5e7eb; --text:#111827; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:var(--text); }
+    .container{ max-width:1100px; margin:32px auto; padding:0 16px; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .card + .card{ margin-top:16px; }
+    
+    /* 홈 대시보드 그리드 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .dashboard-card {
+      background:#fff; 
+      border:1px solid var(--border); 
+      border-radius:16px; 
+      padding:24px; 
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    }
+    
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 8px 0;
+    }
+    
+    .card-description {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    
+    .card-button {
+      display: inline-block;
+      padding: 10px 16px;
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all .2s ease;
+    }
+    
+    .card-button:hover {
+      background: #3730a3;
+      color: #fff;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
+
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">관리자 대시보드</h1>
+        <span style="padding:3px 10px; font-size:12px; border-radius:999px; background:#EEF2FF; color:#3730A3;">HOME</span>
+      </div>
+
+      <!-- 관리 메뉴 -->
+      <div class="card">
+        <div class="dashboard-grid">
+          <!-- 상품 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">📦</div>
+            <h4 class="card-title">상품 관리</h4>
+            <p class="card-description">사이트에서 제공하는 상품들의 목록, 추가, 수정, 삭제를 관리할 수 있습니다.</p>
+            <a href="/admin/products" class="card-button">상품 관리</a>
+          </div>
+          
+          <!-- 스타터팩 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">📁</div>
+            <h4 class="card-title">스타터팩 관리</h4>
+            <p class="card-description">스타터팩의 목록, 생성, 수정을 관리합니다.</p>
+            <a href="/admin/packs" class="card-button">스타터팩 관리</a>
+          </div>
+          
+          <!-- 회원 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">👥</div>
+            <h4 class="card-title">회원 관리</h4>
+            <p class="card-description">회원 정보 조회, 수정, 삭제 등 회원 관리를 담당합니다.</p>
+            <a href="/admin/members" class="card-button">회원 관리</a>
+          </div>
+          
+          <!-- 카테고리 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">🏷️</div>
+            <h4 class="card-title">카테고리 관리</h4>
+            <p class="card-description">상품과 스타터팩의 분류를 위한 카테고리를 관리합니다.</p>
+            <a href="/admin/categories" class="card-button">카테고리 관리</a>
+          </div>
+          
+          <!-- 피드 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">📝</div>
+            <h4 class="card-title">피드 관리</h4>
+            <p class="card-description">사용자들의 피드 및 댓글을 관리하고 검토할 수 있습니다.</p>
+            <a href="/admin/feeds" class="card-button">피드 관리</a>
+          </div>
+          
+          <!-- 링크 정책 관리 -->
+          <div class="dashboard-card">
+            <div class="card-icon">🔗</div>
+            <h4 class="card-title">링크 정책 관리</h4>
+            <p class="card-description">허용/차단할 링크 정책을 설정하고 관리합니다.</p>
+            <a href="/admin/link-policies" class="card-button">링크 정책 관리</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

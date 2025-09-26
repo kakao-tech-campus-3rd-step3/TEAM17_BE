@@ -10,7 +10,8 @@ public record PackResponseDto(
         Integer cost,
         String description,
         List<List<String>> parts,
-        Integer like
+        Integer like,
+        Integer bookmarkCount
 ) {
     public static PackResponseDto from(Pack pack) {
         List<List<String>> parts = pack.getProducts().stream()
@@ -26,7 +27,8 @@ public record PackResponseDto(
                 pack.getTotalCost(),
                 Objects.toString(pack.getDescription(), ""),
                 parts,
-                pack.getPackLikeCount()
+                pack.getPackLikeCount(),
+                pack.getPackBookmarkCount()
         );
     }
 }

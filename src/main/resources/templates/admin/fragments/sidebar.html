@@ -61,11 +61,16 @@
     }
   </style>
 
-  <aside class="sidebar" th:with="t=${curr} ?: ''">
+  <aside class="sidebar" th:with="t=${curr != null ? curr : ''}">
 
     <div class="brand">Admin</div>
 
     <div class="section-title">Overview</div>
+    <a class="btn"
+       th:classappend="${#strings.contains(t, 'admin/home') or t == 'admin' or t == ''} ? ' active' : ''"
+       th:href="@{/admin}">
+      <span class="dot"></span>대시보드
+    </a>
     <a class="btn"
        th:classappend="${#strings.contains(t, 'admin/packs')} ? ' active' : ''"
        th:href="@{/admin/packs}">
@@ -86,7 +91,19 @@
        th:href="@{/admin/products}">
       <span class="dot"></span>상품 관리
     </a>
+    <a class="btn"
+       th:classappend="${#strings.contains(t, 'admin/feeds')} ? ' active' : ''"
+       th:href="@{/admin/feeds}">
+      <span class="dot"></span>Feed 관리
+    </a>
 
+    <div class="divider"></div>
+    <div class="section-title">시스템</div>
+    <a class="btn"
+       th:classappend="${#strings.contains(t, 'admin/link-policies')} ? ' active' : ''"
+       th:href="@{/admin/link-policies}">
+      <span class="dot"></span>링크 정책 관리
+    </a>
 
   </aside>
 </nav>

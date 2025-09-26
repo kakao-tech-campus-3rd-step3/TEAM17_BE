@@ -42,6 +42,9 @@ public class AuthService {
                 .name(requestDto.name())
                 .provider(Member.Provider.EMAIL)
                 .providerId(null)
+                .birthDate(requestDto.birthDate())
+                .gender(requestDto.gender())
+                .phoneNumber(requestDto.phoneNumber())
                 .build();
 
         return memberService.addMember(creationRequest);

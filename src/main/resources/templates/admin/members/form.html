@@ -17,7 +17,7 @@
     .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
     .field{ margin-bottom:14px; }
     label{ font-weight:600; display:block; margin-bottom:6px; }
-    input[type="text"], input[type="email"], input[type="password"], input[type="url"], select{
+    input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="date"], select{
       width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; background:#fff;
     }
     .readonly-field{ background:#f3f4f6; color:#6b7280; }
@@ -102,6 +102,31 @@
                        th:classappend="${#fields.hasErrors('profileImageUrl')} ? 'invalid'"/>
                 <div class="error" th:errors="*{profileImageUrl}"></div>
                 <div class="help">선택사항입니다. 이미지 URL을 입력하세요.</div>
+              </div>
+
+              <div class="field">
+                <label for="birthDate">생년월일 *</label>
+                <input type="date" id="birthDate" th:field="*{birthDate}"
+                       th:classappend="${#fields.hasErrors('birthDate')} ? 'invalid'"/>
+                <div class="error" th:errors="*{birthDate}"></div>
+              </div>
+
+              <div class="field">
+                <label for="gender">성별 *</label>
+                <select id="gender" th:field="*{gender}"
+                        th:classappend="${#fields.hasErrors('gender')} ? 'invalid'">
+                  <option value="">-- 선택 --</option>
+                  <option th:each="g : ${T(com.starterpack.member.entity.Gender).values()}"
+                          th:value="${g}" th:text="${g.description}"></option>
+                </select>
+                <div class="error" th:errors="*{gender}"></div>
+              </div>
+
+              <div class="field">
+                <label for="phoneNumber">전화번호 *</label>
+                <input type="text" id="phoneNumber" th:field="*{phoneNumber}" placeholder="010-1234-5678"
+                       th:classappend="${#fields.hasErrors('phoneNumber')} ? 'invalid'"/>
+                <div class="error" th:errors="*{phoneNumber}"></div>
               </div>
 
               <!-- 읽기 전용 필드 (수정 시) -->

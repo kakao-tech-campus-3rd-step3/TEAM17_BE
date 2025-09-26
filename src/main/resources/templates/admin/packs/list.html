@@ -76,20 +76,22 @@
               <th style="width:110px;">구성수</th>
               <th style="width:140px;">총 비용</th>
               <th style="width:120px;">좋아요</th>
+              <th style="width:120px">북마크</th>
               <th style="width:180px;">관리</th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${#lists.isEmpty(packs)}">
-              <td class="empty" colspan="6">표시할 패키지가 없습니다.</td>
+              <td class="empty" colspan="7">표시할 패키지가 없습니다.</td>
             </tr>
 
             <tr th:each="pack : ${packs}">
               <td th:text="${pack.id}">1</td>
-              <td th:text="${pack.name}">패키지명</td>
+              <td th:text="${pack.name}" style="white-space: nowrap;">패키지명</td>
               <td th:text="${#lists.size(pack.parts)}">0</td>
               <td th:text="${pack.cost}">0</td>
               <td th:text="${pack.like}">0</td>
+              <td th:text="${pack.bookmarkCount}">0</td>
               <td class="actions">
                 <a th:href="@{/admin/packs/{id}/edit(id=${pack.id})}" class="btn">수정</a>
                 <form th:action="@{/admin/packs/{id}/delete(id=${pack.id})}" method="post"

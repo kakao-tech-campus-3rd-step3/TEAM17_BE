@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>링크 정책 관리</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}" />
+  <style>
+    :root { --primary:#4F46E5; --muted:#f6f7fb; --danger:#dc2626; --border:#e5e7eb; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:#111827; }
+    .admin-shell { display:grid; grid-template-columns: 260px 1fr; min-height:100vh; }
+    main.admin-content { padding:24px; }
+    .container{ max-width:1100px; margin:0 auto; }
+    .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .title{ font-size:22px; font-weight:800; margin:0; }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .toolbar{ display:flex; gap:12px; align-items:center; margin:12px 0; flex-wrap:wrap; }
+    .toolbar .spacer{ flex:1; }
+    .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    .btn-danger{ background:var(--danger); color:#fff; border-color:var(--danger); }
+    table { width:100%; border-collapse: collapse; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    thead th { background:#fafafa; font-weight:700; }
+    th, td { padding:12px 12px; border-bottom:1px solid var(--border); text-align:left; }
+    .empty { text-align:center; color:#888; padding:32px 0; }
+    .toast { margin-bottom:12px; padding:10px 12px; border-radius:10px; }
+    .toast.success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+    .toast.error { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+    .pattern-cell { font-family: monospace; background:#f8f9fa; padding:8px; border-radius:6px; word-break: break-all; }
+    .actions { display:flex; gap:8px; }
+    .actions form { display:inline; }
+    .actions .btn { padding:6px 10px; font-size:12px; }
+  </style>
+</head>
+<body>
+<div class="admin-shell">
+  <!-- 사이드바 -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar(${#execInfo.templateName})}"></div>
+
+  <!-- 본문 -->
+  <main class="admin-content">
+    <div class="container">
+      <div class="titlebar">
+        <h1 class="title">링크 정책 관리</h1>
+        <a th:href="@{/admin/link-policies/form}" class="btn btn-primary">새 정책 추가</a>
+      </div>
+
+      <div th:if="${message}" class="toast success" th:text="${message}">성공 메시지</div>
+      <div th:if="${error}" class="toast error" th:text="${error}">오류 메시지</div>
+
+      <div class="card">
+        <!-- 설명 -->
+        <div style="background:#f8f9fa; padding:16px; border-radius:8px; margin-bottom:16px; color:#6b7280; font-size:14px;">
+          <strong>링크 정책 관리</strong><br>
+          블랙리스트에 등록된 패턴이 포함된 URL은 상품 등록 시 차단됩니다.<br>
+          패턴은 부분 문자열 매칭으로 작동합니다. (예: "malicious.com" → "https://malicious.com/evil" 차단)
+        </div>
+
+        <!-- 결과 개요 -->
+        <div style="color:#6b7280; font-size:14px; margin:8px 4px 12px;">
+          총 <b th:text="${#lists.size(policies)}">0</b>개의 정책
+        </div>
+
+        <!-- 빈 결과 -->
+        <div th:if="${#lists.isEmpty(policies)}" class="empty">
+          등록된 링크 정책이 없습니다. <a th:href="@{/admin/link-policies/form}">첫 번째 정책 추가하기</a>
+        </div>
+
+        <!-- 테이블 -->
+        <table th:if="${!#lists.isEmpty(policies)}">
+          <thead>
+          <tr>
+            <th style="width:80px;">ID</th>
+            <th>패턴</th>
+            <th>설명</th>
+            <th style="width:180px;">생성일</th>
+            <th style="width:120px;">관리</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="policy : ${policies}">
+            <td th:text="${policy.id}">1</td>
+            <td>
+              <div class="pattern-cell" th:text="${policy.pattern}">malicious.com</div>
+            </td>
+            <td>
+              <div th:if="${policy.description != null and !policy.description.isEmpty()}" 
+                   th:text="${policy.description}" 
+                   style="color:#6b7280; font-size:13px; max-width:300px; word-break: break-word;">
+                악성 사이트 차단
+              </div>
+              <div th:if="${policy.description == null or policy.description.isEmpty()}" 
+                   style="color:#9ca3af; font-size:13px; font-style:italic;">
+                설명 없음
+              </div>
+            </td>
+            <td th:text="${#temporals.format(policy.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
+            <td>
+              <div class="actions">
+                <form th:action="@{/admin/link-policies/delete}" method="post" style="display:inline;">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input type="hidden" name="id" th:value="${policy.id}"/>
+                  <button type="submit" class="btn btn-danger" 
+                          th:data-pattern="${policy.pattern}"
+                          onclick="return confirm('정말로 이 정책을 삭제하시겠습니까?\n\n패턴: ' + this.dataset.pattern);">삭제</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -3,6 +3,7 @@ package com.starterpack.product.service;
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 
+import com.starterpack.linkpolicy.service.LinkModerationService;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.product.dto.*;
@@ -23,19 +24,28 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final LinkModerationService linkModerationService;
 
     public ProductService(ProductRepository productRepository,
-            CategoryRepository categoryRepository) {
+            CategoryRepository categoryRepository,
+            LinkModerationService linkModerationService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.linkModerationService = linkModerationService;
     }
 
     public ProductDetailResponseDto createProduct(ProductCreateRequestDto productCreateRequestDto) {
         Category category = getCategoryByCategoryId(productCreateRequestDto.categoryId());
 
+        // 링크 검수: sanitize + validate + shortener block + blacklist check
+        String rawLink = productCreateRequestDto.link();
+        if (rawLink != null && !rawLink.isBlank()) {
+            rawLink = linkModerationService.validateAndSanitizeProductLink(rawLink);
+        }
+
         Product product = Product.create(
                 productCreateRequestDto.name(),
-                productCreateRequestDto.link(),
+                rawLink,
                 productCreateRequestDto.productType(),
                 productCreateRequestDto.src(),
                 productCreateRequestDto.cost(),
@@ -150,9 +160,14 @@ public class ProductService {
 
         Category category = getCategoryByCategoryId(productUpdateRequestDto.categoryId());
 
+        String rawLink = productUpdateRequestDto.link();
+        if (rawLink != null && !rawLink.isBlank()) {
+            rawLink = linkModerationService.validateAndSanitizeProductLink(rawLink);
+        }
+
         product.update(
                 productUpdateRequestDto.name(),
-                productUpdateRequestDto.link(),
+                rawLink,
                 productUpdateRequestDto.productType(),
                 productUpdateRequestDto.src(),
                 productUpdateRequestDto.cost(),

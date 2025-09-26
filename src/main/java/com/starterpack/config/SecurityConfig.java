@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -41,6 +43,7 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/admin/login",
             "/error",
+            "/h2-console/**"
     };
 
     @Bean
@@ -64,9 +67,18 @@ public class SecurityConfig {
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
 
+        http.cors(Customizer.withDefaults());
+
         // API 엔드포인트별 접근 권한 설정
         http.authorizeHttpRequests(auth -> auth
-                        // .requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
+                        //.requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/feeds", "/api/feeds/**", // feed 관련 GET 요청
+                                "/api/starterPack/packs", "/api/starterPack/packs/**", "/api/api/starterPack/categories/**", // starterpack 관련 GET 요청
+                                "/api/products", "/api/products/**",
+                                "/api/feeds/*/likes",
+                                "/api/starterPack/packs/*/likes"
+                        ).permitAll() // products 관련 GET 요청
                         .requestMatchers(PUBLIC_URLS).permitAll() // 배포 환경에선 아래 둘 주석 해제하기
                         .anyRequest().authenticated()
         );

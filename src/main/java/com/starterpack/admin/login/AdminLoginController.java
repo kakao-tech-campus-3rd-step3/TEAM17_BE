@@ -3,9 +3,10 @@ package com.starterpack.admin.login;
 import com.starterpack.auth.dto.LocalLoginRequestDto;
 import com.starterpack.auth.dto.TokenResponseDto;
 import com.starterpack.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class AdminLoginController {
     private final AuthService authService;
+    
 
     /**
      * 관리자 로그인 페이지를 보여주는 메서드
      */
     @GetMapping("/login")
     public String showLoginPage() {
-        return "admin/login"; //
+        return "admin/login";
     }
 
     /**
@@ -39,14 +41,18 @@ public class AdminLoginController {
             LocalLoginRequestDto loginRequestDto = new LocalLoginRequestDto(email, password);
             TokenResponseDto tokenResponseDto = authService.localLogin(loginRequestDto);
 
-            Cookie cookie = new Cookie("jwt_token", tokenResponseDto.accessToken());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60);
-            response.addCookie(cookie);
+            ResponseCookie cookie = ResponseCookie.from("jwt_token", tokenResponseDto.accessToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(60 * 60)
+                    .sameSite("Lax")
+                    .build();
 
-            return "redirect:/admin/members";
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            // 로그인 성공 시 관리자 홈페이지로 리다이렉션
+            return "redirect:/admin";
         } catch (Exception e) {
             return "redirect:/admin/login?error=true";
         }

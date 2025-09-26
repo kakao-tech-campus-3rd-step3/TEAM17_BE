@@ -13,6 +13,7 @@ import com.starterpack.feed.entity.FeedLike;
 import com.starterpack.feed.entity.FeedProduct;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
+import com.starterpack.feed.specification.FeedSpecification;
 import com.starterpack.member.entity.Member;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
@@ -20,6 +21,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,6 +145,30 @@ public class FeedService {
                 .build();
 
         feed.getFeedProducts().add(feedProduct);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Feed> searchFeeds(String keyword, Long categoryId, Pageable pageable) {
+        Specification<Feed> spec = FeedSpecification.hasKeyword(keyword)
+                .and(FeedSpecification.hasCategory(categoryId));
+
+        return feedRepository.findAll(spec, pageable);
+    }
+
+    @Transactional
+    public void updateFeedByAdmin(Long feedId, FeedUpdateRequestDto request) {
+        Feed feed = getFeedById(feedId);
+
+        Category category = getCategory(request.categoryId());
+
+
+        feed.update(request.description(), request.imageUrl(), category);
+    }
+
+    @Transactional
+    public void deleteFeedByAdmin(Long feedId) {
+        Feed feed = getFeedById(feedId);
+        feedRepository.delete(feed);
     }
 
     private Feed getFeedByIdWithDetails(Long feedId) {
