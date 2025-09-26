@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -65,6 +66,8 @@ public class SecurityConfig {
         // 폼 로그인 및 HTTP Basic 인증 비활성화
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
+
+        http.cors(Customizer.withDefaults());
 
         // API 엔드포인트별 접근 권한 설정
         http.authorizeHttpRequests(auth -> auth
