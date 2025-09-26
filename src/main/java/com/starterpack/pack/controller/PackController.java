@@ -98,7 +98,7 @@ public class PackController {
     }
 
     @PostMapping("/packs/{id}/like")
-    @Operation(summary = "스타터팩 좋아요 토글", description = "스사터팩의 좋아요를 추가하거나 취소합니다.")
+    @Operation(summary = "스타터팩 좋아요 토글", description = "스타터팩의 좋아요를 추가하거나 취소합니다.")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<PackLikeResponseDto> togglePackLike(
             @PathVariable Long id,
