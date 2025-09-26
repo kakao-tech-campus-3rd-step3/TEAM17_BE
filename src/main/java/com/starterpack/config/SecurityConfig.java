@@ -69,9 +69,13 @@ public class SecurityConfig {
         // API 엔드포인트별 접근 권한 설정
         http.authorizeHttpRequests(auth -> auth
                         //.requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
-                        .requestMatchers(HttpMethod.GET, "/api/feeds", "/api/feeds/**", // feed 관련 GET 요청
-                        "/api/starterPack/packs", "/api/starterPack/packs/**", "/api/api/starterPack/categories/**", // starterpack 관련 GET 요청
-                        "/api/products", "/api/products/**").permitAll() // products 관련 GET 요청
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/feeds", "/api/feeds/**", // feed 관련 GET 요청
+                                "/api/starterPack/packs", "/api/starterPack/packs/**", "/api/api/starterPack/categories/**", // starterpack 관련 GET 요청
+                                "/api/products", "/api/products/**",
+                                "/api/feeds/*/likes",
+                                "/api/starterPack/packs/*/likes"
+                        ).permitAll() // products 관련 GET 요청
                         .requestMatchers(PUBLIC_URLS).permitAll() // 배포 환경에선 아래 둘 주석 해제하기
                         .anyRequest().authenticated()
         );

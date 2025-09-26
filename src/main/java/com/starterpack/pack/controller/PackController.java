@@ -1,7 +1,12 @@
 package com.starterpack.pack.controller;
 
+import com.starterpack.auth.login.Login;
+import com.starterpack.member.entity.Member;
+import com.starterpack.pack.dto.PackBookmarkResponseDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
+import com.starterpack.pack.dto.PackLikeResponseDto;
+import com.starterpack.pack.dto.PackLikerResponseDto;
 import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
@@ -15,6 +20,10 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +68,7 @@ public class PackController {
 
     @PostMapping("/packs")
     @Operation(summary = "스타터팩 생성", description = "새로운 스타터팩을 생성합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> create(
             @RequestBody @Valid PackCreateRequestDto req
     ) {
@@ -72,7 +81,7 @@ public class PackController {
 
     @PatchMapping("/packs/{id}")
     @Operation(summary = "스타터팩 수정", description = "기존 스타터팩 정보를 수정합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> update(
             @PathVariable @Positive Long id,
             @RequestBody @Valid PackUpdateRequestDto req
@@ -83,9 +92,45 @@ public class PackController {
 
     @DeleteMapping("/packs/{id}")
     @Operation(summary = "스타터팩 삭제", description = "스타터팩을 삭제합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
+    @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         packService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/packs/{id}/like")
+    @Operation(summary = "스타터팩 좋아요 토글", description = "스타터팩의 좋아요를 추가하거나 취소합니다.")
+    @SecurityRequirement(name = "cookieAuth")
+    public ResponseEntity<PackLikeResponseDto> togglePackLike(
+            @PathVariable Long id,
+            @Login Member member
+    ){
+        PackLikeResponseDto responseDto = packService.togglePackLike(id, member);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/packs/{id}/likes")
+    @Operation(summary = "팩 좋아요 목록 조회", description = "팩에 좋아요를 누른 사용자 목록을 페이지로 반환합니다.")
+    public ResponseEntity<Page<PackLikerResponseDto>> getPackLikers(
+            @PathVariable
+            Long id,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ){
+        Page<Member> likers = packService.getPackLikers(id, pageable);
+        Page<PackLikerResponseDto> responseDto = likers.map(PackLikerResponseDto::from);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/packs/{id}/bookmark")
+    @Operation(summary = "스타터팩 북마크 토글", description = "유저가 스타터팩에 북마크를 추가하거나 취소합니다.")
+    @SecurityRequirement(name = "cookieAuth")
+    public ResponseEntity<PackBookmarkResponseDto> togglePackBookmark(
+            @PathVariable Long id,
+            @Login Member member
+    ) {
+        PackBookmarkResponseDto responseDto = packService.togglePackBookmark(id, member);
+        return ResponseEntity.ok(responseDto);
     }
 }
