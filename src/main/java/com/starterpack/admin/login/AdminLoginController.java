@@ -51,8 +51,8 @@ public class AdminLoginController {
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-            // 로그인 성공 시 스타터팩 관리 페이지로 리다이렉션
-            return "redirect:/admin/packs";
+            // 로그인 성공 시 관리자 홈페이지로 리다이렉션
+            return "redirect:/admin";
         } catch (Exception e) {
             return "redirect:/admin/login?error=true";
         }
