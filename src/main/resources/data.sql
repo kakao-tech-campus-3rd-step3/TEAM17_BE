@@ -37,7 +37,7 @@ INSERT INTO product (name, link, product_type, src, cost, like_count, category_i
 -- 3) 스타터팩 (Pack) Mock 데이터 (6개)
 INSERT INTO pack (name, category_id, total_cost, pack_like_count, pack_bookmark_count, src, description) VALUES
                                                                                         ('홈베이킹 기본 스타터팩', 1, 100000, 80, 25, 'https://i.namu.wiki/i/8MZZehLGZ1TCO4G7sBivu6GwEpFxajfYyXJ-m-2SIdrIH-4_1amvSyW-6fWykumnu0koFi6LZGNMJLV1O9k7sg.webp', '베이킹 기본 스타터팩 설명입니다'),
-                                                                                        ('캠핑 기본 스타터팩', 2, 200000, 150, 45,'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
+                                                                                        ('캠핑 기본 스타터팩', 2, 200000, 150, 45, 'https://blog-static.kkday.com/ko/blog/wp-content/uploads/korea_camping_spot_5.jpg', '캠핑 기본 스타터팩 설명입니다'),
                                                                                         ('러닝 기본 스타터팩', 3, 333333, 210, 80,'https://cdn-icons-png.flaticon.com/512/4112/4112938.png', '런닝 기본 스타터팩 설명입니다'),
                                                                                         ('독서 기본 스타터팩', 4, 444444, 110, 30,'https://img.khan.co.kr/lady/2020/04/20/l_2020042004000008300185672.jpg', '독서 기본 스타터팩 설명입니다'),
                                                                                         ('헬스 기본 스타터팩', 5, 555555, 180, 95,'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0w-245t0fqP7arr89Qf-I6aEyO_6lBNZ_TA&s', '헬스 기본 스타터팩 설명입니다'),
