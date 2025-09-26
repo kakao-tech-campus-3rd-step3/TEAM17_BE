@@ -81,7 +81,10 @@ public enum ErrorCode {
     //feed
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND,
             "F001",
-            "해당하는 피드를 찾을 수 없습니다.");
+            "해당하는 피드를 찾을 수 없습니다."),
+
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "FC001", "해당하는 댓글을 찾을 수 없습니다."),
+    COMMENT_ALREADY_DELETED(HttpStatus.CONFLICT, "FC002", "이미 삭제된 댓글입니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
