@@ -67,6 +67,11 @@
 
     <div class="section-title">Overview</div>
     <a class="btn"
+       th:classappend="${#strings.contains(t, 'admin/home') or t == 'admin' or t == ''} ? ' active' : ''"
+       th:href="@{/admin}">
+      <span class="dot"></span>대시보드
+    </a>
+    <a class="btn"
        th:classappend="${#strings.contains(t, 'admin/packs')} ? ' active' : ''"
        th:href="@{/admin/packs}">
       <span class="dot"></span>스타터팩 관리
