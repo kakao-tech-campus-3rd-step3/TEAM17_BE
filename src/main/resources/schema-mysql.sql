@@ -194,6 +194,28 @@ CREATE TABLE feed_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 8) 팩 좋아요 (Pack Like)
+-- ------------------------------------------------------------
+CREATE TABLE pack_like (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   pack_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_pack_like_member (pack_id, member_id),
+   KEY idx_pl_member (member_id),
+   CONSTRAINT fk_pl_pack
+       FOREIGN KEY (pack_id)
+           REFERENCES pack(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_pl_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹

@@ -4,18 +4,25 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.member.entity.Member;
 import com.starterpack.pack.dto.PackCreateRequestDto;
+import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.entity.PackLike;
+import com.starterpack.pack.repository.PackLikeRepository;
 import com.starterpack.pack.repository.PackRepository;
 import com.starterpack.product.entity.Product;
 import com.starterpack.product.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +33,8 @@ public class PackService {
     private final PackRepository packRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final PackLikeRepository packLikeRepository;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<Pack> getPacks() {
@@ -133,5 +142,32 @@ public class PackService {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, detailMessage);
         }
         return new HashSet<>(found);
+    }
+
+    @Transactional
+    public PackLikeResponseDto togglePackLike(Long id, Member member) {
+        Pack pack = findPackById(id);
+
+        boolean exists = packLikeRepository.existsByPackAndMember(pack, member);
+
+        if (exists) {
+            packLikeRepository.deleteByPackAndMember(pack, member);
+            packRepository.decrementLikeCount(id);
+        } else {
+            packLikeRepository.save(new PackLike(pack, member));
+            packRepository.incrementLikeCount(id);
+        }
+
+        entityManager.refresh(pack);
+
+        return PackLikeResponseDto.of(pack.getPackLikeCount(), !exists);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Member> getPackLikers(Long id, Pageable pageable) {
+        Pack pack = findPackById(id);
+        Page<PackLike> packLikes = packLikeRepository.findByPack(pack, pageable);
+
+        return packLikes.map(PackLike::getMember);
     }
 }
