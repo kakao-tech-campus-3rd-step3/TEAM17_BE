@@ -15,6 +15,10 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,
             "G002",
             "서버 내부 오류가 발생했습니다."),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,
+            "G003",
+            "입력값이 올바르지 않습니다."),
+
     //Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND,
             "P001",
@@ -77,7 +81,10 @@ public enum ErrorCode {
     //feed
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND,
             "F001",
-            "해당하는 피드를 찾을 수 없습니다.");
+            "해당하는 피드를 찾을 수 없습니다."),
+
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "FC001", "해당하는 댓글을 찾을 수 없습니다."),
+    COMMENT_ALREADY_DELETED(HttpStatus.CONFLICT, "FC002", "이미 삭제된 댓글입니다.");
 
     private final HttpStatus httpStatus;
     private final String errorCode;
