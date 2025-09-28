@@ -58,6 +58,9 @@ public class Feed {
     @Column(name = "like_count", nullable = false)
     private long likeCount = 0;
 
+    @Column(name = "bookmark_count", nullable = false)
+    private long bookmarkCount = 0;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedProduct> feedProducts = new ArrayList<>();
 
