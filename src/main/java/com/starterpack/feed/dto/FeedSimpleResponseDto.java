@@ -12,6 +12,7 @@ public record FeedSimpleResponseDto(
         FeedType feedType,
         CategoryResponseDto category,
         Long likeCount,
+        Long bookmarkCount,
         LocalDateTime createdAt
 ) {
     public static FeedSimpleResponseDto from(Feed feed) {
@@ -27,6 +28,7 @@ public record FeedSimpleResponseDto(
                 feed.getFeedType(),
                 category,
                 feed.getLikeCount(),
+                feed.getBookmarkCount(),
                 feed.getCreatedAt()
         );
     }

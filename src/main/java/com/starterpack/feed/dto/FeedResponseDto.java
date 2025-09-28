@@ -15,6 +15,7 @@ public record FeedResponseDto(
         FeedType feedType,
         CategoryResponseDto category,
         Long likeCount,
+        Long bookmarkCount,
         LocalDateTime createdAt,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -31,6 +32,7 @@ public record FeedResponseDto(
                 feed.getFeedType(),
                 category,
                 feed.getLikeCount(),
+                feed.getBookmarkCount(),
                 feed.getCreatedAt(),
                 feed.getFeedProducts().stream()
                         .map(TaggedProductResponseDto::from)
