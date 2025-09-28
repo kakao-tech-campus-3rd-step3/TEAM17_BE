@@ -136,11 +136,14 @@ CREATE TABLE feed (
     feed_type   ENUM('INFO', 'DAILY') NOT NULL,
     category_id BIGINT UNSIGNED     NULL,
     like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
+    bookmark_count  BIGINT UNSIGNED    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_feed_user (user_id),
     KEY idx_feed_category (category_id),
+    KEY idx_feed_like_count (like_count),
+    KEY idx_feed_bookmark_count (bookmark_count),
     CONSTRAINT fk_feed_user
         FOREIGN KEY (user_id)
             REFERENCES member(user_id)
@@ -150,7 +153,9 @@ CREATE TABLE feed (
         FOREIGN KEY (category_id)
             REFERENCES category(id)
             ON UPDATE CASCADE
-            ON DELETE SET NULL
+            ON DELETE SET NULL,
+    CONSTRAINT chk_feed_like_count CHECK (like_count >= 0),
+    CONSTRAINT chk_feed_bookmark_count CHECK (bookmark_count >= 0)
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 6) 피드, 상품 연관 테이블
@@ -197,7 +202,29 @@ CREATE TABLE feed_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
--- 8) 피드 댓글 (Feed Comment)
+-- 8) 피드 북마크 (Feed Bookmark)
+-- ------------------------------------------------------------
+CREATE TABLE feed_bookmark (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   feed_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_feed_bookmark_member (feed_id, member_id),
+   KEY idx_fb_member (member_id),
+   CONSTRAINT fk_fb_feed
+       FOREIGN KEY (feed_id)
+           REFERENCES feed(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_fb_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 9) 피드 댓글 (Feed Comment)
 -- ------------------------------------------------------------
 CREATE TABLE feed_comment (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -233,7 +260,7 @@ CREATE TABLE feed_comment (
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
--- 9) 팩 좋아요 (Pack Like)
+-- 10) 팩 좋아요 (Pack Like)
 -- ------------------------------------------------------------
 CREATE TABLE pack_like (
    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -254,6 +281,8 @@ CREATE TABLE pack_like (
            ON UPDATE CASCADE
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 11) 팩 북마크 (Pack Bookmark)
 -- ------------------------------------------------------------
 CREATE TABLE pack_bookmark (
    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
