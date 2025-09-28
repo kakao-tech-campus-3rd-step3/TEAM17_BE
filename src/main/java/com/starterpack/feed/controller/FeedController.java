@@ -1,6 +1,7 @@
 package com.starterpack.feed.controller;
 
 import com.starterpack.auth.login.Login;
+import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCommentAddRequestDto;
 import com.starterpack.feed.dto.FeedCommentResponseDto;
 import com.starterpack.feed.dto.FeedCommentUpdateRequestDto;
@@ -185,5 +186,14 @@ public class FeedController {
         return ResponseEntity.ok(responseDto);
     }
 
-
+    @PostMapping("/{feedId}/bookmark")
+    @Operation(summary = "사용자 피드 북마크 토글", description = "유저가 피드에 북마크를 추가하거나 취소합니다.")
+    @SecurityRequirement(name = "cookieAuth")
+    public ResponseEntity<FeedBookmarkResponseDto> toggleFeedBookmark(
+            @PathVariable Long feedId,
+            @Login Member member
+    ) {
+        FeedBookmarkResponseDto responseDto = feedService.toggleFeedBookmark(feedId, member);
+        return ResponseEntity.ok(responseDto);
+    }
 }

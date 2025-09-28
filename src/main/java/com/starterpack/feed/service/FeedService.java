@@ -4,13 +4,16 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.dto.ProductTagRequestDto;
 import com.starterpack.feed.entity.Feed;
+import com.starterpack.feed.entity.FeedBookmark;
 import com.starterpack.feed.entity.FeedLike;
 import com.starterpack.feed.entity.FeedProduct;
+import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
@@ -33,6 +36,7 @@ public class FeedService {
     private final ProductRepository productRepository;
     private final FeedLikeRepository feedLikeRepository;
     private final EntityManager entityManager;
+    private final FeedBookmarkRepository feedBookmarkRepository;
 
     @Transactional
     public Feed addFeed(
@@ -179,5 +183,22 @@ public class FeedService {
     private Feed getFeedById(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
+    }
+
+    @Transactional
+    public FeedBookmarkResponseDto toggleFeedBookmark(Long feedId, Member member) {
+        Feed feed = getFeedById(feedId);
+
+        boolean exists = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+
+        if (exists) {
+            feedBookmarkRepository.deleteByFeedAndMember(feed, member);
+            feedRepository.decrementBookmarkCount(feedId);
+        } else {
+            feedBookmarkRepository.save(new FeedBookmark(feed, member));
+            feedRepository.incrementBookmarkCount(feedId);
+        }
+
+        return FeedBookmarkResponseDto.of(!exists);
     }
 }

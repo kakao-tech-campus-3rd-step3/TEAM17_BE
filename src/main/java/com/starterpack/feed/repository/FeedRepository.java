@@ -37,4 +37,12 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Feed> findAll(Specification<Feed> spec, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount + 1 WHERE f.id = :feedId")
+    void incrementBookmarkCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount - 1 WHERE f.id = :feedId")
+    void decrementBookmarkCount(@Param("feedId") Long id);
 }
