@@ -72,9 +72,13 @@ public class AuthService {
             throw new BusinessException(ErrorCode.LOGIN_FAILED);
         }
 
-        // 모든 검증 통과 -> JWT 토큰 생성
-        String token = jwtTokenUtil.createToken(member.getEmail(), member.getRole());
+        // 모든 검증 통과 -> JWT 액세스, 리프레쉬 토큰 생성
+        String accessToken = jwtTokenUtil.createAccessToken(member.getEmail(), member.getRole());
+        String refreshToken = jwtTokenUtil.createRefreshToken(member.getEmail());
 
-        return new TokenResponseDto(token);
+        // 리프레쉬 토큰 DB에 저장
+        memberService.updateRefreshToken(member.getUserId(), refreshToken);
+
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 }
