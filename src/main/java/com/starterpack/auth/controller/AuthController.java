@@ -7,6 +7,8 @@ import com.starterpack.auth.service.AuthService;
 import com.starterpack.auth.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class AuthController {
      * 로컬 회원가입 API
      */
     @PostMapping("/signup")
+    @Operation(summary = "자체 회원가입", description = "이메일과 비밀번호를 사용하여 신규 회원을 등록합니다.")
     public ResponseEntity<MemberResponseDto> localSignUp(
             @Valid @RequestBody LocalSignUpRequestDto requestDto
     ) {
@@ -42,6 +45,7 @@ public class AuthController {
      * 로컬 로그인 API
      */
     @PostMapping("/login")
+    @Operation(summary = "로컬 로그인", description = "이메일과 비밀번호로 인증 후, Access/Refresh 토큰을 HttpOnly 쿠키로 발급합니다.")
     public ResponseEntity<Void> localLogin(
             @Valid @RequestBody LocalLoginRequestDto requestDto,
             HttpServletResponse  response
@@ -73,6 +77,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Access Token 재발급", description = "유효한 Refresh Token 쿠키를 사용하여 새로운 Access Token을 발급받습니다.")
     public ResponseEntity<Void> reissueAccessToken(
             @CookieValue("refresh_token") String refreshToken,
             HttpServletResponse response
@@ -93,6 +98,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "서버의 Refresh Token을 무효화하고 클라이언트의 토큰 쿠키를 삭제합니다.")
+    @SecurityRequirement(name = "CookieAuthentication")
     public ResponseEntity<Void> logout(
             @Login Member member,
             HttpServletResponse response
