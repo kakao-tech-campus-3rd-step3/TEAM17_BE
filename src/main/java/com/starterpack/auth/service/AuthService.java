@@ -81,4 +81,23 @@ public class AuthService {
 
         return new TokenResponseDto(accessToken, refreshToken);
     }
+
+    // 액세스 토큰 재발급 로직
+    @Transactional
+    public String reissueAccessToken(String refreshToken) {
+        // 리프레쉬 토큰 검증
+        if (!jwtTokenUtil.validateToken(refreshToken)) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String email = jwtTokenUtil.getEmail(refreshToken);
+        Member member = memberService.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        if (!refreshToken.equals(member.getRefreshToken())) {
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_MISMATCH);
+        }
+
+        return jwtTokenUtil.createAccessToken(member.getEmail(), member.getRole());
+    }
 }
