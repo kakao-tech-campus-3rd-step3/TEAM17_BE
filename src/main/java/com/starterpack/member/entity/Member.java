@@ -59,7 +59,6 @@ public class Member {
     @Column(name = "refresh_token", length = 500)
     private String refreshToken;
 
-
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

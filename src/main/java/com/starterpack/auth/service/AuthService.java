@@ -8,6 +8,8 @@ import com.starterpack.auth.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
+import com.starterpack.member.entity.Member.Provider;
+import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +23,7 @@ public class AuthService {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
+    private final MemberRepository memberRepository;
 
     /**
      * AuthService의 책임:
@@ -40,7 +43,7 @@ public class AuthService {
                 .email(requestDto.email())
                 .encodedPassword(encodedPassword)
                 .name(requestDto.name())
-                .provider(Member.Provider.EMAIL)
+                .provider(Provider.EMAIL)
                 .providerId(null)
                 .birthDate(requestDto.birthDate())
                 .gender(requestDto.gender())
@@ -55,7 +58,7 @@ public class AuthService {
      * @param requestDto 이메일, 비밀번호
      * @return JWT 토큰 정보
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public TokenResponseDto localLogin(LocalLoginRequestDto requestDto) {
 
         // 이메일로 회원 조회
@@ -63,7 +66,7 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
         // 계정 유형 확인 (자체 로그인 유저만 허용)
-        if (member.getProvider() != Member.Provider.EMAIL) {
+        if (member.getProvider() != Provider.EMAIL) {
             throw new BusinessException(ErrorCode.INVALID_LOGIN_PROVIDER);
         }
 
@@ -99,5 +102,11 @@ public class AuthService {
         }
 
         return jwtTokenUtil.createAccessToken(member.getEmail(), member.getRole());
+    }
+
+    @Transactional
+    public void logout(Member member) {
+        // DB에서 리프레쉬 토큰을 삭제하여 무효화
+        memberService.updateRefreshToken(member.getUserId(), null);
     }
 }
