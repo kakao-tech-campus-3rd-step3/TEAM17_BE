@@ -37,6 +37,7 @@ CREATE TABLE member (
   birth_date         DATE,
   gender             VARCHAR(10),
   phone_number       VARCHAR(20),
+  refresh_token      VARCHAR(500),
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT chk_member_role CHECK (role IN ('USER','ADMIN')), -- (선택) Enum 보호

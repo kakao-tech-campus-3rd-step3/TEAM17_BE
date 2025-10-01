@@ -152,4 +152,12 @@ public class MemberService {
         Member updatedMember = memberRepository.save(member);
         return new MemberResponseDto(updatedMember);
     }
+
+    // 리프레쉬 토큰 업데이트
+    @Transactional
+    public void updateRefreshToken(Long memberId, String refreshToken) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+        member.updateRefreshToken(refreshToken);
+    }
 }

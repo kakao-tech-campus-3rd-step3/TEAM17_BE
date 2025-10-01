@@ -54,6 +54,12 @@ public enum ErrorCode {
     INVALID_AUTH_PRINCIPAL(HttpStatus.UNAUTHORIZED,
             "S004",
             "인증 정보가 올바르지 않습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+            "S005",
+            "유효하지 않은 리프레시 토큰입니다."),
+    REFRESH_TOKEN_MISMATCH(HttpStatus.UNAUTHORIZED,
+            "S006",
+            "리프레시 토큰이 일치하지 않습니다."),
     //Login
     INVALID_LOGIN_PROVIDER(HttpStatus.BAD_REQUEST,
             "L001",
