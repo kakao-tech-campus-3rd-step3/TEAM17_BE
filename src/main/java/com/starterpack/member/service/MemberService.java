@@ -4,7 +4,6 @@ import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.entity.Member;
-import com.starterpack.member.entity.Role;
 import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +22,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NicknameService nicknameService;
 
     // 모든 멤버 조회
     public List<Member> findAllMembers() {
@@ -63,18 +62,21 @@ public class MemberService {
             throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATED);
         }
 
+        // 랜덤 닉네임 생성
+        String randomNickname = nicknameService.generateUniqueNickname();
+
         // 일반 사용자 생성
         Member member = Member.createUser(
                 request.email(),
                 request.encodedPassword(),
                 request.name(),
+                randomNickname,
                 request.provider(),
-                request.providerId()
+                request.providerId(),
+                request.birthDate(),
+                request.gender(),
+                request.phoneNumber()
         );
-
-        if (request.profileImageUrl() != null) {
-            member.setProfileImageUrl(request.profileImageUrl());
-        }
 
         return new MemberResponseDto(memberRepository.save(member));
     }
@@ -106,6 +108,17 @@ public class MemberService {
             member.setProfileImageUrl(requestDto.profileImageUrl());
         }
 
+        if (requestDto.birthDate() != null) {
+            member.setBirthDate(requestDto.birthDate());
+        }
+
+        if (requestDto.gender() != null) {
+            member.setGender(requestDto.gender());
+        }
+
+        if (requestDto.phoneNumber() != null) {
+            member.setPhoneNumber(requestDto.phoneNumber());
+        }
         Member updatedMember = memberRepository.save(member);
         return new MemberResponseDto(updatedMember);
     }

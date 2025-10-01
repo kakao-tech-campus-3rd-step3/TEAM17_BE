@@ -1,0 +1,55 @@
+package com.starterpack.linkpolicy.service;
+
+import com.starterpack.exception.BusinessException;
+import com.starterpack.exception.ErrorCode;
+import com.starterpack.linkpolicy.dto.LinkPolicyCreateRequestDto;
+import com.starterpack.linkpolicy.dto.LinkPolicyDeleteRequestDto;
+import com.starterpack.linkpolicy.dto.LinkPolicyResponseDto;
+import com.starterpack.linkpolicy.model.LinkPolicy;
+import com.starterpack.linkpolicy.repository.LinkPolicyRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class LinkPolicyService {
+
+    private final LinkPolicyRepository repository;
+
+    public LinkPolicyService(LinkPolicyRepository repository) {
+        this.repository = repository;
+    }
+
+    public LinkPolicyResponseDto add(LinkPolicyCreateRequestDto request) {
+        LinkPolicy saved = repository.save(new LinkPolicy(request.pattern(), request.description(), java.time.LocalDateTime.now()));
+        return LinkPolicyResponseDto.from(saved);
+    }
+
+    public boolean delete(Long id) {
+        if (!repository.existsById(id)) {
+            return false;
+        }
+        repository.deleteById(id);
+        return true;
+    }
+
+    public List<LinkPolicyResponseDto> getAll() {
+        return repository.findAll().stream()
+                .map(LinkPolicyResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    // 컨트롤러에서 사용하는 메서드들
+    public LinkPolicyResponseDto create(LinkPolicyCreateRequestDto request) {
+        return add(request);
+    }
+
+    public void delete(LinkPolicyDeleteRequestDto request) {
+        if (!delete(request.id())) {
+            throw new BusinessException(ErrorCode.LINK_POLICY_NOT_FOUND);
+        }
+    }
+}
+
+

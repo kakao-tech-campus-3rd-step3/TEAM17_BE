@@ -12,6 +12,7 @@ public record PackDetailResponseDto(
         String description,
         String src,
         Integer like,
+        Integer bookmarkCount,
         List<PartDto> parts
 ) {
     public static PackDetailResponseDto from(Pack pack) {
@@ -29,6 +30,7 @@ public record PackDetailResponseDto(
                 pack.getDescription(),
                 pack.getSrc(),
                 pack.getPackLikeCount(),
+                pack.getPackBookmarkCount(),
                 parts
         );
     }

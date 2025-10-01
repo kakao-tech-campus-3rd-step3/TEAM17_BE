@@ -86,12 +86,7 @@ public class AdminMemberController {
     @GetMapping("/form")
     public String createForm(Model model) {
         if (!model.containsAttribute("memberDto")) {
-            model.addAttribute("memberDto", new MemberUpdateRequestDto(
-                    null, // email
-                    null, // password
-                    null, // name
-                    null  // profileImageUrl
-            ));
+            model.addAttribute("memberDto", MemberUpdateRequestDto.EMPTY_FORM);
         }
         model.addAttribute("memberId", null); // 템플릿의 isEdit 분기용
         return "admin/members/form";
@@ -125,7 +120,10 @@ public class AdminMemberController {
                 req.name(),
                 Member.Provider.EMAIL, // 관리자 생성은 EMAIL(또는 LOCAL)로 고정
                 null, // providerId 없음
-                req.profileImageUrl()
+                req.profileImageUrl(),
+                req.birthDate(),
+                req.gender(),
+                req.phoneNumber()
         );
 
         MemberResponseDto created = memberService.addMember(createDto);
@@ -151,7 +149,10 @@ public class AdminMemberController {
                 member.email(),
                 null, // 비밀번호 미입력 시 변경 없음
                 member.name(),
-                member.profileImageUrl()
+                member.profileImageUrl(),
+                member.birthDate(),
+                member.gender(),
+                member.phoneNumber()
         );
 
         model.addAttribute("memberDto", updateDto);
