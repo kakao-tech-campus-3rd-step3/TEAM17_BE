@@ -43,6 +43,7 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     @Query("UPDATE Pack p SET p.packLikeCount = p.packLikeCount - 1 WHERE p.id = :id")
     void decrementLikeCount(@Param("id") Long id);
 
+    @Modifying
     @Query("UPDATE Pack p SET p.packBookmarkCount = p.packBookmarkCount + 1 WHERE p.id = :id")
     void incrementPackBookmarkCount(@Param("id") Long id);
 
