@@ -1,9 +1,11 @@
 package com.starterpack.exception;
 
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,8 +19,22 @@ public class GlobalExceptionHandler {
 
         log.warn("Business Exception Occurred: {}", errorCode);
 
-        final ErrorResponse errorResponse = new ErrorResponse(errorCode.getErrorCode(),
-                e.getMessage());
+        final ErrorResponse errorResponse = ErrorResponse.of(errorCode);
+
+        return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        final ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+
+        List<FieldErrorDetail> fieldErrors = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldErrorDetail::from)
+                .toList();
+
+        log.warn("MethodArgumentNotValidException Occurred: {}", errorCode);
+
+        final ErrorResponse errorResponse = ErrorResponse.of(errorCode, fieldErrors);
 
         return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());
     }
