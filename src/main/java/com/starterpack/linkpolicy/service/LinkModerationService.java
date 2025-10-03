@@ -2,6 +2,7 @@ package com.starterpack.linkpolicy.service;
 
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -30,22 +31,15 @@ public class LinkModerationService {
             "lnkd.in", "cutt.ly", "soo.gd", "v.gd", "shrtco.de", "shorturl.at"
     );
 
-    // URL 내 HTML/스크립트 관련 위험 문자 제거
+    // URL 내 HTML/스크립트 관련 위험 문자 제거 - Apache Commons Text 사용
     public String sanitizeHtmlFromUrl(String url) {
-        if (url == null) {
+        if (url == null || url.isBlank()) {
             return null;
         }
-        // HTML 태그 제거 - <로 시작해서 >로 끝나는 모든 태그 제거
-        String sanitized = url;
-        while (sanitized.contains("<") && sanitized.contains(">")) {
-            int start = sanitized.indexOf("<");
-            int end = sanitized.indexOf(">", start);
-            if (start != -1 && end != -1) {
-                sanitized = sanitized.substring(0, start) + sanitized.substring(end + 1);
-            } else {
-                break;
-            }
-        }
+        
+        // Apache Commons Text를 사용하여 HTML 엔티티 디코딩 및 태그 제거
+        String sanitized = StringEscapeUtils.unescapeHtml4(url)
+                .replaceAll("<[^>]*>", ""); // HTML 태그 제거
         
         // 추가 위험 문자 제거
         sanitized = sanitized
@@ -92,7 +86,7 @@ public class LinkModerationService {
         String normalizedUrl = url.toLowerCase().trim();
         
         for (String pattern : blacklistPatterns) {
-            if (normalizedUrl.contains(pattern.toLowerCase())) {
+            if (pattern != null && !pattern.isBlank() && normalizedUrl.contains(pattern.toLowerCase())) {
                 return true;
             }
         }
@@ -130,7 +124,7 @@ public class LinkModerationService {
     }
 
     private String extractHost(String url) {
-        if (url == null) return null;
+        if (url == null || url.isBlank()) return null;
         try {
             URI uri = new URI(url.trim());
             return uri.getHost();

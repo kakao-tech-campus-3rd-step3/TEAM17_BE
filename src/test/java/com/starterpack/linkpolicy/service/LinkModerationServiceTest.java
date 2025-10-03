@@ -37,7 +37,7 @@ class LinkModerationServiceTest {
     }
 
     @Test
-    @DisplayName("HTML 태그 제거 테스트")
+    @DisplayName("HTML 태그 제거 테스트 - Apache Commons Text 적용")
     void sanitizeHtmlFromUrl() {
         // Given
         String urlWithHtml = "https://example.com<script>alert('xss')</script>";
@@ -250,6 +250,41 @@ class LinkModerationServiceTest {
 
         // Then
         assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("Apache Commons Text - HTML 엔티티 디코딩 테스트")
+    void sanitizeHtmlFromUrl_HtmlEntities() {
+        // Given
+        String urlWithHtmlEntities = "https://example.com&amp;param=value&lt;script&gt;";
+
+        // When
+        String result = linkModerationService.sanitizeHtmlFromUrl(urlWithHtmlEntities);
+
+        // Then - HTML 엔티티 디코딩 후 스크립트 태그가 제거됨
+        assertThat(result).isEqualTo("https://example.com&param=value");
+    }
+
+    @Test
+    @DisplayName("Apache Commons Text - null/blank 처리 테스트")
+    void sanitizeHtmlFromUrl_NullAndBlank() {
+        // Given & When & Then
+        assertThat(linkModerationService.sanitizeHtmlFromUrl(null)).isNull();
+        assertThat(linkModerationService.sanitizeHtmlFromUrl("")).isNull();
+        assertThat(linkModerationService.sanitizeHtmlFromUrl("   ")).isNull();
+    }
+
+    @Test
+    @DisplayName("Apache Commons Text - 공백 처리 테스트")
+    void validateUrlByRegex_SpacesHandling() {
+        // Given
+        String urlWithSpaces = "  https://example.com  ";
+
+        // When
+        boolean result = linkModerationService.validateUrlByRegex(urlWithSpaces);
+
+        // Then
+        assertThat(result).isTrue();
     }
 
     @Test
