@@ -8,18 +8,14 @@ import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
-import com.starterpack.feed.dto.ProductTagRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedBookmark;
 import com.starterpack.feed.entity.FeedLike;
-import com.starterpack.feed.entity.FeedProduct;
 import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
 import com.starterpack.member.entity.Member;
-import com.starterpack.product.entity.Product;
-import com.starterpack.product.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FeedService {
     private final FeedRepository feedRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductRepository productRepository;
     private final FeedLikeRepository feedLikeRepository;
     private final EntityManager entityManager;
     private final FeedBookmarkRepository feedBookmarkRepository;
@@ -48,13 +43,8 @@ public class FeedService {
                 .user(member)
                 .description(createDto.description())
                 .imageUrl(createDto.imageUrl())
-                .feedType(createDto.feedType())
                 .category(category)
                 .build();
-
-        if (createDto.isInfoFeedWithProducts()) {
-            createDto.products().forEach(productDto -> addProductToFeed(feed, productDto));
-        }
 
         return feedRepository.save(feed);
     }
@@ -130,27 +120,6 @@ public class FeedService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
-    private void addProductToFeed(Feed feed, ProductTagRequestDto productDto) {
-        Product product = new Product(
-                productDto.name(),
-                "link",
-                "productType",
-                productDto.imageUrl(),
-                0,
-                feed.getCategory()
-        );
-
-        productRepository.save(product);
-
-        FeedProduct feedProduct = FeedProduct.builder()
-                .feed(feed)
-                .product(product)
-                .description(productDto.description())
-                .build();
-
-        feed.getFeedProducts().add(feedProduct);
-    }
-
     @Transactional(readOnly = true)
     public Page<Feed> searchFeeds(String keyword, Long categoryId, Pageable pageable) {
         Specification<Feed> spec = FeedSpecification.hasKeyword(keyword)
@@ -176,7 +145,7 @@ public class FeedService {
     }
 
     private Feed getFeedByIdWithDetails(Long feedId) {
-        return feedRepository.findByIdWithDetails(feedId)
+        return feedRepository.findWithDetailsById(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
     }
 
