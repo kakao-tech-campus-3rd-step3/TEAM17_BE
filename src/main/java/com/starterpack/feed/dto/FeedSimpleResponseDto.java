@@ -1,7 +1,6 @@
 package com.starterpack.feed.dto;
 
 import com.starterpack.feed.entity.Feed;
-import com.starterpack.feed.entity.FeedType;
 import java.time.LocalDateTime;
 
 public record FeedSimpleResponseDto(
@@ -9,7 +8,6 @@ public record FeedSimpleResponseDto(
         AuthorResponseDto author,
         String description,
         String imageUrl,
-        FeedType feedType,
         CategoryResponseDto category,
         Long likeCount,
         Long bookmarkCount,
@@ -25,7 +23,6 @@ public record FeedSimpleResponseDto(
                 AuthorResponseDto.from(feed.getUser()),
                 feed.getDescription(),
                 feed.getImageUrl(),
-                feed.getFeedType(),
                 category,
                 feed.getLikeCount(),
                 feed.getBookmarkCount(),
