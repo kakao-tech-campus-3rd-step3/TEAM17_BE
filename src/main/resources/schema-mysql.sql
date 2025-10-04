@@ -132,8 +132,7 @@ CREATE TABLE feed (
     id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     user_id     BIGINT UNSIGNED     NOT NULL,
     description TEXT                NULL, -- 피드 설명
-    image_url   VARCHAR(500)        NOT NULL, -- 일상: 일상사진, 정보공유: 대표사진
-    feed_type   ENUM('INFO', 'DAILY') NOT NULL,
+    image_url   VARCHAR(500)        NOT NULL,
     category_id BIGINT UNSIGNED     NULL,
     like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
     bookmark_count  BIGINT UNSIGNED    NOT NULL DEFAULT 0,
@@ -156,28 +155,6 @@ CREATE TABLE feed (
             ON DELETE SET NULL,
     CONSTRAINT chk_feed_like_count CHECK (like_count >= 0),
     CONSTRAINT chk_feed_bookmark_count CHECK (bookmark_count >= 0)
-) ENGINE=InnoDB;
--- ------------------------------------------------------------
--- 6) 피드, 상품 연관 테이블
--- ------------------------------------------------------------
-CREATE TABLE feed_product (
-      id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      feed_id     BIGINT UNSIGNED NOT NULL,
-      product_id  BIGINT UNSIGNED NOT NULL,
-      description TEXT   NULL, -- 상품 설명인데 추후 Product에 옮길지 결정할 예정
-      PRIMARY KEY (id),
-      UNIQUE KEY uk_feed_product (feed_id, product_id),
-      KEY idx_fp_product (product_id),
-      CONSTRAINT fk_fp_feed
-          FOREIGN KEY (feed_id)
-              REFERENCES feed(id)
-              ON UPDATE CASCADE
-              ON DELETE CASCADE,
-      CONSTRAINT fk_fp_product
-          FOREIGN KEY (product_id)
-              REFERENCES product(id)
-              ON UPDATE CASCADE
-              ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 7) 피드 좋아요 (Feed Like)
