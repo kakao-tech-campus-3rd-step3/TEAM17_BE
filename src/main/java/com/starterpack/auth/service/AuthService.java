@@ -1,8 +1,11 @@
 package com.starterpack.auth.service;
 
+import com.starterpack.auth.dto.KakaoTokenResponseDto;
+import com.starterpack.auth.dto.KakaoUserInfoResponseDto;
 import com.starterpack.auth.dto.LocalLoginRequestDto;
 import com.starterpack.auth.dto.TokenResponseDto;
 import com.starterpack.auth.jwt.JwtTokenUtil;
+import com.starterpack.auth.kakao.KakaoApiClient;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.auth.dto.LocalSignUpRequestDto;
 import com.starterpack.member.dto.MemberCreationRequestDto;
@@ -24,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
+    private final KakaoApiClient kakaoApiClient;
 
     /**
      * AuthService의 책임:
@@ -108,5 +112,35 @@ public class AuthService {
     public void logout(Member member) {
         // DB에서 리프레쉬 토큰을 삭제하여 무효화
         memberService.updateRefreshToken(member.getUserId(), null);
+    }
+
+    /**
+     * 카카오 로그인 및 자동 회원가입
+     */
+    @Transactional
+    public TokenResponseDto kakaoLogin(String code) {
+        //  Kakao Api Client를 통해 액세스 토큰 및 사용자 정보 조회
+        KakaoTokenResponseDto kakaoToken = kakaoApiClient.fetchAccessToken(code);
+        KakaoUserInfoResponseDto userInfo = kakaoApiClient.fetchUserInfo(kakaoToken.accessToken());
+
+        // userInfo를 토대로 MemberCreationRequestDto 생성
+        MemberCreationRequestDto creationRequest = MemberCreationRequestDto.fromKakao(userInfo);
+
+        // providerId와 provider를 통해 존재하는 멤버인지 확인하고 없으면 새롭게 생성
+        Member member = memberRepository.findByProviderAndProviderId(Provider.KAKAO, creationRequest.providerId())
+                .orElseGet(() -> {
+                    MemberResponseDto responseDto = memberService.addMember(creationRequest);
+                    
+                    return memberRepository.findById(responseDto.userId())
+                            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND, "신규 회원 생성 후 조회에 실패했습니다."));
+                });
+
+        // 토큰 발급 및 리프레쉬 토큰 저장
+        String accessToken = jwtTokenUtil.createAccessToken(member.getEmail(), member.getRole());
+        String refreshToken = jwtTokenUtil.createRefreshToken(member.getEmail());
+
+        member.updateRefreshToken(refreshToken);
+
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 }
