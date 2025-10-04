@@ -34,7 +34,6 @@
             <dl class="kv">
               <dt>ID</dt><dd th:text="${feed.id}">1</dd>
               <dt>작성자</dt><dd th:text="${feed.user.email}">user@example.com</dd>
-              <dt>피드 타입</dt><dd th:text="${feed.feedType}">INFO</dd>
               <dt>카테고리</dt><dd th:text="${feed.category != null ? feed.category.name : '미지정'}">카테고리</dd>
               <dt>좋아요 수</dt><dd th:text="${feed.likeCount}">0</dd>
               <dt>작성일</dt><dd th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</dd>
@@ -56,20 +55,6 @@
         <div class="content-box">
           <div class="meta-info">설명</div>
           <div th:text="${feed.description}" class="description-content">Feed 설명이 여기에 표시됩니다.</div>
-        </div>
-
-        <!-- 연관 상품 -->
-        <div th:if="${feed.feedType.toString() == 'INFO' and !#lists.isEmpty(feed.feedProducts)}"
-             class="product-section">
-          <div class="meta-info">연관 상품</div>
-          <div th:each="feedProduct : ${feed.feedProducts}" class="product-list-item">
-            <img class="product-thumbnail" th:src="${feedProduct.product.src}" />
-            <div>
-              <div class="product-id-info">상품 ID: <span th:text="${feedProduct.product.id}"></span></div>
-              <div class="product-info-name" th:text="${feedProduct.product.name}">상품명</div>
-              <div class="product-info-desc" th:text="${feedProduct.description}">FeedProduct 설명</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
