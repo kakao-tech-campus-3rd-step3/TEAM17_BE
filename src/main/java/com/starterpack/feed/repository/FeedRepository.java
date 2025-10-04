@@ -15,13 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificationExecutor<Feed> {
-    @Query("SELECT f FROM Feed f " +
-            "JOIN FETCH f.user " +
-            "LEFT JOIN FETCH f.category " +
-            "LEFT JOIN FETCH f.feedProducts fp " +
-            "LEFT JOIN FETCH fp.product " +
-            "WHERE f.id = :id")
-    Optional<Feed> findByIdWithDetails(@Param("id") Long id);
+    @EntityGraph(attributePaths = {"user", "category"})
+    Optional<Feed> findWithDetailsById(@Param("id") Long id);
 
     @Override
     @EntityGraph(attributePaths = {"user", "category"})
