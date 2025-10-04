@@ -23,7 +23,22 @@ spring:
       mode: always
       schema-locations: classpath:schema-h2.sql
       data-locations: classpath:data-h2.sql
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+        provider:
+          kakao:
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+
 jwt:
   secret-key: ${JWT_SECRET_KEY}
-  expiration-ms: ${JWT_EXPIRATION_MS}
+  access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
   issuer: starterpack
+
+
