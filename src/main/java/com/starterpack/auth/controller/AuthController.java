@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -128,5 +130,34 @@ public class AuthController {
                 .path("/")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    @GetMapping("/kakao/callback")
+    @Operation(summary = "[내부 API] 카카오 로그인 콜백", description = "카카오 서버로부터 인가 코드를 받아 로그인/회원가입을 처리하는 내부용 API")
+    public void kakaoCallback(@RequestParam String code, HttpServletResponse response) throws IOException {
+
+        TokenResponseDto tokenResponseDto = authService.kakaoLogin(code);
+
+        ResponseCookie accessTokenCookie = ResponseCookie.from("jwt_token", tokenResponseDto.accessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 30) // 30분
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+
+        ResponseCookie refreshTokenCookie  = ResponseCookie.from("refresh_token", tokenResponseDto.refreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 60 * 24 * 14) // 14일
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+        response.sendRedirect("https://team-17-fe-theta.vercel.app");
     }
 }

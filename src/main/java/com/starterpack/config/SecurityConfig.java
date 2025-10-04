@@ -27,7 +27,7 @@ import org.springframework.http.HttpMethod;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenUtil  jwtTokenUtil;
+    private final JwtTokenUtil jwtTokenUtil;
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
@@ -45,7 +45,8 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/admin/login",
             "/error",
-            "/h2-console/**"
+            "/h2-console/**",
+            "/api/auth/kakao/callback"
     };
 
     @Bean
