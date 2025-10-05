@@ -9,7 +9,6 @@ import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedLikerResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
-import com.starterpack.feed.dto.FeedSimpleResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedCommentService;
@@ -71,11 +70,11 @@ public class FeedController {
 
     @GetMapping
     @Operation(summary = "피드 목록 조회", description = "모든 피드 목록을 페이지로 조회합니다.")
-    public ResponseEntity<Page<FeedSimpleResponseDto>> getAllFeeds(
+    public ResponseEntity<Page<FeedResponseDto>> getAllFeeds(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Feed> feedPage = feedService.getAllFeeds(pageable);
 
-        Page<FeedSimpleResponseDto> responseDto = feedPage.map(FeedSimpleResponseDto::from);
+        Page<FeedResponseDto> responseDto = feedPage.map(FeedResponseDto::from);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

@@ -28,36 +28,6 @@
             <label for="imageUrl">이미지 URL</label>
             <input type="url" id="imageUrl" name="imageUrl" th:value="${isEdit ? feed.imageUrl : ''}" placeholder="https://example.com/image.jpg"/>
           </div>
-
-          <div class="field" th:unless="${isEdit}">
-            <label for="feedType">피드 타입</label>
-            <select id="feedType" name="feedType" onchange="toggleProductSection()">
-              <option value="">-- 피드 타입 선택 --</option>
-              <option th:each="type : ${feedTypes}" th:value="${type}" th:text="${type}"></option>
-            </select>
-          </div>
-
-          <div id="productSection" style="display:none;" th:unless="${isEdit}">
-            <div class="field">
-              <label>연관 상품</label>
-              <div id="productList"></div>
-              <button type="button" onclick="addProduct()" class="btn btn-ghost add-product-btn">상품 추가</button>
-            </div>
-          </div>
-
-          <div th:if="${isEdit and feed.feedType.toString() == 'INFO' and !#lists.isEmpty(feed.feedProducts)}">
-            <div class="field">
-              <label>연관 상품 (수정 불가)</label>
-              <div th:each="feedProduct : ${feed.feedProducts}" class="readonly-product">
-                <div class="readonly-product-name" th:text="${feedProduct.product.name}">상품명</div>
-                <div class="readonly-product-desc" th:text="${feedProduct.description}">상품 설명</div>
-              </div>
-              <div class="info-text">
-                💡 상품 정보 수정은 별도 상품 관리에서 진행해주세요.
-              </div>
-            </div>
-          </div>
-
           <div class="field">
             <label for="categoryId">카테고리</label>
             <select id="categoryId" name="categoryId">
@@ -101,68 +71,5 @@
     </div>
   </div>
 </template>
-
-
-<script th:if="${!isEdit}">
-  function toggleProductSection() {
-    const feedType = document.getElementById('feedType').value;
-    const productSection = document.getElementById('productSection');
-
-    if (feedType === 'INFO') {
-      productSection.style.display = 'block';
-    } else {
-      productSection.style.display = 'none';
-      document.getElementById('productList').innerHTML = '';
-    }
-  }
-
-  function addProduct() {
-    const template = document.getElementById('product-item-template');
-    const productList = document.getElementById('productList');
-    const productIndex = productList.children.length;
-
-    const clone = template.content.cloneNode(true);
-
-    const title = clone.querySelector('.product-title');
-    const nameInput = clone.querySelector('.product-name');
-    const imageUrlInput = clone.querySelector('.product-image-url');
-    const descriptionTextarea = clone.querySelector('.product-description');
-
-    title.textContent = `상품 ${productIndex + 1}`;
-    nameInput.name = `products[${productIndex}].name`;
-    imageUrlInput.name = `products[${productIndex}].imageUrl`;
-    descriptionTextarea.name = `products[${productIndex}].description`;
-
-    productList.appendChild(clone);
-  }
-
-  function reindexProducts() {
-    const productItems = document.querySelectorAll('.product-item');
-    productItems.forEach((item, index) => {
-      const title = item.querySelector('.product-title');
-      title.textContent = `상품 ${index + 1}`;
-
-      const nameInput = item.querySelector('.product-name');
-      const imageInput = item.querySelector('.product-image-url');
-      const descTextarea = item.querySelector('.product-description');
-
-      if (nameInput) nameInput.name = `products[${index}].name`;
-      if (imageInput) imageInput.name = `products[${index}].imageUrl`;
-      if (descTextarea) descTextarea.name = `products[${index}].description`;
-    });
-  }
-
-  const productListContainer = document.getElementById('productList');
-  productListContainer.addEventListener('click', function (event) {
-    if (event.target.classList.contains('remove-product-btn')) {
-      const productItem = event.target.closest('.product-item');
-      if (productItem) {
-        productItem.remove();
-        reindexProducts();
-      }
-    }
-  });
-</script>
-
 </body>
 </html>
