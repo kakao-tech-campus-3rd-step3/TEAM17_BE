@@ -160,7 +160,7 @@ CREATE TABLE feed (
   user_id     BIGINT       NOT NULL,
   description CLOB,
   image_url   VARCHAR(500) NOT NULL,
-  category_id BIGINT,
+  category_id BIGINT       NOT NULL,
   like_count  BIGINT       NOT NULL DEFAULT 0,
   bookmark_count  BIGINT   NOT NULL DEFAULT 0,
   comment_count BIGINT     NOT NULL DEFAULT 0,
@@ -192,7 +192,7 @@ ALTER TABLE feed
     ADD CONSTRAINT fk_feed_category
         FOREIGN KEY (category_id)
             REFERENCES category(id)
-            ON DELETE SET NULL
+            ON DELETE RESTRICT
             ON UPDATE CASCADE;
 ------------------------------------------------------------
 -- 8) 피드 좋아요

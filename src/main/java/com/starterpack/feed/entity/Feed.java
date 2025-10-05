@@ -42,7 +42,7 @@ public class Feed {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column(name = "like_count", nullable = false)

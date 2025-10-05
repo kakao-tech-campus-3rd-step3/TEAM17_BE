@@ -133,9 +133,10 @@ CREATE TABLE feed (
     user_id     BIGINT UNSIGNED     NOT NULL,
     description TEXT                NULL, -- 피드 설명
     image_url   VARCHAR(500)        NOT NULL,
-    category_id BIGINT UNSIGNED     NULL,
+    category_id BIGINT UNSIGNED     NOT NULL,
     like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
     bookmark_count  BIGINT UNSIGNED    NOT NULL DEFAULT 0,
+    comment_count BIGINT   UNSIGNED    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -143,6 +144,7 @@ CREATE TABLE feed (
     KEY idx_feed_category (category_id),
     KEY idx_feed_like_count (like_count),
     KEY idx_feed_bookmark_count (bookmark_count),
+    KEY idx_feed_comment_count (comment_count),
     CONSTRAINT fk_feed_user
         FOREIGN KEY (user_id)
             REFERENCES member(user_id)
@@ -152,9 +154,7 @@ CREATE TABLE feed (
         FOREIGN KEY (category_id)
             REFERENCES category(id)
             ON UPDATE CASCADE
-            ON DELETE SET NULL,
-    CONSTRAINT chk_feed_like_count CHECK (like_count >= 0),
-    CONSTRAINT chk_feed_bookmark_count CHECK (bookmark_count >= 0)
+            ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 7) 피드 좋아요 (Feed Like)
