@@ -48,6 +48,9 @@ public class FeedCommentService {
         }
 
         FeedComment saved = feedCommentRepository.save(comment);
+
+        feedRepository.incrementCommentCount(feedId);
+
         return FeedCommentResponseDto.from(saved, /*isMine*/ true);
     }
 
@@ -74,7 +77,12 @@ public class FeedCommentService {
         if (!isOwner(member, comment) && !isAdmin(member)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
+
+        Long feedId = comment.getFeed().getId();
+
         comment.softDelete(isAdmin(member) ? DeletedBy.ADMIN : DeletedBy.USER);
+
+        feedRepository.decrementCommentCount(feedId);
     }
 
     private static boolean isOwner(Member member, FeedComment comment) {

@@ -40,4 +40,12 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     @Modifying
     @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount - 1 WHERE f.id = :feedId")
     void decrementBookmarkCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.commentCount = f.commentCount + 1 WHERE f.id = :feedId")
+    void incrementCommentCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.commentCount = f.commentCount - 1 WHERE f.id = :feedId")
+    void decrementCommentCount(@Param("feedId") Long id);
 }
