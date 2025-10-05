@@ -51,6 +51,9 @@ public class Feed {
     @Column(name = "bookmark_count", nullable = false)
     private long bookmarkCount = 0;
 
+    @Column(name = "comment_count", nullable = false)
+    private long commentCount = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

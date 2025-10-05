@@ -163,6 +163,7 @@ CREATE TABLE feed (
   category_id BIGINT,
   like_count  BIGINT       NOT NULL DEFAULT 0,
   bookmark_count  BIGINT   NOT NULL DEFAULT 0,
+  comment_count BIGINT     NOT NULL DEFAULT 0,
   created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -172,10 +173,12 @@ CREATE INDEX idx_feed_user     ON feed(user_id);
 CREATE INDEX idx_feed_category ON feed(category_id);
 CREATE INDEX idx_feed_like_count     ON feed(like_count);
 CREATE INDEX idx_feed_bookmark_count ON feed(bookmark_count);
+CREATE INDEX idx_feed_comment_count ON feed(comment_count);
 
 -- 제약 조건 추가
 ALTER TABLE feed ADD CONSTRAINT chk_feed_like_count CHECK (like_count >= 0);
 ALTER TABLE feed ADD CONSTRAINT chk_feed_bookmark_count CHECK (bookmark_count >= 0);
+ALTER TABLE feed ADD CONSTRAINT chk_feed_comment_count CHECK (comment_count >= 0);
 
 -- 외래 키(FK) 추가
 ALTER TABLE feed
