@@ -57,7 +57,7 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public Feed getFeed(Long feedId) {
+    public Feed getFeedByAdmin(Long feedId) {
         return getFeedByIdWithDetails(feedId);
     }
 
