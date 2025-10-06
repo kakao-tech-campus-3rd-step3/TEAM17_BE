@@ -57,6 +57,23 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
+    public FeedSimpleResponseDto getFeed(
+            Member member,
+            Long feedId
+    ) {
+        Feed feed = getFeedByIdWithDetails(feedId);
+
+        if (member == null) {
+            return FeedSimpleResponseDto.forAnonymous(feed);
+        } else {
+            boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
+            boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+
+            return FeedSimpleResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
+        }
+    }
+
+    @Transactional(readOnly = true)
     public Feed getFeedByAdmin(Long feedId) {
         return getFeedByIdWithDetails(feedId);
     }
@@ -202,7 +219,7 @@ public class FeedService {
         return feeds.stream()
                 .collect(Collectors.toMap(
                         Feed::getId,
-                        feed -> new FeedStatusResponseDto(
+                        feed -> FeedStatusResponseDto.of(
                                 likedFeedIds.contains(feed.getId()),
                                 bookmarkedFeedIds.contains(feed.getId())
                         )

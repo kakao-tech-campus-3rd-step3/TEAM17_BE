@@ -61,10 +61,11 @@ public class FeedController {
 
     @GetMapping("/{feedId}")
     @Operation(summary = "피드 상세 조회", description = "특정 피드의 상세 정보를 조회합니다.")
-    public ResponseEntity<FeedResponseDto> getFeed (@PathVariable Long feedId) {
-        Feed feed = feedService.getFeedByAdmin(feedId);
-
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+    public ResponseEntity<FeedSimpleResponseDto> getFeed (
+            @PathVariable Long feedId,
+            @Login(required = false) Member member
+    ) {
+        FeedSimpleResponseDto responseDto = feedService.getFeed(member, feedId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
