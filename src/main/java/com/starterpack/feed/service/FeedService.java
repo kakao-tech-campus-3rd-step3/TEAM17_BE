@@ -7,6 +7,8 @@ import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
+import com.starterpack.feed.dto.FeedSimpleResponseDto;
+import com.starterpack.feed.dto.FeedStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedBookmark;
@@ -17,6 +19,11 @@ import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,8 +62,19 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Feed> getAllFeeds(Pageable pageable) {
-        return feedRepository.findAll(pageable);
+    public Page<FeedSimpleResponseDto> getAllFeeds(Member member, Pageable pageable) {
+        Page<Feed> feedPage = feedRepository.findAll(pageable);
+
+        if (member == null) { //비로그인
+            return feedPage.map(FeedSimpleResponseDto::forAnonymous);
+        } else { //로그인
+            Map<Long, FeedStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
+
+            return feedPage.map(feed -> {
+                FeedStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), FeedStatusResponseDto.anonymousStatus());
+                return FeedSimpleResponseDto.forMember(feed, statusDto);
+            });
+        }
     }
 
     @Transactional
@@ -169,5 +187,25 @@ public class FeedService {
         }
 
         return FeedBookmarkResponseDto.of(!exists);
+    }
+
+    private Map<Long, FeedStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
+        if (feeds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> feedIds = feeds.stream().map(Feed::getId).toList();
+
+        Set<Long> likedFeedIds = feedLikeRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+        Set<Long> bookmarkedFeedIds = feedBookmarkRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+
+        return feeds.stream()
+                .collect(Collectors.toMap(
+                        Feed::getId,
+                        feed -> new FeedStatusResponseDto(
+                                likedFeedIds.contains(feed.getId()),
+                                bookmarkedFeedIds.contains(feed.getId())
+                        )
+                ));
     }
 }
