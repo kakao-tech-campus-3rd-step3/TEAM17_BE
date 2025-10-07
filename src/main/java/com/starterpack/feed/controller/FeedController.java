@@ -9,7 +9,6 @@ import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedLikerResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
-import com.starterpack.feed.dto.FeedSimpleResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedCommentService;
@@ -54,29 +53,29 @@ public class FeedController {
     ) {
         Feed feed = feedService.addFeed(member, feedCreateDto);
 
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+        FeedResponseDto responseDto = FeedResponseDto.forAnonymous(feed);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{feedId}")
     @Operation(summary = "피드 상세 조회", description = "특정 피드의 상세 정보를 조회합니다.")
-    public ResponseEntity<FeedSimpleResponseDto> getFeed (
+    public ResponseEntity<FeedResponseDto> getFeed (
             @PathVariable Long feedId,
             @Login(required = false) Member member
     ) {
-        FeedSimpleResponseDto responseDto = feedService.getFeed(member, feedId);
+        FeedResponseDto responseDto = feedService.getFeed(member, feedId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping
     @Operation(summary = "피드 목록 조회", description = "모든 피드 목록을 페이지로 조회합니다.")
-    public ResponseEntity<Page<FeedSimpleResponseDto>> getAllFeeds(
+    public ResponseEntity<Page<FeedResponseDto>> getAllFeeds(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @Login(required = false) Member member
     ) {
-        Page<FeedSimpleResponseDto> responseDto = feedService.getAllFeeds(member, pageable);
+        Page<FeedResponseDto> responseDto = feedService.getAllFeeds(member, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -91,7 +90,7 @@ public class FeedController {
     ) {
         Feed feed = feedService.updateFeed(feedId, member, feedUpdateRequestDto);
 
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+        FeedResponseDto responseDto = feedService.getFeed(member, feedId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }

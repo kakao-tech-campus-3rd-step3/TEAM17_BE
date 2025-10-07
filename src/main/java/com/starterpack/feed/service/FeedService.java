@@ -7,7 +7,7 @@ import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
-import com.starterpack.feed.dto.FeedSimpleResponseDto;
+import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.feed.dto.FeedStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
@@ -57,19 +57,19 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public FeedSimpleResponseDto getFeed(
+    public FeedResponseDto getFeed(
             Member member,
             Long feedId
     ) {
         Feed feed = getFeedByIdWithDetails(feedId);
 
         if (member == null) {
-            return FeedSimpleResponseDto.forAnonymous(feed);
+            return FeedResponseDto.forAnonymous(feed);
         } else {
             boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
             boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
 
-            return FeedSimpleResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
+            return FeedResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
         }
     }
 
@@ -79,17 +79,17 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public Page<FeedSimpleResponseDto> getAllFeeds(Member member, Pageable pageable) {
+    public Page<FeedResponseDto> getAllFeeds(Member member, Pageable pageable) {
         Page<Feed> feedPage = feedRepository.findAll(pageable);
 
         if (member == null) { //비로그인
-            return feedPage.map(FeedSimpleResponseDto::forAnonymous);
+            return feedPage.map(FeedResponseDto::forAnonymous);
         } else { //로그인
             Map<Long, FeedStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
 
             return feedPage.map(feed -> {
                 FeedStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), FeedStatusResponseDto.anonymousStatus());
-                return FeedSimpleResponseDto.forMember(feed, statusDto);
+                return FeedResponseDto.forMember(feed, statusDto);
             });
         }
     }
