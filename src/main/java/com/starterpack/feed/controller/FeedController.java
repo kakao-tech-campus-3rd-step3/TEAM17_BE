@@ -88,7 +88,7 @@ public class FeedController {
             @Login Member member,
             @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
     ) {
-        Feed feed = feedService.updateFeed(feedId, member, feedUpdateRequestDto);
+        feedService.updateFeed(feedId, member, feedUpdateRequestDto);
 
         FeedResponseDto responseDto = feedService.getFeed(member, feedId);
 

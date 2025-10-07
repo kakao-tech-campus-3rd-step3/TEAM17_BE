@@ -95,7 +95,7 @@ public class FeedService {
     }
 
     @Transactional
-    public Feed updateFeed(
+    public void updateFeed(
             Long feedId,
             Member member,
             FeedUpdateRequestDto updateDto
@@ -110,7 +110,6 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
-        return feed;
     }
 
     @Transactional
