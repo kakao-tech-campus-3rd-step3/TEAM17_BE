@@ -9,7 +9,6 @@ public record FeedCommentResponseDto(
         Long parentId,
         String content,
         boolean isDeleted,
-        String deletedBy,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         AuthorInfo author,
@@ -17,12 +16,12 @@ public record FeedCommentResponseDto(
 ) {
     public static FeedCommentResponseDto from(FeedComment entity, boolean isMine) {
         Member author = entity.getAuthor();
+
         return new FeedCommentResponseDto(
                 entity.getId(),
                 entity.getParent() != null ? entity.getParent().getId() : null,
-                entity.isDeleted() ? null : entity.getContent(),
+                entity.isDeleted() ? null : entity.getContent(), // 삭제된 댓글은 content 숨김
                 entity.isDeleted(),
-                entity.getDeletedBy() != null ? entity.getDeletedBy().name() : null,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 new AuthorInfo(

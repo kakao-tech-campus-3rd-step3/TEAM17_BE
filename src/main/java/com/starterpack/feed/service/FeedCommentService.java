@@ -7,7 +7,6 @@ import com.starterpack.feed.dto.FeedCommentResponseDto;
 import com.starterpack.feed.dto.FeedCommentUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedComment;
-import com.starterpack.feed.entity.FeedComment.DeletedBy;
 import com.starterpack.feed.repository.FeedCommentRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.member.entity.Member;
@@ -77,10 +76,11 @@ public class FeedCommentService {
         if (!isOwner(member, comment) && !isAdmin(member)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
-
+        if (comment.isDeleted()) {
+            return;
+        }
         Long feedId = comment.getFeed().getId();
-
-        comment.softDelete(isAdmin(member) ? DeletedBy.ADMIN : DeletedBy.USER);
+        comment.softDelete();
 
         feedRepository.decrementCommentCount(feedId);
     }
@@ -96,6 +96,8 @@ public class FeedCommentService {
             return false;
         }
     }
+
+
     @Transactional
     public FeedCommentResponseDto updateComment(Long commentId, Member member, FeedCommentUpdateRequestDto requestDto) {
         FeedComment comment = feedCommentRepository.findById(commentId)
