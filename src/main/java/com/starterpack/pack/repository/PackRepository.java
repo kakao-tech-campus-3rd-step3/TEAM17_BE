@@ -50,4 +50,12 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     @Modifying
     @Query("UPDATE Pack p SET p.packBookmarkCount = p.packBookmarkCount - 1 WHERE p.id = :id")
     void decrementPackBookmarkCount(@Param("id") Long id);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE Pack p SET p.packCommentCount = p.packCommentCount + 1 WHERE p.id = :id")
+    void incrementCommentCount(@Param("id") Long id);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE Pack p SET p.packCommentCount = CASE WHEN p.packCommentCount > 0 THEN p.packCommentCount - 1 ELSE 0 END WHERE p.id = :id")
+    void decrementCommentCount(@Param("id") Long id);
 }
