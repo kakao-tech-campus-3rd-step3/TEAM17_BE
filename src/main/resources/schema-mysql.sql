@@ -211,7 +211,6 @@ CREATE TABLE feed_comment (
   parent_id   BIGINT UNSIGNED NULL,
   depth       INT             NOT NULL DEFAULT 0,
   is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
-  deleted_by  ENUM('USER', 'ADMIN') NULL,
   deleted_at  TIMESTAMP       NULL,
   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -279,6 +278,35 @@ CREATE TABLE pack_bookmark (
            REFERENCES member(user_id)
            ON UPDATE CASCADE
            ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 12) 팩 댓글 (Pack Comment)
+-- ------------------------------------------------------------
+CREATE TABLE pack_comment (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pack_id     BIGINT UNSIGNED NOT NULL,
+  author_id   BIGINT UNSIGNED NOT NULL,
+  content     VARCHAR(500)    NOT NULL,
+  parent_id   BIGINT UNSIGNED NULL,
+  depth       INT             NOT NULL DEFAULT 0,
+  is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
+  deleted_at  TIMESTAMP       NULL,
+  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_pack_comment_pack (pack_id),
+  KEY idx_pack_comment_author (author_id),
+  KEY idx_pack_comment_parent (parent_id),
+  KEY idx_pack_comment_created_at (created_at),
+  CONSTRAINT fk_pack_comment_pack
+    FOREIGN KEY (pack_id) REFERENCES pack(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_author
+    FOREIGN KEY (author_id) REFERENCES member(user_id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_parent
+    FOREIGN KEY (parent_id) REFERENCES pack_comment(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
