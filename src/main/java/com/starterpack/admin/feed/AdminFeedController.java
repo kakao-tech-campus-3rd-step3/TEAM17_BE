@@ -85,14 +85,14 @@ public class AdminFeedController {
 
     @GetMapping("/{id}")
     public String showFeed(@PathVariable Long id, Model model) {
-        Feed feed = feedService.getFeed(id);
+        Feed feed = feedService.getFeedByAdmin(id);
         model.addAttribute("feed", feed);
         return "admin/feed/detail";
     }
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
-        Feed feed = feedService.getFeed(id);
+        Feed feed = feedService.getFeedByAdmin(id);
         List<Category> categories = categoryService.findAllCategories();
 
         model.addAttribute("feed", feed);

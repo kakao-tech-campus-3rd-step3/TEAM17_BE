@@ -7,6 +7,8 @@ import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
+import com.starterpack.feed.dto.FeedResponseDto;
+import com.starterpack.feed.dto.FeedStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedBookmark;
@@ -17,6 +19,11 @@ import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,17 +57,45 @@ public class FeedService {
     }
 
     @Transactional(readOnly = true)
-    public Feed getFeed(Long feedId) {
+    public FeedResponseDto getFeed(
+            Member member,
+            Long feedId
+    ) {
+        Feed feed = getFeedByIdWithDetails(feedId);
+
+        if (member == null) {
+            return FeedResponseDto.forAnonymous(feed);
+        } else {
+            boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
+            boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+
+            return FeedResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Feed getFeedByAdmin(Long feedId) {
         return getFeedByIdWithDetails(feedId);
     }
 
     @Transactional(readOnly = true)
-    public Page<Feed> getAllFeeds(Pageable pageable) {
-        return feedRepository.findAll(pageable);
+    public Page<FeedResponseDto> getAllFeeds(Member member, Pageable pageable) {
+        Page<Feed> feedPage = feedRepository.findAll(pageable);
+
+        if (member == null) { //비로그인
+            return feedPage.map(FeedResponseDto::forAnonymous);
+        } else { //로그인
+            Map<Long, FeedStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
+
+            return feedPage.map(feed -> {
+                FeedStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), FeedStatusResponseDto.anonymousStatus());
+                return FeedResponseDto.forMember(feed, statusDto);
+            });
+        }
     }
 
     @Transactional
-    public Feed updateFeed(
+    public void updateFeed(
             Long feedId,
             Member member,
             FeedUpdateRequestDto updateDto
@@ -75,7 +110,6 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
-        return feed;
     }
 
     @Transactional
@@ -169,5 +203,25 @@ public class FeedService {
         }
 
         return FeedBookmarkResponseDto.of(!exists);
+    }
+
+    private Map<Long, FeedStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
+        if (feeds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> feedIds = feeds.stream().map(Feed::getId).toList();
+
+        Set<Long> likedFeedIds = feedLikeRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+        Set<Long> bookmarkedFeedIds = feedBookmarkRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+
+        return feeds.stream()
+                .collect(Collectors.toMap(
+                        Feed::getId,
+                        feed -> FeedStatusResponseDto.of(
+                                likedFeedIds.contains(feed.getId()),
+                                bookmarkedFeedIds.contains(feed.getId())
+                        )
+                ));
     }
 }

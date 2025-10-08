@@ -42,18 +42,23 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Login loginAnnotation = parameter.getParameterAnnotation(Login.class);
 
-        if (authentication == null) {
-            throw new BusinessException(ErrorCode.INVALID_AUTH_PRINCIPAL);
+        if (isUnauthenticated(authentication)) {
+            if (loginAnnotation == null || loginAnnotation.required()) {
+                throw new BusinessException(ErrorCode.INVALID_AUTH_PRINCIPAL);
+            } else {
+                return null;
+            }
         }
 
-        Object principalObj = authentication.getPrincipal();
-        if (!(principalObj instanceof CustomMemberDetails principal)) {
-            throw new BusinessException(ErrorCode.INVALID_AUTH_PRINCIPAL);
-        }
+        CustomMemberDetails principal = (CustomMemberDetails) authentication.getPrincipal();
 
         return principal.getMember();
     }
 
-
+    private boolean isUnauthenticated(Authentication authentication) {
+        return authentication == null || !(authentication.getPrincipal() instanceof CustomMemberDetails);
     }
+
+}
