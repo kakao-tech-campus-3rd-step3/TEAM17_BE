@@ -17,6 +17,6 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     void bulkIncrementUsageCount(@Param("ids") Set<Long> ids);
 
     @Modifying
-    @Query("UPDATE Hashtag h SET h.usageCount = h.usageCount - 1 WHERE h.id IN :ids")
+    @Query("UPDATE Hashtag h SET h.usageCount = h.usageCount - 1 WHERE h.id IN :ids AND h.usageCount > 0")
     void bulkDecrementUsageCount(@Param("ids") Set<Long> ids);
 }
