@@ -3,6 +3,7 @@ package com.starterpack.s3.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -19,7 +20,7 @@ public class S3Service {
     private String bucket;
 
     // Presigned URL을 생성 후 반환하는 메소드
-    public String generatePresignedUrl(String dirName, String fileName) {
+    public String generatePresignedUrl(String dirName, String fileName, String contentType) {
         // 파일 이름이 겹치지 않도록 고유한 경로 생성
         String fullPath = dirName + "/" + UUID.randomUUID() + "_" + fileName;
 
@@ -27,6 +28,8 @@ public class S3Service {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(fullPath)
+                .contentType(contentType)
+                .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
 
         // Presigned URL 생성 요청 준비

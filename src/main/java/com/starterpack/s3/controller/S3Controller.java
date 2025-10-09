@@ -35,8 +35,11 @@ public class S3Controller {
             @RequestBody PresignedUrlRequestDto requestDto,
             @RequestParam String dirName
     ) {
-        // Presigned URL 생성
-        String presignedUrl = s3Service.generatePresignedUrl(dirName, requestDto.fileName());
+        String presignedUrl = s3Service.generatePresignedUrl(
+                dirName,
+                requestDto.fileName(),
+                requestDto.contentType()
+        );
 
         // DB에 저장될 파일 URL은 Presigned URL에서 쿼리스트링(?) 부분을 제외한 순수 URL
         String fileUrl = presignedUrl.substring(0, presignedUrl.indexOf("?"));
