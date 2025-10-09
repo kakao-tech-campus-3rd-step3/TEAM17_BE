@@ -41,4 +41,14 @@ jwt:
   refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
   issuer: starterpack
 
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    region:
+      static: ${AWS_REGION}
+
 
