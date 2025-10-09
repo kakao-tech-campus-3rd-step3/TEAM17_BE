@@ -17,9 +17,12 @@ import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
+import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +42,7 @@ public class FeedService {
     private final FeedLikeRepository feedLikeRepository;
     private final EntityManager entityManager;
     private final FeedBookmarkRepository feedBookmarkRepository;
+    private final HashtagService hashtagService;
 
     @Transactional
     public Feed addFeed(
@@ -46,12 +50,17 @@ public class FeedService {
             FeedCreateRequestDto createDto) {
         Category category = getCategory(createDto.categoryId());
 
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(createDto.hashtagNames());
+
         Feed feed = Feed.builder()
                 .user(member)
                 .description(createDto.description())
                 .imageUrl(createDto.imageUrl())
                 .category(category)
+                .hashtags(hashtags)
                 .build();
+
+        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
 
         return feedRepository.save(feed);
     }
@@ -110,6 +119,12 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(updateDto.hashtagNames());
+
+        Feed.HashtagUpdateResult result = feed.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
     }
 
     @Transactional
@@ -117,6 +132,9 @@ public class FeedService {
         Feed feed = getFeedByIdWithDetails(feedId);
 
         feed.validateOwner(member);
+
+        List<Hashtag> hashtags = feed.getHashtags();
+        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
 
         feedRepository.delete(feed);
     }
