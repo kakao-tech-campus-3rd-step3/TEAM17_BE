@@ -8,7 +8,7 @@ import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
-import com.starterpack.feed.dto.FeedStatusResponseDto;
+import com.starterpack.feed.dto.InteractionStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedBookmark;
@@ -78,7 +78,7 @@ public class FeedService {
             boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
             boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
 
-            return FeedResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
+            return FeedResponseDto.forMember(feed, InteractionStatusResponseDto.of(isLiked, isBookmarked));
         }
     }
 
@@ -94,10 +94,10 @@ public class FeedService {
         if (member == null) { //비로그인
             return feedPage.map(FeedResponseDto::forAnonymous);
         } else { //로그인
-            Map<Long, FeedStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
+            Map<Long, InteractionStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
 
             return feedPage.map(feed -> {
-                FeedStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), FeedStatusResponseDto.anonymousStatus());
+                InteractionStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), InteractionStatusResponseDto.anonymousStatus());
                 return FeedResponseDto.forMember(feed, statusDto);
             });
         }
@@ -223,7 +223,7 @@ public class FeedService {
         return FeedBookmarkResponseDto.of(!exists);
     }
 
-    private Map<Long, FeedStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
+    private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
         if (feeds.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -236,7 +236,7 @@ public class FeedService {
         return feeds.stream()
                 .collect(Collectors.toMap(
                         Feed::getId,
-                        feed -> FeedStatusResponseDto.of(
+                        feed -> InteractionStatusResponseDto.of(
                                 likedFeedIds.contains(feed.getId()),
                                 bookmarkedFeedIds.contains(feed.getId())
                         )
