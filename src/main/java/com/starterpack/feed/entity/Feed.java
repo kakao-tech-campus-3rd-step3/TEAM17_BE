@@ -44,7 +44,7 @@ public class Feed {
     @JoinColumn(name = "user_id", nullable = false)
     private Member user;
 
-    @Lob
+    @Column(length = 2000)
     private String description;
 
     @Column(name = "image_url", length = 500, nullable = false)

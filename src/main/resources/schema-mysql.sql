@@ -131,7 +131,7 @@ CREATE TABLE pack_product (
 CREATE TABLE feed (
     id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     user_id     BIGINT UNSIGNED     NOT NULL,
-    description TEXT                NULL, -- 피드 설명
+    description VARCHAR(2000)       NOT NULL,
     image_url   VARCHAR(500)        NOT NULL,
     category_id BIGINT UNSIGNED     NOT NULL,
     like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
