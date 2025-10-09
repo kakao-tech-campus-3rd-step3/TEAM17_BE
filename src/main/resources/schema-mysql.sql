@@ -281,6 +281,37 @@ CREATE TABLE pack_bookmark (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 12) 해시태그 (Hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE hashtag (
+     id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+     name        VARCHAR(100)    NOT NULL,
+     usage_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
+     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (id),
+     UNIQUE KEY uk_hashtag_name (name)
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 13) 피드-해시태그 연관테이블 (feed_hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE feed_hashtag (
+      id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      feed_id    BIGINT UNSIGNED NOT NULL,
+      hashtag_id BIGINT UNSIGNED NOT NULL,
+      tag_order  INT             NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uk_feed_hashtag (feed_id, hashtag_id),
+      KEY idx_fh_hashtag (hashtag_id),
+      CONSTRAINT fk_fh_feed
+          FOREIGN KEY (feed_id) REFERENCES feed(id)
+              ON UPDATE CASCADE ON DELETE CASCADE,
+      CONSTRAINT fk_fh_hashtag
+          FOREIGN KEY (hashtag_id) REFERENCES hashtag(id)
+              ON UPDATE CASCADE ON DELETE CASCADE,
+      CONSTRAINT chk_fh_tag_order CHECK (tag_order >= 0)
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
