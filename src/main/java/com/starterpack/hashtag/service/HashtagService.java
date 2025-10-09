@@ -37,6 +37,28 @@ public class HashtagService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void incrementUsageCount(Set<Hashtag> hashtags) {
+        if (hashtags == null || hashtags.isEmpty()) return;
+
+        Set<Long> ids = hashtags.stream()
+                .map(Hashtag::getId)
+                .collect(Collectors.toSet());
+
+        hashtagRepository.bulkIncrementUsageCount(ids);
+    }
+
+    @Transactional
+    public void decrementUsageCount(Set<Hashtag> hashtags) {
+        if (hashtags == null || hashtags.isEmpty()) return;
+
+        Set<Long> ids = hashtags.stream()
+                .map(Hashtag::getId)
+                .collect(Collectors.toSet());
+
+        hashtagRepository.bulkDecrementUsageCount(ids);
+    }
+
     private List<String> normalizeHashtagNames(List<String> hashtagNames) {
         return hashtagNames.stream()
                 .map(String::toLowerCase)
