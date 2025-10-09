@@ -1,4 +1,4 @@
-package com.starterpack.common.service;
+package com.starterpack.s3.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
