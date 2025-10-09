@@ -1,7 +1,9 @@
 package com.starterpack.feed.dto;
 
 import com.starterpack.feed.entity.Feed;
+import com.starterpack.hashtag.dto.HashtagResponseDto;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record FeedResponseDto(
         Long feedId,
@@ -9,6 +11,7 @@ public record FeedResponseDto(
         String description,
         String imageUrl,
         CategoryResponseDto category,
+        List<HashtagResponseDto> hashtags,
         Long likeCount,
         Long bookmarkCount,
         Long commentCount,
@@ -22,6 +25,9 @@ public record FeedResponseDto(
                 feed.getDescription(),
                 feed.getImageUrl(),
                 CategoryResponseDto.from(feed.getCategory()),
+                feed.getHashtags().stream()
+                                .map(HashtagResponseDto::from)
+                                .toList(),
                 feed.getLikeCount(),
                 feed.getBookmarkCount(),
                 feed.getCommentCount(),
