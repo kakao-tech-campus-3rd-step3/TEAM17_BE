@@ -49,7 +49,7 @@ public class FeedController {
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<FeedResponseDto> addFeed (
             @Login Member member,
-            @RequestBody FeedCreateRequestDto feedCreateDto
+            @Valid @RequestBody FeedCreateRequestDto feedCreateDto
     ) {
         Feed feed = feedService.addFeed(member, feedCreateDto);
 
@@ -86,7 +86,7 @@ public class FeedController {
     public ResponseEntity<FeedResponseDto> updateFeed(
             @PathVariable Long feedId,
             @Login Member member,
-            @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
+            @Valid @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
     ) {
         feedService.updateFeed(feedId, member, feedUpdateRequestDto);
 
