@@ -102,6 +102,8 @@
                 <a th:href="@{/admin/feeds/{id}/edit(id=${feed.id})}" class="btn-like-link">수정</a>
                 <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post"
                       onsubmit="return confirm('정말로 삭제하시겠습니까?');" class="inline-form">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
                   <button type="submit" class="btn-like-link">삭제</button>
                 </form>
               </td>

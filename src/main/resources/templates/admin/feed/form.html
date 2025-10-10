@@ -19,6 +19,8 @@
 
       <div class="card">
         <form method="post" th:attr="action=${isEdit ? '/admin/feeds/' + feedId + '/edit' : '/admin/feeds/add'}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
           <div class="field">
             <label for="description">설명</label>
             <textarea id="description" name="description" placeholder="Feed 설명을 입력하세요">[[${isEdit ? feed.description : ''}]]</textarea>

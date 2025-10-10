@@ -27,7 +27,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     void incrementLikeCount(@Param("feedId") Long id);
 
     @Modifying
-    @Query("UPDATE Feed f SET f.likeCount = f.likeCount - 1 WHERE f.id = :feedId")
+    @Query("UPDATE Feed f SET f.likeCount = f.likeCount - 1 WHERE f.id = :feedId AND f.likeCount > 0")
     void decrementLikeCount(@Param("feedId") Long id);
 
     @EntityGraph(attributePaths = {"user", "category"})
@@ -38,7 +38,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     void incrementBookmarkCount(@Param("feedId") Long id);
 
     @Modifying
-    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount - 1 WHERE f.id = :feedId")
+    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount - 1 WHERE f.id = :feedId AND f.bookmarkCount > 0")
     void decrementBookmarkCount(@Param("feedId") Long id);
 
     @Modifying
@@ -46,6 +46,6 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     void incrementCommentCount(@Param("feedId") Long id);
 
     @Modifying
-    @Query("UPDATE Feed f SET f.commentCount = f.commentCount - 1 WHERE f.id = :feedId")
+    @Query("UPDATE Feed f SET f.commentCount = f.commentCount - 1 WHERE f.id = :feedId AND f.commentCount > 0")
     void decrementCommentCount(@Param("feedId") Long id);
 }
