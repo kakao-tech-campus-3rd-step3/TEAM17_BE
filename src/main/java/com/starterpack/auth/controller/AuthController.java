@@ -167,19 +167,9 @@ public class AuthController {
     // CSRF 토큰을 쿠키로 발급
     @GetMapping("/csrf-token")
     @Operation(summary = "CSRF 토큰 발급", description = "클라이언트에게 CSRF 토큰을 쿠키로 발급합니다.")
-    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken, HttpServletResponse response) {
-        // CsrfToken을 파라미터로 받아서 토큰이 생성되도록 함
-        if (csrfToken != null) {
-            // 토큰이 로드되면 CookieCsrfTokenRepository가 자동으로 쿠키를 설정함
-            // 명시적으로 쿠키 설정 (setSecure(false)로 인해 HTTP에서도 작동)
-            ResponseCookie cookie = ResponseCookie.from("XSRF-TOKEN", csrfToken.getToken())
-                    .httpOnly(false)
-                    .secure(false)
-                    .path("/")
-                    .maxAge(3600)
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        }
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> getCsrfToken(CsrfToken csrfToken) {
+        // 토큰 값을 응답으로 반환해서 디버깅
+        String token = csrfToken.getToken();
+        return ResponseEntity.ok(token);
     }
 }
