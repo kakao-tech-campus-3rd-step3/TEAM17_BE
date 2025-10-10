@@ -13,10 +13,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
@@ -60,7 +63,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(60 * 30) // 30분
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
@@ -70,7 +73,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 14) // 14일
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
@@ -92,7 +95,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(60 * 30) // 30분
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
@@ -143,7 +146,7 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(60 * 30) // 30분
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
@@ -153,11 +156,17 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 14) // 14일
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         response.sendRedirect("https://team-17-fe-theta.vercel.app");
+    }
+
+    @GetMapping("/csrf-token")
+    @Operation(summary = "CSRF 토큰 발급", description = "클라이언트에게 CSRF 토큰을 쿠키로 발급합니다.")
+    public ResponseEntity<Void> getCsrfToken() {
+        return ResponseEntity.ok().build();
     }
 }

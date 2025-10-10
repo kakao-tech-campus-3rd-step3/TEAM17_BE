@@ -6,10 +6,12 @@ import com.starterpack.auth.jwt.JwtTokenFilter;
 import com.starterpack.auth.jwt.JwtTokenResolver;
 import com.starterpack.auth.jwt.JwtTokenUtil;
 import java.util.Arrays;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,8 +20,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -33,48 +37,57 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final JwtTokenResolver jwtTokenResolver;
 
-    private static final String[] PUBLIC_URLS = {
-            "/", // 루트 경로
+    private static final String[] API_PUBLIC_URLS = {
             "/api/auth/signup",
             "/api/auth/login",
             "/api/auth/refresh",
+            "/api/auth/kakao/callback",
+            "/api/auth/csrf-token"
+    };
+
+    private static final String[] COMMON_PUBLIC_URLS = {
+            "/",
+            "/error",
             "/actuator/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/v3/api-docs/**",
             "/v3/api-docs",
-            "/admin/login",
-            "/error",
-            "/h2-console/**",
-            "/api/auth/kakao/callback"
+            "/v3/api-docs/**"
     };
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/favicon.ico", "/.well-known/**");
+                .requestMatchers("/favicon.ico", "/.well-known/**", "/h2-console/**");
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public CsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        repository.setCookieName("XSRF-TOKEN");
+        repository.setHeaderName("x-xsrf-token"); // 소문자 헤더 사용
+        repository.setSecure(true); // HTTPS 환경에서만 쿠키 발급
+        repository.setCookiePath("/");
+        return repository;
+    }
 
-        // 세션을 사용하지 않으므로 STATELESS로 설정
-        http.sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        // CSRF 비활성화
-        http.csrf(csrf -> csrf.disable());
-
-        // 폼 로그인 및 HTTP Basic 인증 비활성화
-        http.formLogin(form -> form.disable());
-        http.httpBasic(basic -> basic.disable());
-
-        http.cors(Customizer.withDefaults());
-
-        // API 엔드포인트별 접근 권한 설정
-        http.authorizeHttpRequests(auth -> auth
-                        //.requestMatchers("/**").permitAll() // 개발 단계에선 이것만 주석 해제하고 아래는 주석 처리
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/**")
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 STATELESS
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(csrfTokenRepository())
+//                        .ignoringRequestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/kakao/callback", "/api/auth/csrf-token")
+//                )
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/debug/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/feeds", "/api/feeds/**", // feed 관련 GET 요청
                                 "/api/starterPack/packs", "/api/starterPack/packs/**", "/api/api/starterPack/categories/**", // starterpack 관련 GET 요청
@@ -82,24 +95,46 @@ public class SecurityConfig {
                                 "/api/categories", // 카테고리 조회 GET 요청
                                 "/api/feeds/*/likes",
                                 "/api/starterPack/packs/*/likes"
-                        ).permitAll() // products 관련 GET 요청
-                        .requestMatchers(PUBLIC_URLS).permitAll() // 배포 환경에선 아래 둘 주석 해제하기
+                        ).permitAll()
+                        .requestMatchers(API_PUBLIC_URLS).permitAll()
+                        .requestMatchers(COMMON_PUBLIC_URLS).permitAll()
                         .anyRequest().authenticated()
-        );
-
-        // 커스텀 필터 적용 (Spring Security의 기본 필터인 UsernamePasswordAuthenticationFilter 앞에 JwtTokenFilter 배치)
-        http.addFilterBefore(
-                new JwtTokenFilter(userDetailsService, jwtTokenUtil, Arrays.asList(PUBLIC_URLS), jwtTokenResolver),
-                UsernamePasswordAuthenticationFilter.class
-        );
-
-        //  인증/인가 관련 예외 처리 핸들러 등록
-        http.exceptionHandling(ex -> ex
-                .authenticationEntryPoint(customAuthenticationEntryPoint) // 인증 실패 시(401)
-                .accessDeniedHandler(customAccessDeniedHandler)           // 인가 실패 시(403)
-        );
-
+                )
+                .addFilterBefore(
+                        new JwtTokenFilter(userDetailsService, jwtTokenUtil,
+                                Stream.of(API_PUBLIC_URLS, COMMON_PUBLIC_URLS).flatMap(Stream::of).toList(),
+                                jwtTokenResolver),
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                );
         return http.build();
     }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/admin/**")
+                .csrf(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/login").permitAll()
+                        .anyRequest().hasRole("ADMIN")
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .addFilterBefore(
+                new JwtTokenFilter(userDetailsService, jwtTokenUtil, Arrays.asList(COMMON_PUBLIC_URLS), jwtTokenResolver),
+                UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                );
+        return http.build();
+    }
+
 
 }
