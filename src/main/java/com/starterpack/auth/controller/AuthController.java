@@ -164,9 +164,14 @@ public class AuthController {
         response.sendRedirect("https://team-17-fe-theta.vercel.app");
     }
 
+    // CSRF 토큰을 쿠키로 발급
     @GetMapping("/csrf-token")
     @Operation(summary = "CSRF 토큰 발급", description = "클라이언트에게 CSRF 토큰을 쿠키로 발급합니다.")
-    public ResponseEntity<Void> getCsrfToken() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<java.util.Map<String, String>> getCsrfToken(CsrfToken csrfToken) {
+        // 프론트에서 사용하기 쉽게 JSON 형태로 반환
+        return ResponseEntity.ok(java.util.Map.of(
+            "token", csrfToken.getToken(),
+            "headerName", "X-XSRF-TOKEN"
+        ));
     }
 }

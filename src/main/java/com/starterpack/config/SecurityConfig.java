@@ -66,8 +66,8 @@ public class SecurityConfig {
     public CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookieName("XSRF-TOKEN");
-        repository.setHeaderName("x-xsrf-token"); // 소문자 헤더 사용
-        repository.setSecure(true); // HTTPS 환경에서만 쿠키 발급
+        repository.setHeaderName("X-XSRF-TOKEN");
+        repository.setSecure(true); // HTTPS 전용
         repository.setCookiePath("/");
         return repository;
     }
@@ -78,11 +78,10 @@ public class SecurityConfig {
         http
                 .securityMatcher("/api/**")
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 STATELESS
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(csrfTokenRepository())
-//                        .ignoringRequestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/kakao/callback", "/api/auth/csrf-token")
-//                )
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfTokenRepository())
+                        .ignoringRequestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/kakao/callback")
+                )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .cors(Customizer.withDefaults())
