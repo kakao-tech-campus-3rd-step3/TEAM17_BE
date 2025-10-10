@@ -67,7 +67,7 @@ public class SecurityConfig {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         repository.setCookieName("XSRF-TOKEN");
         repository.setHeaderName("X-XSRF-TOKEN");
-        repository.setSecure(false); // 개발 환경(localhost) 테스트를 위해 false로 설정
+        repository.setSecure(true); // HTTPS 전용
         repository.setCookiePath("/");
         return repository;
     }
