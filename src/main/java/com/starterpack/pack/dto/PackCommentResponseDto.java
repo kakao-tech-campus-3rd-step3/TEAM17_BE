@@ -1,10 +1,11 @@
-package com.starterpack.feed.dto;
+package com.starterpack.pack.dto;
 
-import com.starterpack.feed.entity.FeedComment;
+import com.starterpack.feed.dto.FeedCommentResponseDto.AuthorInfo;
 import com.starterpack.member.entity.Member;
+import com.starterpack.pack.entity.PackComment;
 import java.time.LocalDateTime;
 
-public record FeedCommentResponseDto(
+public record PackCommentResponseDto(
         Long id,
         Long parentId,
         String content,
@@ -14,13 +15,13 @@ public record FeedCommentResponseDto(
         AuthorInfo author,
         boolean isMine
 ) {
-    public static FeedCommentResponseDto from(FeedComment entity, boolean isMine) {
+    public static PackCommentResponseDto from(PackComment entity, boolean isMine) {
         Member author = entity.getAuthor();
 
-        return new FeedCommentResponseDto(
+        return new PackCommentResponseDto(
                 entity.getId(),
                 entity.getParent() != null ? entity.getParent().getId() : null,
-                entity.isDeleted() ? null : entity.getContent(), // 삭제된 댓글은 content 숨김
+                entity.isDeleted() ? null : entity.getContent(),
                 entity.isDeleted(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
@@ -32,6 +33,4 @@ public record FeedCommentResponseDto(
                 isMine
         );
     }
-
-    public record AuthorInfo(Long id, String name, String profileImageUrl) {}
 }

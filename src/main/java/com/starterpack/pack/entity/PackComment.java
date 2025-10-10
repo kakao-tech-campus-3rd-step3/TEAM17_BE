@@ -1,4 +1,4 @@
-package com.starterpack.feed.entity;
+package com.starterpack.pack.entity;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.member.entity.Member;
@@ -11,22 +11,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "feed_comment")
+@Table(name = "pack_comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(access = AccessLevel.PRIVATE)
-public class FeedComment {
+public class PackComment {
 
-    public static final int MAX_DEPTH = 1; // 0: 루트 댓글, 1: 대댓글
+    public static final int MAX_DEPTH = 1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "feed_id", nullable = false)
-    private Feed feed;
+    @JoinColumn(name = "pack_id", nullable = false)
+    private Pack pack;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
@@ -37,11 +37,11 @@ public class FeedComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private FeedComment parent;
+    private PackComment parent;
 
     @OneToMany(mappedBy = "parent")
     @Builder.Default
-    private List<FeedComment> children = new ArrayList<>();
+    private List<PackComment> children = new ArrayList<>();
 
     @Column(name = "depth", nullable = false)
     private int depth;
@@ -60,11 +60,10 @@ public class FeedComment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-
-    public static FeedComment createRoot(Feed feed, Member author, String content) {
-        validateArgs(feed, author, content);
-        return FeedComment.builder()
-                .feed(feed)
+    public static PackComment createRoot(Pack pack, Member author, String content) {
+        validateArgs(pack, author, content);
+        return PackComment.builder()
+                .pack(pack)
                 .author(author)
                 .content(content)
                 .depth(0)
@@ -72,16 +71,17 @@ public class FeedComment {
                 .build();
     }
 
-    public static FeedComment createReply(Feed feed, Member author, String content, FeedComment parent) {
-        validateArgs(feed, author, content);
-        if (parent == null)
+    public static PackComment createReply(Pack pack, Member author, String content, PackComment parent) {
+        validateArgs(pack, author, content);
+        if (parent == null) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "parent is null for reply");
+        }
         int nextDepth = parent.depth + 1;
         if (nextDepth > MAX_DEPTH) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "대댓글은 최대 1단계까지만 허용합니다.");
         }
-        FeedComment reply = FeedComment.builder()
-                .feed(feed)
+        PackComment reply = PackComment.builder()
+                .pack(pack)
                 .author(author)
                 .content(content)
                 .parent(parent)
@@ -92,14 +92,15 @@ public class FeedComment {
         return reply;
     }
 
-    private static void validateArgs(Feed feed, Member author, String content) {
-        if (feed == null || author == null) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "feed/author must not be null");
+    private static void validateArgs(Pack pack, Member author, String content) {
+        if (pack == null || author == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "pack/author must not be null");
         }
         if (content == null || content.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content must not be blank");
         }
-        if (content.length() > 500) {
+        String trimmed = content.strip();
+        if (trimmed.length() > 500) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content length must be <= 500");
         }
     }
@@ -131,7 +132,6 @@ public class FeedComment {
         this.content = ""; // UI에서 "삭제된 댓글입니다" 식으로 표시
     }
 
-    /** 필요 시 복구 기능 유지 */
     public void restoreByAdmin(String restoredContent) {
         this.deleted = false;
         this.deletedAt = null;
