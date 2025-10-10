@@ -8,7 +8,7 @@ import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
-import com.starterpack.feed.dto.FeedStatusResponseDto;
+import com.starterpack.feed.dto.InteractionStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.entity.FeedBookmark;
@@ -17,9 +17,12 @@ import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
+import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +42,7 @@ public class FeedService {
     private final FeedLikeRepository feedLikeRepository;
     private final EntityManager entityManager;
     private final FeedBookmarkRepository feedBookmarkRepository;
+    private final HashtagService hashtagService;
 
     @Transactional
     public Feed addFeed(
@@ -46,12 +50,17 @@ public class FeedService {
             FeedCreateRequestDto createDto) {
         Category category = getCategory(createDto.categoryId());
 
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(createDto.hashtagNames());
+
         Feed feed = Feed.builder()
                 .user(member)
                 .description(createDto.description())
                 .imageUrl(createDto.imageUrl())
                 .category(category)
+                .hashtags(hashtags)
                 .build();
+
+        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
 
         return feedRepository.save(feed);
     }
@@ -69,7 +78,7 @@ public class FeedService {
             boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
             boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
 
-            return FeedResponseDto.forMember(feed, FeedStatusResponseDto.of(isLiked, isBookmarked));
+            return FeedResponseDto.forMember(feed, InteractionStatusResponseDto.of(isLiked, isBookmarked));
         }
     }
 
@@ -85,10 +94,10 @@ public class FeedService {
         if (member == null) { //비로그인
             return feedPage.map(FeedResponseDto::forAnonymous);
         } else { //로그인
-            Map<Long, FeedStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
+            Map<Long, InteractionStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
 
             return feedPage.map(feed -> {
-                FeedStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), FeedStatusResponseDto.anonymousStatus());
+                InteractionStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), InteractionStatusResponseDto.anonymousStatus());
                 return FeedResponseDto.forMember(feed, statusDto);
             });
         }
@@ -110,6 +119,12 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(updateDto.hashtagNames());
+
+        Feed.HashtagUpdateResult result = feed.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
     }
 
     @Transactional
@@ -117,6 +132,9 @@ public class FeedService {
         Feed feed = getFeedByIdWithDetails(feedId);
 
         feed.validateOwner(member);
+
+        List<Hashtag> hashtags = feed.getHashtags();
+        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
 
         feedRepository.delete(feed);
     }
@@ -205,7 +223,7 @@ public class FeedService {
         return FeedBookmarkResponseDto.of(!exists);
     }
 
-    private Map<Long, FeedStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
+    private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
         if (feeds.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -218,7 +236,7 @@ public class FeedService {
         return feeds.stream()
                 .collect(Collectors.toMap(
                         Feed::getId,
-                        feed -> FeedStatusResponseDto.of(
+                        feed -> InteractionStatusResponseDto.of(
                                 likedFeedIds.contains(feed.getId()),
                                 bookmarkedFeedIds.contains(feed.getId())
                         )

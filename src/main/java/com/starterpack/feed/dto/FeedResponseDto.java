@@ -1,7 +1,9 @@
 package com.starterpack.feed.dto;
 
 import com.starterpack.feed.entity.Feed;
+import com.starterpack.hashtag.dto.HashtagResponseDto;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record FeedResponseDto(
         Long feedId,
@@ -9,32 +11,32 @@ public record FeedResponseDto(
         String description,
         String imageUrl,
         CategoryResponseDto category,
-        Long likeCount,
-        Long bookmarkCount,
-        Long commentCount,
-        FeedStatusResponseDto feedStatus,
+        List<HashtagResponseDto> hashtags,
+        FeedStatsResponseDto stats,
+        InteractionStatusResponseDto interactionStatus,
         LocalDateTime createdAt
 ) {
-    public FeedResponseDto(Feed feed, FeedStatusResponseDto feedStatus) {
+    public FeedResponseDto(Feed feed, InteractionStatusResponseDto interactionStatus) {
         this(
                 feed.getId(),
                 AuthorResponseDto.from(feed.getUser()),
                 feed.getDescription(),
                 feed.getImageUrl(),
                 CategoryResponseDto.from(feed.getCategory()),
-                feed.getLikeCount(),
-                feed.getBookmarkCount(),
-                feed.getCommentCount(),
-                feedStatus,
+                feed.getHashtags().stream()
+                                .map(HashtagResponseDto::from)
+                                .toList(),
+                FeedStatsResponseDto.from(feed),
+                interactionStatus,
                 feed.getCreatedAt()
         );
     }
 
     public static FeedResponseDto forAnonymous(Feed feed) {
-        return new FeedResponseDto(feed, FeedStatusResponseDto.anonymousStatus());
+        return new FeedResponseDto(feed, InteractionStatusResponseDto.anonymousStatus());
     }
 
-    public static FeedResponseDto forMember(Feed feed, FeedStatusResponseDto feedStatus) {
-        return new FeedResponseDto(feed, feedStatus);
+    public static FeedResponseDto forMember(Feed feed, InteractionStatusResponseDto interactionStatus) {
+        return new FeedResponseDto(feed, interactionStatus);
     }
 }
