@@ -21,8 +21,10 @@ public class S3Service {
 
     // Presigned URL을 생성 후 반환하는 메소드
     public String generatePresignedUrl(String dirName, String fileName, String contentType) {
+        String sanitizedDirName = dirName.replace("..", "").replace("/", "").replace("\\", "");
+
         // 파일 이름이 겹치지 않도록 고유한 경로 생성
-        String fullPath = dirName + "/" + UUID.randomUUID() + "_" + fileName;
+        String fullPath = sanitizedDirName + "/" + UUID.randomUUID() + "_" + fileName;
 
         // S3에 파일을 올리는 'PUT' 요청을 미리 준비
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
