@@ -22,8 +22,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -64,12 +65,20 @@ public class SecurityConfig {
 
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        PlainTextCookieCsrfTokenRepository repository = new PlainTextCookieCsrfTokenRepository();
         repository.setCookieName("XSRF-TOKEN");
         repository.setHeaderName("X-XSRF-TOKEN");
-        repository.setSecure(true); // HTTPS 전용
+        repository.setSecure(true);
         repository.setCookiePath("/");
+        repository.setSameSite("None");
         return repository;
+    }
+
+    @Bean
+    public CsrfTokenRequestHandler csrfTokenRequestHandler() {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName("_csrf");
+        return handler;
     }
 
     @Bean
@@ -80,7 +89,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 STATELESS
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository())
-                        .ignoringRequestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/kakao/callback")
+                        .csrfTokenRequestHandler(csrfTokenRequestHandler())
+                        .ignoringRequestMatchers(
+                                "/api/auth/signup",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/kakao/callback",
+                                "/api/auth/csrf-token"
+                        )
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
