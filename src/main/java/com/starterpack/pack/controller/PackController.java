@@ -76,9 +76,10 @@ public class PackController {
     @Operation(summary = "스타터팩 생성", description = "새로운 스타터팩을 생성합니다.")
     @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> create(
-            @RequestBody @Valid PackCreateRequestDto req
+            @RequestBody @Valid PackCreateRequestDto req,
+            @Login Member member
     ) {
-        Pack created = packService.create(req); // 엔티티 반환
+        Pack created = packService.create(req, member); // 엔티티 반환
         PackDetailResponseDto body = PackDetailResponseDto.from(created);
         return ResponseEntity
                 .created(URI.create("/api/starterPack/packs/" + body.id())) // base path 정합성
@@ -90,17 +91,24 @@ public class PackController {
     @SecurityRequirement(name = "cookieAuth")
     public ResponseEntity<PackDetailResponseDto> update(
             @PathVariable @Positive Long id,
-            @RequestBody @Valid PackUpdateRequestDto req
+            @RequestBody @Valid PackUpdateRequestDto req,
+            @Login Member member
     ) {
-        Pack updated = packService.update(id, req); // 엔티티 반환
-        return ResponseEntity.ok(PackDetailResponseDto.from(updated));
+        packService.update(id, req, member);
+        Pack pack = packService.getPackDetail(id);
+        PackDetailResponseDto response = PackDetailResponseDto.from(pack);
+
+        return ResponseEntity.ok(response);
+
     }
 
     @DeleteMapping("/packs/{id}")
     @Operation(summary = "스타터팩 삭제", description = "스타터팩을 삭제합니다.")
     @SecurityRequirement(name = "cookieAuth")
-    public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
-        packService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable @Positive Long id,
+            @Login Member member) {
+        packService.delete(id, member);
         return ResponseEntity.noContent().build();
     }
 

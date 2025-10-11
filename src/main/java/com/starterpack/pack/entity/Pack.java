@@ -1,31 +1,40 @@
 package com.starterpack.pack.entity;
 
 import com.starterpack.category.entity.Category;
-import com.starterpack.product.entity.Product;
+import com.starterpack.member.entity.Member;
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "pack")
 public class Pack {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id") // ERD: category
+    @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "total_cost")
-    private Integer totalCost;
+    @Column(name = "price")
+    private Integer price;
 
     @Column(name = "pack_like_count", nullable = false)
     private Integer packLikeCount = 0;
@@ -36,29 +45,16 @@ public class Pack {
     @Column(name = "pack_comment_count", nullable = false)
     private Integer packCommentCount = 0;
 
-    @Column(length = 500)
-    private String src;
+    @Column(name = "main_image_url", length = 1000)
+    private String mainImageUrl;
 
     @Lob
+    @Column(name = "description")
     private String description;
 
-    // pack_product 조인 테이블 매핑
-    @ManyToMany
-    @JoinTable(
-            name = "pack_product",
-            joinColumns = @JoinColumn(name = "pack_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private Set<Product> products = new HashSet<>();
+    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PackItem> items = new ArrayList<>();
 
-    public void addProduct(Product p) {
-        products.add(p);
-        p.getPacks().add(this);
-    }
-    public void removeProduct(Product p) {
-        products.remove(p);
-        p.getPacks().remove(this);
-    }
     public void changeName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Pack name must not be blank");
@@ -66,66 +62,66 @@ public class Pack {
         this.name = name;
     }
 
-    public int calcTotalCost() {
-        int sum = 0;
-        for (Product pr : this.products) {
-            if (pr.getCost() != null) sum += pr.getCost();
-        }
-        return sum;
+    @Builder
+    public Pack(Category category, Member member, String name, Integer price,
+            String mainImageUrl, String description) {
+        validateCreate(category, member, name);
+        this.category = category;
+        this.member = member;
+        this.name = name;
+        this.price = price;
+        this.mainImageUrl = mainImageUrl;
+        this.description = description;
+        this.packLikeCount = 0;
+        this.packBookmarkCount = 0;
+        this.packCommentCount = 0;
     }
 
-    public static Pack create(
-            Category category,
-            String name,
-            String description,
-            String src,
-            Set<Product> products,
-            Integer requestedTotalCost
-    ) {
-        Pack p = new Pack();
+    private void validateCreate(Category category, Member member, String name) {
         if (category == null) {
             throw new IllegalArgumentException("Category must not be null");
         }
-        p.setCategory(category);
-        p.changeName(name);
-        p.setDescription(description);
-        p.setSrc(src);
-        p.setPackLikeCount(0);
-        p.setPackBookmarkCount(0);
-        p.setPackCommentCount(0);
-
-        if (products != null) {
-            for (Product pr : products) {
-                p.addProduct(pr);
-            }
+        if (member == null) {
+            throw new IllegalArgumentException("Member must not be null");
         }
-        p.setTotalCost(requestedTotalCost != null ? requestedTotalCost : p.calcTotalCost());
-        return p;
-    }
-
-    public void applyUpdate(
-            Category newCategory,
-            String newName,
-            Set<Product> newProducts,
-            Integer requestedTotalCost,
-            String newDescription,
-            String newSrc
-    ) {
-        if (newCategory != null) this.setCategory(newCategory);
-        if (newName != null) this.changeName(newName);
-        if (newDescription != null) this.setDescription(newDescription);
-        if (newSrc != null) this.setSrc(newSrc);
-
-        if (newProducts != null) {
-            for (Product pr : new java.util.HashSet<>(this.products)) {
-                this.removeProduct(pr);
-            }
-            for (Product pr : newProducts) {
-                this.addProduct(pr);
-            }
-            this.setTotalCost(requestedTotalCost != null ? requestedTotalCost : this.calcTotalCost());
-        } else if (requestedTotalCost != null) {
-            this.setTotalCost(requestedTotalCost);
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Pack name must not be blank");
         }
     }
+
+    // PackItem 관리 메서드
+    public void addItem(PackItem item) {
+        items.add(item);
+        item.setPack(this);
+    }
+
+    public void clearItems() {
+        items.clear();
+    }
+
+    // 수정 메서드
+    public void update(Category category, String name, Integer price,
+            String mainImageUrl, String description) {
+        if (category != null) {
+            this.category = category;
+        }
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (mainImageUrl != null) {
+            this.mainImageUrl = mainImageUrl;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+    }
+
+    // 권한 체크 메서드
+    public boolean isOwner(Member member) {
+        return this.member.getUserId().equals(member.getUserId());
+    }
+
 }
