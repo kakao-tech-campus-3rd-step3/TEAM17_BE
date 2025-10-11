@@ -1,8 +1,11 @@
 package com.starterpack.admin.pack;
 
+import com.starterpack.auth.login.Login;
 import com.starterpack.category.service.CategoryService;
+import com.starterpack.member.entity.Member;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
+import com.starterpack.pack.dto.PackItemDto;
 import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
@@ -27,7 +30,6 @@ public class AdminPackController {
 
     private final PackService packService;
     private final CategoryService categoryService;
-    private final ProductService productService;
 
     /** 리스트 */
     @GetMapping
@@ -61,7 +63,6 @@ public class AdminPackController {
     public String addForm(Model model) {
         model.addAttribute("packDto", PackCreateRequestDto.EMPTY_FORM);
         model.addAttribute("categories", categoryService.findAllCategories());
-        model.addAttribute("products", productService.getProductsForAdmin());
         return "admin/packs/form";
     }
 
@@ -71,15 +72,15 @@ public class AdminPackController {
             @Valid @ModelAttribute("packDto") PackCreateRequestDto createDto,
             BindingResult bindingResult,
             Model model,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            @Login Member member
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.findAllCategories());
-            model.addAttribute("products", productService.getProductsForAdmin());
             return "admin/packs/form";
         }
 
-        Pack created = packService.create(createDto);
+        Pack created = packService.create(createDto, member);
         PackDetailResponseDto dto = PackDetailResponseDto.from(created);
 
         redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 등록 완료");
@@ -92,22 +93,20 @@ public class AdminPackController {
         Pack pack = packService.getPackDetail(id);
         PackDetailResponseDto detail = PackDetailResponseDto.from(pack);
 
-        List<Long> productIds = detail.parts().stream()
-                .map(PackDetailResponseDto.PartDto::productId)
-                .toList();
+        // PackItem을 PackItemDto로 변환
+        List<PackItemDto> items = detail.items();
 
         PackUpdateRequestDto updateDto = new PackUpdateRequestDto(
                 detail.categoryId(),
                 detail.name(),
-                productIds,
-                detail.cost(),
+                detail.price(),
+                detail.mainImageUrl(),
                 detail.description(),
-                detail.src()
+                items
         );
 
         model.addAttribute("packDto", updateDto);
         model.addAttribute("categories", categoryService.findAllCategories());
-        model.addAttribute("products", productService.getProductsForAdmin());
         model.addAttribute("packId", id);
         return "admin/packs/form";
     }
@@ -119,17 +118,19 @@ public class AdminPackController {
             @Valid @ModelAttribute("packDto") PackUpdateRequestDto updateDto,
             BindingResult bindingResult,
             Model model,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            @Login Member member
     ) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.findAllCategories());
-            model.addAttribute("products", productService.getProductsForAdmin());
             model.addAttribute("packId", id);
             return "admin/packs/form";
         }
 
-        Pack updated = packService.update(id, updateDto);
-        PackDetailResponseDto dto = PackDetailResponseDto.from(updated);
+        Pack updated = packService.update(id, updateDto, member);
+        Pack packWithMember = packService.getPackDetail(updated.getId());
+
+        PackDetailResponseDto dto = PackDetailResponseDto.from(packWithMember);
 
         redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 수정 완료");
         return "redirect:/admin/packs";
@@ -137,8 +138,10 @@ public class AdminPackController {
 
     /** 삭제 */
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        packService.delete(id);
+    public String delete(@PathVariable Long id,
+            RedirectAttributes redirectAttributes,
+            @Login Member member) {
+        packService.delete(id, member);
         redirectAttributes.addFlashAttribute("message", "패키지 삭제 완료");
         return "redirect:/admin/packs";
     }
