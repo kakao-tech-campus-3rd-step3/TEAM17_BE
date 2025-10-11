@@ -1,8 +1,12 @@
 package com.starterpack.s3.service;
 
+import com.starterpack.s3.dto.PresignedUrlsRequestDto;
+import com.starterpack.s3.dto.PresignedUrlsResponseDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -14,33 +18,45 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
+    private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // Presigned URL을 생성 후 반환하는 메소드
-    public String generatePresignedUrl(String dirName, String fileName, String contentType) {
+    public List<PresignedUrlsResponseDto> generatePresignedUrls(String dirName, PresignedUrlsRequestDto requestDto) {
+        // 전달받은 파일 정보 리스트를 순회하며 각 파일에 대한 URL 생성
+        return requestDto.files().stream()
+                .map(fileInfo -> {
+                    String fullPath = generateFullPath(dirName, fileInfo.fileName());
+
+                    // Presigned URL 생성
+                    PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(fullPath)
+                            .contentType(fileInfo.contentType())
+                            .acl(ObjectCannedACL.PUBLIC_READ)
+                            .build();
+
+                    // Presigned URL 생성 요청 준비
+                    PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                            .signatureDuration(Duration.ofMinutes(5)) // Presigned URL 유효 시간
+                            .putObjectRequest(putObjectRequest)
+                            .build();
+
+                    String presignedUrl = s3Presigner.presignPutObject(presignRequest).url().toString();
+
+                    // 최종 파일 URL 생성
+                    String fileUrl = s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(fullPath)).toString();
+
+                    return new PresignedUrlsResponseDto(presignedUrl, fileUrl);
+                })
+                .toList();
+    }
+
+    // 파일 경로를 생성하는 메서드
+    private String generateFullPath(String dirName, String fileName) {
         String sanitizedDirName = dirName.replace("..", "").replace("/", "").replace("\\", "");
-
-        // 파일 이름이 겹치지 않도록 고유한 경로 생성
-        String fullPath = sanitizedDirName + "/" + UUID.randomUUID() + "_" + fileName;
-
-        // S3에 파일을 올리는 'PUT' 요청을 미리 준비
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(fullPath)
-                .contentType(contentType)
-                .acl(ObjectCannedACL.PUBLIC_READ)
-                .build();
-
-        // Presigned URL 생성 요청 준비
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5)) // Presigned URL 유효 시간
-                .putObjectRequest(putObjectRequest)
-                .build();
-
-        // S3Presigner를 사용하여 Presigned URL 생성 후 문자열로 반환
-        return s3Presigner.presignPutObject(presignRequest).url().toString();
+        return sanitizedDirName + "/" + UUID.randomUUID() + "_" + fileName;
     }
 }

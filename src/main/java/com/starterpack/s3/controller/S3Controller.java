@@ -1,11 +1,12 @@
 package com.starterpack.s3.controller;
 
 import com.starterpack.s3.service.S3Service;
-import com.starterpack.s3.dto.PresignedUrlRequestDto;
-import com.starterpack.s3.dto.PresignedUrlResponseDto;
+import com.starterpack.s3.dto.PresignedUrlsRequestDto;
+import com.starterpack.s3.dto.PresignedUrlsResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,22 +29,15 @@ public class S3Controller {
      * @param dirName    파일을 저장할 S3 내의 디렉토리 이름 (예: "feeds", "profiles")
      * @return Presigned URL과 최종 파일 URL
      */
-    @PostMapping("/presigned-url")
-    @Operation(summary = "Presigned URL 생성", description = "파일 업로드를 위한 임시 URL을 발급합니다.")
+    @PostMapping("/presigned-urls")
+    @Operation(summary = "Presigned URL 다중 생성", description = "여러 파일 업로드를 위한 임시 URL 목록을 발급합니다")
     @SecurityRequirement(name = "CookieAuthentication")
-    public ResponseEntity<PresignedUrlResponseDto> getPresignedUrl(
-            @RequestBody PresignedUrlRequestDto requestDto,
+    public ResponseEntity<List<PresignedUrlsResponseDto>> getPresignedUrls(
+            @RequestBody PresignedUrlsRequestDto requestDto,
             @RequestParam String dirName
     ) {
-        String presignedUrl = s3Service.generatePresignedUrl(
-                dirName,
-                requestDto.fileName(),
-                requestDto.contentType()
-        );
+        List<PresignedUrlsResponseDto> responseDto = s3Service.generatePresignedUrls(dirName, requestDto);
 
-        // DB에 저장될 파일 URL은 Presigned URL에서 쿼리스트링(?) 부분을 제외한 순수 URL
-        String fileUrl = presignedUrl.substring(0, presignedUrl.indexOf("?"));
-
-        return ResponseEntity.ok(new PresignedUrlResponseDto(presignedUrl, fileUrl));
+        return ResponseEntity.ok(responseDto);
     }
 }
