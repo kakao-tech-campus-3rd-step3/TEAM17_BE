@@ -89,20 +89,6 @@ public class PackService {
 
     @Transactional
     public Pack update(Long id, PackUpdateRequestDto req, Member member) {
-
-        // ✅ 디버깅 로그 추가
-        System.out.println("=== PackService.update() Debug ===");
-        System.out.println("req.items(): " + req.items());
-        if (req.items() != null) {
-            System.out.println("items size: " + req.items().size());
-            for (int i = 0; i < req.items().size(); i++) {
-                PackItemDto item = req.items().get(i);
-                System.out.println("items[" + i + "]: " + item);
-            }
-        }
-        System.out.println("==================================");
-
-
         Pack pack = findPackById(id);
 
         // 권한 체크
