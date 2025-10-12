@@ -107,23 +107,7 @@ public class PackService {
                 req.description()
         );
 
-        // PackItem 업데이트
-        if (req.items() != null && !req.items().isEmpty()) {
-            // 기존 아이템 삭제
-            pack.clearItems();
-
-            // 새 아이템 추가
-            for (PackItemDto itemDto : req.items()) {
-                PackItem item = PackItem.builder()
-                        .pack(pack)
-                        .name(itemDto.name())
-                        .linkUrl(itemDto.linkUrl())
-                        .description(itemDto.description())
-                        .imageUrl(itemDto.imageUrl())
-                        .build();
-                pack.addItem(item);
-            }
-        }
+        pack.updateItems(req.items());
 
         return pack; 
     }

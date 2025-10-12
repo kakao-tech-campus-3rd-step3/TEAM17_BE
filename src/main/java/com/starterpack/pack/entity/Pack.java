@@ -2,6 +2,7 @@ package com.starterpack.pack.entity;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.member.entity.Member;
+import com.starterpack.pack.dto.PackItemDto;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,6 +117,31 @@ public class Pack {
         }
         if (description != null) {
             this.description = description;
+        }
+    }
+
+    public void updateItems(List<PackItemDto> itemDtos) {
+        if (itemDtos == null || itemDtos.isEmpty()) {
+            return; // 또는 clearItems() 호출 여부 결정
+        }
+
+        // 기존 아이템 삭제
+        this.clearItems();
+
+        // 새 아이템 추가
+        for (PackItemDto dto : itemDtos) {
+            if (dto == null || dto.name() == null || dto.name().isBlank()) {
+                continue; // null이나 빈 이름은 스킵
+            }
+
+            PackItem item = PackItem.builder()
+                    .pack(this)
+                    .name(dto.name())
+                    .linkUrl(dto.linkUrl())
+                    .description(dto.description())
+                    .imageUrl(dto.imageUrl())
+                    .build();
+            this.addItem(item);
         }
     }
 
