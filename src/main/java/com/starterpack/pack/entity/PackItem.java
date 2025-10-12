@@ -25,13 +25,13 @@ public class PackItem {
     @Column(nullable = false, length = 200)
     private String name;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String linkUrl;
 
     @Column(length = 1000)
     private String description;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String imageUrl;
 
     @Builder
