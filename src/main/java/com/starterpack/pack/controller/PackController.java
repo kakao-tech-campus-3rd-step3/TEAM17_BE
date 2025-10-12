@@ -10,7 +10,6 @@ import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackLikerResponseDto;
-import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.service.PackCommentService;
@@ -45,22 +44,22 @@ public class PackController {
 
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
-    public Map<String, List<PackResponseDto>> getAllPacks() {
+    public Map<String, List<PackDetailResponseDto>> getAllPacks() {
         List<Pack> packs = packService.getPacks(); // 엔티티 반환
-        List<PackResponseDto> responseDto = packs.stream()
-                .map(PackResponseDto::from)
+        List<PackDetailResponseDto> responseDto = packs.stream()
+                .map(PackDetailResponseDto::from)
                 .toList();
         return Map.of("packs", responseDto);
     }
 
     @GetMapping("/categories/{categoryId}/packs")
     @Operation(summary = "카테고리별 스타터팩 조회", description = "특정 카테고리의 스타터팩 목록을 조회합니다.")
-    public Map<String, List<PackResponseDto>> listByCategory(
+    public Map<String, List<PackDetailResponseDto>> listByCategory(
             @PathVariable @Positive Long categoryId
     ) {
         List<Pack> packs = packService.getPacksByCategory(categoryId); // 엔티티 반환
-        List<PackResponseDto> responseDto = packs.stream()
-                .map(PackResponseDto::from)
+        List<PackDetailResponseDto> responseDto = packs.stream()
+                .map(PackDetailResponseDto::from)
                 .toList();
         return Map.of("packs", responseDto);
     }
