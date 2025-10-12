@@ -1,8 +1,8 @@
 -- ------------------------------------------------------------
-INSERT INTO member (email, password, name, nickname, is_active, role, provider, birth_date, gender, phone_number)
+INSERT INTO member (email, password, name, nickname, is_active, role, provider, birth_date, gender, phone_number, created_at, updated_at)
 VALUES
-    ('admin@test.com', '$2a$10$jznYgTod3Yf2cjYfwFgrRe7CGo7Ubx0hBwyYBi1046U.ZN.GTGm16', '관리자', '관리자1234567', TRUE, 'ADMIN', 'EMAIL', '2002-12-25', 'MALE', '010-1234-5678'),
-    ('user@test.com',  '{noop}pass', '일반사용자', '일반사용자7654321', TRUE, 'USER', 'EMAIL', '2002-12-25', 'MALE', '010-1234-5678');
+    ('admin@test.com', '$2a$10$jznYgTod3Yf2cjYfwFgrRe7CGo7Ubx0hBwyYBi1046U.ZN.GTGm16', '관리자', '관리자1234567', TRUE, 'ADMIN', 'EMAIL', '2002-12-25', 'MALE', '010-1234-5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user@test.com',  '{noop}pass', '일반사용자', '일반사용자7654321', TRUE, 'USER', 'EMAIL', '2002-12-25', 'MALE', '010-1234-5678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ------------------------------------------------------------
 -- 1) 카테고리 (Category) Mock 데이터 (6개)
