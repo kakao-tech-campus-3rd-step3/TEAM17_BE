@@ -147,7 +147,8 @@ public class Pack {
 
     // 권한 체크 메서드
     public boolean isOwner(Member member) {
-        return this.member.getUserId().equals(member.getUserId());
+        return member != null && this.member != null
+                && this.member.getUserId() != null
+                && this.member.getUserId().equals(member.getUserId());
     }
-
 }
