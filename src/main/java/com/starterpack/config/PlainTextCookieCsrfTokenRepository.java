@@ -44,7 +44,7 @@ public class PlainTextCookieCsrfTokenRepository implements CsrfTokenRepository {
         Cookie cookie = new Cookie(this.cookieName, tokenValue);
         cookie.setPath(this.cookiePath);
         cookie.setSecure(this.secure);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setMaxAge(-1);
 
         // SameSite 속성 설정
