@@ -73,15 +73,17 @@ public class PackService {
                 .description(req.description())
                 .build();
 
-        for (PackItemDto itemDto : req.items()) {
-            PackItem item = PackItem.builder()
-                    .pack(pack)
-                    .name(itemDto.name())
-                    .linkUrl(itemDto.linkUrl())
-                    .description(itemDto.description())
-                    .imageUrl(itemDto.imageUrl())
-                    .build();
-            pack.addItem(item);
+        if (req.items() != null) {
+            for (PackItemDto itemDto : req.items()) {
+                PackItem item = PackItem.builder()
+                        .pack(pack)
+                        .name(itemDto.name())
+                        .linkUrl(itemDto.linkUrl())
+                        .description(itemDto.description())
+                        .imageUrl(itemDto.imageUrl())
+                        .build();
+                pack.addItem(item);
+            }
         }
 
         return packRepository.save(pack);
