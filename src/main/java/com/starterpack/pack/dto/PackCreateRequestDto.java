@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import org.hibernate.validator.constraints.URL;
 
 public record PackCreateRequestDto(
         @NotNull(message = "카테고리는 필수입니다.")
@@ -20,6 +21,7 @@ public record PackCreateRequestDto(
         Integer price,
 
         @Size(max = 1000, message = "이미지 링크는 1000자를 초과할 수 없습니다.")
+        @URL(protocol = "http", regexp = "https?://.*", message = "유효한 URL 형식이 아닙니다.")
         String mainImageUrl,
 
         @Size(max = 5000, message = "설명은 5000자를 초과할 수 없습니다.")
