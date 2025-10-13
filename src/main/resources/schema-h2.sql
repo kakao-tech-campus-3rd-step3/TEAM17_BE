@@ -112,7 +112,7 @@ CREATE TABLE pack (
     pack_bookmark_count INT          NOT NULL DEFAULT 0,
     pack_comment_count  INT          NOT NULL DEFAULT 0,
     main_image_url      VARCHAR(1000),
-    description         CLOB,
+    description         LONGTEXT,
     created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
