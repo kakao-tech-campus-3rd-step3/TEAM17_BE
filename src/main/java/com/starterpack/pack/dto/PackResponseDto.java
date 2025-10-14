@@ -2,33 +2,37 @@ package com.starterpack.pack.dto;
 
 import com.starterpack.pack.entity.Pack;
 import java.util.List;
-import java.util.Objects;
 
 public record PackResponseDto(
         Long id,
         String name,
-        Integer cost,
+        Integer price,
         String description,
-        List<List<String>> parts,
-        Integer like,
-        Integer bookmarkCount
+        String mainImageUrl,
+        List<PackItemDto> items,
+        Integer likeCount,
+        Integer bookmarkCount,
+        Integer commentCount,
+        String authorNickname,
+        Long memberId
 ) {
     public static PackResponseDto from(Pack pack) {
-        List<List<String>> parts = pack.getProducts().stream()
-                .map(p -> List.of(
-                        Objects.toString(p.getName(), ""),
-                        Objects.toString(p.getSrc(), "")
-                ))
+        List<PackItemDto> items = pack.getItems().stream()
+                .map(PackItemDto::from)
                 .toList();
 
         return new PackResponseDto(
                 pack.getId(),
-                Objects.toString(pack.getName(), ""),
-                pack.getTotalCost(),
-                Objects.toString(pack.getDescription(), ""),
-                parts,
+                pack.getName(),
+                pack.getPrice(),
+                pack.getDescription(),
+                pack.getMainImageUrl(),
+                items,
                 pack.getPackLikeCount(),
-                pack.getPackBookmarkCount()
+                pack.getPackBookmarkCount(),
+                pack.getPackCommentCount(),
+                pack.getMember().getNickname(),
+                pack.getMember().getUserId()
         );
     }
 }

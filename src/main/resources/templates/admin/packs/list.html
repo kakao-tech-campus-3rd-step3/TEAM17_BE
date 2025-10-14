@@ -7,12 +7,13 @@
   <style>
     :root { --primary:#4F46E5; --border:#e5e7eb; --text:#111827; }
     body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:#fff; color:var(--text); }
-    .container{ max-width:1000px; margin:32px auto; padding:0 16px; }
+    .container{ max-width:1200px; margin:32px auto; padding:0 16px; }
     .titlebar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
     .title{ font-size:22px; font-weight:800; margin:0; }
     .tag{ padding:3px 10px; font-size:12px; border-radius:999px; background:#EEF2FF; color:#3730A3; }
-    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.04); }
+    .card{ background:#fff; border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,.04); margin-bottom:16px; }
     .top-actions{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .alert{ padding:12px 16px; border-radius:8px; background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
 
     /* 테이블 */
     .table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
@@ -23,10 +24,14 @@
     }
     tbody td{ border-bottom:1px solid var(--border); padding:12px 14px; vertical-align:middle; }
     tbody tr:last-child td{ border-bottom:none; }
-    .empty { text-align:center; color:#888; }
+    tbody tr:hover{ background:#f9fafb; }
+    .empty { text-align:center; color:#888; padding:40px 20px; }
     .actions{ white-space:nowrap; display:flex; gap:8px; }
-    .btn{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; font-size:13px; }
+    .btn:hover{ background:#f3f4f6; }
     .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    .btn-primary:hover{ background:#4338ca; }
+    .badge{ display:inline-block; padding:2px 8px; border-radius:999px; background:#f1f5f9; font-size:12px; font-weight:600; }
   </style>
 </head>
 <body>
@@ -41,17 +46,18 @@
         <span class="tag">LIST</span>
       </div>
 
-      <!-- 메시지 -->
-      <div class="card" th:if="${message}">
-        <div th:text="${message}" class="alert alert-success">성공 메시지</div>
+      <!-- 성공 메시지 -->
+      <div class="card alert" th:if="${message}">
+        <div th:text="${message}">성공 메시지</div>
       </div>
 
       <div class="card">
         <!-- 상단 버튼 + 카테고리 필터 -->
         <div class="top-actions">
-          <form class="filter" th:action="@{/admin/packs/filter}" method="get">
-            <label for="categoryId">카테고리:</label>
-            <select id="categoryId" name="categoryId" onchange="handleCategoryChange(this)">
+          <form class="filter" th:action="@{/admin/packs/filter}" method="get" style="display:flex; gap:8px; align-items:center;">
+            <label for="categoryId" style="font-weight:600;">카테고리:</label>
+            <select id="categoryId" name="categoryId" onchange="handleCategoryChange(this)"
+                    style="padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
               <option value="" th:selected="${categoryId == null}">전체</option>
               <option th:each="c : ${categories}"
                       th:value="${c.id}"
@@ -60,10 +66,10 @@
                 카테고리명
               </option>
             </select>
-            <noscript><button type="submit">적용</button></noscript>
+            <noscript><button type="submit" class="btn">적용</button></noscript>
           </form>
 
-          <a th:href="@{/admin/packs/add}" class="btn btn-primary">새 패키지 등록</a>
+          <a th:href="@{/admin/packs/add}" class="btn btn-primary">+ 새 패키지 등록</a>
         </div>
 
         <!-- 목록 테이블 -->
@@ -71,33 +77,39 @@
           <table>
             <thead>
             <tr>
-              <th style="width:90px;">ID</th>
+              <th style="width:80px;">ID</th>
               <th>이름</th>
-              <th style="width:110px;">구성수</th>
-              <th style="width:140px;">총 비용</th>
-              <th style="width:120px;">좋아요</th>
-              <th style="width:120px">북마크</th>
+              <th style="width:120px;">작성자</th>
+              <th style="width:100px;">아이템 수</th>
+              <th style="width:120px;">가격</th>
+              <th style="width:100px;">좋아요</th>
+              <th style="width:100px">북마크</th>
               <th style="width:180px;">관리</th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${#lists.isEmpty(packs)}">
-              <td class="empty" colspan="7">표시할 패키지가 없습니다.</td>
+              <td class="empty" colspan="8">표시할 패키지가 없습니다.</td>
             </tr>
 
             <tr th:each="pack : ${packs}">
               <td th:text="${pack.id}">1</td>
-              <td th:text="${pack.name}" style="white-space: nowrap;">패키지명</td>
-              <td th:text="${#lists.size(pack.parts)}">0</td>
-              <td th:text="${pack.cost}">0</td>
-              <td th:text="${pack.like}">0</td>
-              <td th:text="${pack.bookmarkCount}">0</td>
+              <td th:text="${pack.name}" style="font-weight:600;">패키지명</td>
+              <td>
+                <span th:text="${pack.authorNickname}" class="badge">작성자</span>
+              </td>
+              <td style="text-align:center;">
+                <span th:text="${#lists.size(pack.items)}" class="badge">0</span>
+              </td>
+              <td th:text="${pack.price != null ? #numbers.formatInteger(pack.price, 0, 'COMMA') + '원' : '-'}" style="text-align:right; font-variant-numeric:tabular-nums;">0원</td>
+              <td th:text="${pack.likeCount}" style="text-align:center;">0</td>
+              <td th:text="${pack.bookmarkCount}" style="text-align:center;">0</td>
               <td class="actions">
                 <a th:href="@{/admin/packs/{id}/edit(id=${pack.id})}" class="btn">수정</a>
                 <form th:action="@{/admin/packs/{id}/delete(id=${pack.id})}" method="post"
-                      onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                      onsubmit="return confirm('정말로 삭제하시겠습니까?');" style="display:inline;">
                   <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <button type="submit" class="btn">삭제</button>
+                  <button type="submit" class="btn" style="color:#dc2626;">삭제</button>
                 </form>
               </td>
             </tr>

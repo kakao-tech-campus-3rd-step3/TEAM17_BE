@@ -10,30 +10,29 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PackRepository extends JpaRepository<Pack, Long> {
-
-    List<Pack> findByCategory_Id(Long categoryId);
-
     @Override
-    @EntityGraph(attributePaths = {"products", "category"})
+    @EntityGraph(attributePaths = {"items", "category", "member"})
     List<Pack> findAll();
 
     @Query("""
         select distinct p
         from Pack p
-        left join fetch p.products
+        left join fetch p.items
         left join fetch p.category
+        left join fetch p.member
         where p.category.id = :categoryId
     """)
-    List<Pack> findAllByCategoryIdWithProducts(@Param("categoryId") Long categoryId);
+    List<Pack> findAllByCategoryIdWithItems(@Param("categoryId") Long categoryId);
 
     @Query("""
         select distinct p
         from Pack p
-        left join fetch p.products
+        left join fetch p.items
         left join fetch p.category
+        left join fetch p.member
         where p.id = :id
     """)
-    Optional<Pack> findWithProductsById(@Param("id") Long id);
+    Optional<Pack> findWithItemsById(@Param("id") Long id);
 
     @Modifying
     @Query("UPDATE Pack p SET p.packLikeCount = p.packLikeCount + 1 WHERE p.id = :id")

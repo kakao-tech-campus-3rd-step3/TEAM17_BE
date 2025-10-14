@@ -2,16 +2,16 @@ package com.starterpack.repository;
 
 import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
+import com.starterpack.member.entity.Member;
+import com.starterpack.member.entity.Role;
+import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.entity.PackItem;
 import com.starterpack.pack.repository.PackRepository;
-import com.starterpack.product.entity.Product;
-import com.starterpack.product.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +22,7 @@ class RepositorySmokeTest {
     @Autowired
     CategoryRepository categoryRepository;
     @Autowired
-    ProductRepository productRepository;
+    MemberRepository memberRepository;
     @Autowired
     PackRepository packRepository;
 
@@ -34,47 +34,55 @@ class RepositorySmokeTest {
         cat.setSrc("sports.png");
         cat = categoryRepository.save(cat);
 
-        // 상품 저장
-        Product p1 = new Product();
-        p1.setName("래쉬가드");
-        p1.setProductType("TOP");
-        p1.setCost(45000);
-        p1.setLikeCount(7);
-        p1.setCategory(cat);
-        productRepository.save(p1);
+        Member member = new Member();
+        member.setEmail("test@example.com");
+        member.setPassword("password123");
+        member.setName("테스터");
+        member.setNickname("테스트유저");
+        member.setRole(Role.USER);
+        member.setIsActive(true);
+        member = memberRepository.save(member);
 
-        Product p2 = new Product();
-        p2.setName("무릎보호대");
-        p2.setProductType("GEAR");
-        p2.setCost(12000);
-        p2.setLikeCount(2);
-        p2.setCategory(cat);
-        productRepository.save(p2);
+        Pack pack = Pack.builder()
+                .name("주짓수 스타터팩")
+                .category(cat)
+                .member(member)
+                .price(57000)
+                .mainImageUrl("pack.png")
+                .description("주짓수를 시작하는데 필요한 모든 것!")
+                .build();
 
-        // 팩 저장 + 상품 연관
-        Pack pack = new Pack();
-        pack.setName("주짓수 스타터팩");
-        pack.setCategory(cat);
-        pack.setTotalCost(57000);
-        pack.setPackLikeCount(3);
-        pack.setSrc("pack.png");
-        pack.setDescription("주짓수 스타터팩");
+        // ✅ 5. PackItem 추가 (새로운 구조)
+        PackItem item1 = PackItem.builder()
+                .pack(pack)
+                .name("래쉬가드")
+                .linkUrl("https://example.com/rashguard")
+                .description("고품질 래쉬가드입니다.")
+                .imageUrl("rashguard.jpg")
+                .build();
 
-        // 편의 메서드 사용
-        pack.addProduct(p1);
-        pack.addProduct(p2);
+        PackItem item2 = PackItem.builder()
+                .pack(pack)
+                .name("무릎보호대")
+                .linkUrl("https://example.com/knee-pad")
+                .description("무릎을 보호해주는 필수 장비입니다.")
+                .imageUrl("knee-pad.jpg")
+                .build();
+
+        pack.addItem(item1);
+        pack.addItem(item2);
+
         pack = packRepository.save(pack);
 
-        // 검증 1: 카테고리로 상품 찾기
-        List<Product> byCat = productRepository.findByCategory_Id(cat.getId());
-        assertThat(byCat).hasSize(2);
-
-        // 검증 2: 이름 부분검색
-        assertThat(productRepository.findByNameContainingIgnoreCase("래쉬")).hasSize(1);
-
-        // 검증 3: 팩-상품 연관
         Pack saved = packRepository.findById(pack.getId()).orElseThrow();
-        assertThat(saved.getProducts()).extracting(Product::getName)
-                .containsExactlyInAnyOrder("래쉬가드","무릎보호대");
+        assertThat(saved.getItems()).hasSize(2);
+        assertThat(saved.getItems())
+                .extracting(PackItem::getName)
+                .containsExactlyInAnyOrder("래쉬가드", "무릎보호대");
+
+        assertThat(saved.getName()).isEqualTo("주짓수 스타터팩");
+        assertThat(saved.getPrice()).isEqualTo(57000);
+        assertThat(saved.getMember().getNickname()).isEqualTo("테스트유저");
+        assertThat(saved.getCategory().getName()).isEqualTo("스포츠");
     }
 }
