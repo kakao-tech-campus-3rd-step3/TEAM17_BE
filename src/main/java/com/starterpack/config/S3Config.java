@@ -30,4 +30,20 @@ public class S3Config {
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
     }
+
+    /**
+     * 일반 S3 작업을 위한 S3Client를 Bean으로 등록합니다.
+     */
+    @Bean
+    public S3Client s3Client() {
+        // AWS 자격 증명 객체를 생성합니다.
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+
+        // S3Client 객체를 빌더 패턴으로 생성하여 반환합니다.
+        return S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
+    }
+
 }
