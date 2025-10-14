@@ -3,6 +3,9 @@ package com.starterpack.pack.controller;
 import com.starterpack.auth.login.Login;
 import com.starterpack.member.entity.Member;
 import com.starterpack.pack.dto.PackBookmarkResponseDto;
+import com.starterpack.pack.dto.PackCommentAddRequestDto;
+import com.starterpack.pack.dto.PackCommentResponseDto;
+import com.starterpack.pack.dto.PackCommentUpdateRequestDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
@@ -10,6 +13,7 @@ import com.starterpack.pack.dto.PackLikerResponseDto;
 import com.starterpack.pack.dto.PackResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.service.PackCommentService;
 import com.starterpack.pack.service.PackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 public class PackController {
 
     private final PackService packService;
+    private final PackCommentService packCommentService;
 
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
@@ -120,6 +126,59 @@ public class PackController {
         Page<Member> likers = packService.getPackLikers(id, pageable);
         Page<PackLikerResponseDto> responseDto = likers.map(PackLikerResponseDto::from);
 
+        return ResponseEntity.ok(responseDto);
+    }
+    @PostMapping("/{packId}/comments")
+    @Operation(
+            summary = "댓글 작성",
+            description = "지정된 팩에 댓글 또는 대댓글을 작성합니다. parentId가 없으면 루트 댓글, 있으면 대댓글로 처리됩니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<PackCommentResponseDto> addComment(
+            @PathVariable Long packId,
+            @Login Member member,
+            @Valid @RequestBody PackCommentAddRequestDto requestDto
+    ) {
+        PackCommentResponseDto responseDto = packCommentService.addComment(packId, member, requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @GetMapping("/{packId}/comments")
+    @Operation(
+            summary = "댓글 목록 조회",
+            description = "지정된 팩의 댓글 목록을 페이지로 조회합니다. 기본 정렬은 생성일 오름차순(오래된순)입니다. 소프트 삭제된 댓글은 '삭제된 댓글입니다' 형태로 노출됩니다.")
+    public ResponseEntity<Page<PackCommentResponseDto>> getComments(
+            @PathVariable Long packId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<PackCommentResponseDto> page = packCommentService.getComments(packId, pageable);
+        return ResponseEntity.ok(page);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @Operation(
+            summary = "댓글 소프트 삭제",
+            description = "댓글을 소프트 삭제합니다. 작성자 본인 또는 관리자만 가능합니다.")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long commentId,
+            @Login Member member
+    ) {
+        packCommentService.deleteComment(commentId, member);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/comments/{commentId}")
+    @Operation(
+            summary = "댓글 수정",
+            description = "댓글 내용을 수정합니다. 작성자 본인 또는 관리자만 가능합니다."
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<PackCommentResponseDto> updateComment(
+            @PathVariable Long commentId,
+            @Login Member member,
+            @Valid @RequestBody PackCommentUpdateRequestDto requestDto
+    ) {
+        PackCommentResponseDto responseDto = packCommentService.updateComment(commentId, member, requestDto);
         return ResponseEntity.ok(responseDto);
     }
 

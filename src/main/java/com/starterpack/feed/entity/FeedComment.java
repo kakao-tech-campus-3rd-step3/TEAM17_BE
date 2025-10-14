@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "feed_comment"
-)
+@Table(name = "feed_comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -39,21 +37,17 @@ public class FeedComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private FeedComment parent; // null이면 루트 댓글
+    private FeedComment parent;
 
     @OneToMany(mappedBy = "parent")
-    @Builder.Default //null 방지
+    @Builder.Default
     private List<FeedComment> children = new ArrayList<>();
 
     @Column(name = "depth", nullable = false)
-    private int depth; // 0은 루트 댓글 1은 대댓글
+    private int depth;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "deleted_by")
-    private DeletedBy deletedBy;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -66,7 +60,7 @@ public class FeedComment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    //댓글 객체 만들기
+
     public static FeedComment createRoot(Feed feed, Member author, String content) {
         validateArgs(feed, author, content);
         return FeedComment.builder()
@@ -80,7 +74,8 @@ public class FeedComment {
 
     public static FeedComment createReply(Feed feed, Member author, String content, FeedComment parent) {
         validateArgs(feed, author, content);
-        if (parent == null) throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "parent is null for reply");
+        if (parent == null)
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "parent is null for reply");
         int nextDepth = parent.depth + 1;
         if (nextDepth > MAX_DEPTH) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "대댓글은 최대 1단계까지만 허용합니다.");
@@ -108,7 +103,7 @@ public class FeedComment {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "content length must be <= 500");
         }
     }
-    //댓글 수정
+
     public void updateContent(String newContent) {
         if (this.deleted) {
             throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED, "삭제된 댓글은 수정할 수 없습니다.");
@@ -123,30 +118,23 @@ public class FeedComment {
         this.content = trimmed;
     }
 
-
-    //도메인 로직
     public void validateOwner(Member member) {
         if (member == null || !this.author.getUserId().equals(member.getUserId())) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
     }
 
-
-    public void softDelete(DeletedBy by) {
+    public void softDelete() {
         if (this.deleted) return;
         this.deleted = true;
-        this.deletedBy = by;
         this.deletedAt = LocalDateTime.now();
-        this.content = ""; // UI에서 "삭제된 댓글입니다" 이런식으로 출력되면 좋을거 같습니다.
+        this.content = ""; // UI에서 "삭제된 댓글입니다" 식으로 표시
     }
 
-
+    /** 필요 시 복구 기능 유지 */
     public void restoreByAdmin(String restoredContent) {
         this.deleted = false;
-        this.deletedBy = null;
         this.deletedAt = null;
         this.content = restoredContent;
     }
-
-    public enum DeletedBy { USER, ADMIN }
 }

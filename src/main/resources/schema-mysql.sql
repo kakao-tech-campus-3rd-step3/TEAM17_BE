@@ -24,6 +24,7 @@ CREATE TABLE member (
   birth_date        DATE,
   gender            VARCHAR(10),
   phone_number      VARCHAR(20),
+  refresh_token     VARCHAR(500),
   created_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id),
@@ -130,16 +131,20 @@ CREATE TABLE pack_product (
 CREATE TABLE feed (
     id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     user_id     BIGINT UNSIGNED     NOT NULL,
-    description TEXT                NULL, -- 피드 설명
-    image_url   VARCHAR(500)        NOT NULL, -- 일상: 일상사진, 정보공유: 대표사진
-    feed_type   ENUM('INFO', 'DAILY') NOT NULL,
-    category_id BIGINT UNSIGNED     NULL,
+    description VARCHAR(2000)       NOT NULL,
+    image_url   VARCHAR(500)        NOT NULL,
+    category_id BIGINT UNSIGNED     NOT NULL,
     like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
+    bookmark_count  BIGINT UNSIGNED    NOT NULL DEFAULT 0,
+    comment_count BIGINT   UNSIGNED    NOT NULL DEFAULT 0,
     created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_feed_user (user_id),
     KEY idx_feed_category (category_id),
+    KEY idx_feed_like_count (like_count),
+    KEY idx_feed_bookmark_count (bookmark_count),
+    KEY idx_feed_comment_count (comment_count),
     CONSTRAINT fk_feed_user
         FOREIGN KEY (user_id)
             REFERENCES member(user_id)
@@ -149,29 +154,7 @@ CREATE TABLE feed (
         FOREIGN KEY (category_id)
             REFERENCES category(id)
             ON UPDATE CASCADE
-            ON DELETE SET NULL
-) ENGINE=InnoDB;
--- ------------------------------------------------------------
--- 6) 피드, 상품 연관 테이블
--- ------------------------------------------------------------
-CREATE TABLE feed_product (
-      id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      feed_id     BIGINT UNSIGNED NOT NULL,
-      product_id  BIGINT UNSIGNED NOT NULL,
-      description TEXT   NULL, -- 상품 설명인데 추후 Product에 옮길지 결정할 예정
-      PRIMARY KEY (id),
-      UNIQUE KEY uk_feed_product (feed_id, product_id),
-      KEY idx_fp_product (product_id),
-      CONSTRAINT fk_fp_feed
-          FOREIGN KEY (feed_id)
-              REFERENCES feed(id)
-              ON UPDATE CASCADE
-              ON DELETE CASCADE,
-      CONSTRAINT fk_fp_product
-          FOREIGN KEY (product_id)
-              REFERENCES product(id)
-              ON UPDATE CASCADE
-              ON DELETE CASCADE
+            ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 7) 피드 좋아요 (Feed Like)
@@ -196,7 +179,29 @@ CREATE TABLE feed_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
--- 8) 피드 댓글 (Feed Comment)
+-- 8) 피드 북마크 (Feed Bookmark)
+-- ------------------------------------------------------------
+CREATE TABLE feed_bookmark (
+   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+   feed_id     BIGINT UNSIGNED NOT NULL,
+   member_id   BIGINT UNSIGNED NOT NULL,
+   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (id),
+   UNIQUE KEY uk_feed_bookmark_member (feed_id, member_id),
+   KEY idx_fb_member (member_id),
+   CONSTRAINT fk_fb_feed
+       FOREIGN KEY (feed_id)
+           REFERENCES feed(id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE,
+   CONSTRAINT fk_fb_member
+       FOREIGN KEY (member_id)
+           REFERENCES member(user_id)
+           ON UPDATE CASCADE
+           ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 9) 피드 댓글 (Feed Comment)
 -- ------------------------------------------------------------
 CREATE TABLE feed_comment (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -206,7 +211,6 @@ CREATE TABLE feed_comment (
   parent_id   BIGINT UNSIGNED NULL,
   depth       INT             NOT NULL DEFAULT 0,
   is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
-  deleted_by  ENUM('USER', 'ADMIN') NULL,
   deleted_at  TIMESTAMP       NULL,
   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -232,7 +236,7 @@ CREATE TABLE feed_comment (
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
--- 9) 팩 좋아요 (Pack Like)
+-- 10) 팩 좋아요 (Pack Like)
 -- ------------------------------------------------------------
 CREATE TABLE pack_like (
    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -254,6 +258,8 @@ CREATE TABLE pack_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 11) 팩 북마크 (Pack Bookmark)
+-- ------------------------------------------------------------
 CREATE TABLE pack_bookmark (
    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
    pack_id     BIGINT UNSIGNED NOT NULL,
@@ -272,6 +278,65 @@ CREATE TABLE pack_bookmark (
            REFERENCES member(user_id)
            ON UPDATE CASCADE
            ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 12) 팩 댓글 (Pack Comment)
+-- ------------------------------------------------------------
+CREATE TABLE pack_comment (
+  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pack_id     BIGINT UNSIGNED NOT NULL,
+  author_id   BIGINT UNSIGNED NOT NULL,
+  content     VARCHAR(500)    NOT NULL,
+  parent_id   BIGINT UNSIGNED NULL,
+  depth       INT             NOT NULL DEFAULT 0,
+  is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
+  deleted_at  TIMESTAMP       NULL,
+  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_pack_comment_pack (pack_id),
+  KEY idx_pack_comment_author (author_id),
+  KEY idx_pack_comment_parent (parent_id),
+  KEY idx_pack_comment_created_at (created_at),
+  CONSTRAINT fk_pack_comment_pack
+    FOREIGN KEY (pack_id) REFERENCES pack(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_author
+    FOREIGN KEY (author_id) REFERENCES member(user_id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_parent
+    FOREIGN KEY (parent_id) REFERENCES pack_comment(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+-- ------------------------------------------------------------
+-- 13) 해시태그 (Hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE hashtag (
+     id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+     name        VARCHAR(100)    NOT NULL,
+     usage_count BIGINT UNSIGNED NOT NULL DEFAULT 0,
+     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (id),
+     UNIQUE KEY uk_hashtag_name (name)
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
+-- 14) 피드-해시태그 연관테이블 (feed_hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE feed_hashtag (
+      id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      feed_id    BIGINT UNSIGNED NOT NULL,
+      hashtag_id BIGINT UNSIGNED NOT NULL,
+      tag_order  INT             NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uk_feed_hashtag (feed_id, hashtag_id),
+      KEY idx_fh_hashtag (hashtag_id),
+      CONSTRAINT fk_fh_feed
+          FOREIGN KEY (feed_id) REFERENCES feed(id)
+              ON UPDATE CASCADE ON DELETE CASCADE,
+      CONSTRAINT fk_fh_hashtag
+          FOREIGN KEY (hashtag_id) REFERENCES hashtag(id)
+              ON UPDATE CASCADE ON DELETE CASCADE,
+      CONSTRAINT chk_fh_tag_order CHECK (tag_order >= 0)
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.

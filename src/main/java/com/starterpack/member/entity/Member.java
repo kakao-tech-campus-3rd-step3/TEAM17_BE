@@ -56,6 +56,9 @@ public class Member {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    @Column(name = "refresh_token", length = 500)
+    private String refreshToken;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -95,6 +98,10 @@ public class Member {
         Member member = new Member(email, password, name, nickname, provider, providerId,  birthDate, gender, phoneNumber);
         member.setRole(Role.ADMIN);
         return member;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     // 닉네임 설정 메서드

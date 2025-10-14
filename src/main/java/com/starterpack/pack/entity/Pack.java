@@ -33,6 +33,9 @@ public class Pack {
     @Column(name = "pack_bookmark_count", nullable = false)
     private Integer packBookmarkCount = 0;
 
+    @Column(name = "pack_comment_count", nullable = false)
+    private Integer packCommentCount = 0;
+
     @Column(length = 500)
     private String src;
 
@@ -48,7 +51,6 @@ public class Pack {
     )
     private Set<Product> products = new HashSet<>();
 
-    // 편의 메서드 (양쪽 연관관계 관리)
     public void addProduct(Product p) {
         products.add(p);
         p.getPacks().add(this);
@@ -72,12 +74,14 @@ public class Pack {
         return sum;
     }
 
-    public static Pack create(Category category,
+    public static Pack create(
+            Category category,
             String name,
             String description,
             String src,
             Set<Product> products,
-            Integer requestedTotalCost) {
+            Integer requestedTotalCost
+    ) {
         Pack p = new Pack();
         if (category == null) {
             throw new IllegalArgumentException("Category must not be null");
@@ -88,6 +92,7 @@ public class Pack {
         p.setSrc(src);
         p.setPackLikeCount(0);
         p.setPackBookmarkCount(0);
+        p.setPackCommentCount(0);
 
         if (products != null) {
             for (Product pr : products) {
@@ -97,16 +102,19 @@ public class Pack {
         p.setTotalCost(requestedTotalCost != null ? requestedTotalCost : p.calcTotalCost());
         return p;
     }
-    public void applyUpdate(Category newCategory,
+
+    public void applyUpdate(
+            Category newCategory,
             String newName,
             Set<Product> newProducts,
             Integer requestedTotalCost,
             String newDescription,
-            String newSrc) {
+            String newSrc
+    ) {
         if (newCategory != null) this.setCategory(newCategory);
-        if (newName != null)     this.changeName(newName);
+        if (newName != null) this.changeName(newName);
         if (newDescription != null) this.setDescription(newDescription);
-        if (newSrc != null)         this.setSrc(newSrc);
+        if (newSrc != null) this.setSrc(newSrc);
 
         if (newProducts != null) {
             for (Product pr : new java.util.HashSet<>(this.products)) {

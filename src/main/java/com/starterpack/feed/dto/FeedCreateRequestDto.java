@@ -1,16 +1,24 @@
 package com.starterpack.feed.dto;
 
-import com.starterpack.feed.entity.FeedType;
+import com.starterpack.hashtag.validator.HashtagCheck;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record FeedCreateRequestDto(
+    @NotNull(message = "피드 설명은 필수입니다.")
+    @Size(max = 2000, message = "피드 설명은 2000자까지 입니다.")
     String description,
+
+    @NotNull(message = "이미지 링크는 필수입니다.")
+    @Size(max = 500, message= "이미지 링크는 500자까지 입니다.")
     String imageUrl,
-    FeedType feedType,
+
+    @NotNull(message = "취미 카테고리는 필수입니다.")
     Long categoryId,
-    List<ProductTagRequestDto> products
+
+    @Size(max = 10, message = "해쉬태그는 최대 10개까지 가능합니다.")
+    @HashtagCheck
+    List<String> hashtagNames
 ) {
-    public boolean isInfoFeedWithProducts() {
-        return this.feedType() == FeedType.INFO && this.products() != null && !this.products().isEmpty();
-    }
 }

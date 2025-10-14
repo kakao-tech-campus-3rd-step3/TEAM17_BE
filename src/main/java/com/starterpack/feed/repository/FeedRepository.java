@@ -15,13 +15,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificationExecutor<Feed> {
-    @Query("SELECT f FROM Feed f " +
-            "JOIN FETCH f.user " +
-            "LEFT JOIN FETCH f.category " +
-            "LEFT JOIN FETCH f.feedProducts fp " +
-            "LEFT JOIN FETCH fp.product " +
-            "WHERE f.id = :id")
-    Optional<Feed> findByIdWithDetails(@Param("id") Long id);
+    @EntityGraph(attributePaths = {"user", "category"})
+    Optional<Feed> findWithDetailsById(@Param("id") Long id);
 
     @Override
     @EntityGraph(attributePaths = {"user", "category"})
@@ -32,9 +27,25 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     void incrementLikeCount(@Param("feedId") Long id);
 
     @Modifying
-    @Query("UPDATE Feed f SET f.likeCount = f.likeCount - 1 WHERE f.id = :feedId")
+    @Query("UPDATE Feed f SET f.likeCount = f.likeCount - 1 WHERE f.id = :feedId AND f.likeCount > 0")
     void decrementLikeCount(@Param("feedId") Long id);
 
     @EntityGraph(attributePaths = {"user", "category"})
     Page<Feed> findAll(Specification<Feed> spec, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount + 1 WHERE f.id = :feedId")
+    void incrementBookmarkCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.bookmarkCount = f.bookmarkCount - 1 WHERE f.id = :feedId AND f.bookmarkCount > 0")
+    void decrementBookmarkCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.commentCount = f.commentCount + 1 WHERE f.id = :feedId")
+    void incrementCommentCount(@Param("feedId") Long id);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.commentCount = f.commentCount - 1 WHERE f.id = :feedId AND f.commentCount > 0")
+    void decrementCommentCount(@Param("feedId") Long id);
 }

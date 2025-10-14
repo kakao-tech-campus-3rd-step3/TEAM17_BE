@@ -1,6 +1,7 @@
 package com.starterpack.feed.controller;
 
 import com.starterpack.auth.login.Login;
+import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCommentAddRequestDto;
 import com.starterpack.feed.dto.FeedCommentResponseDto;
 import com.starterpack.feed.dto.FeedCommentUpdateRequestDto;
@@ -8,7 +9,6 @@ import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
 import com.starterpack.feed.dto.FeedLikerResponseDto;
 import com.starterpack.feed.dto.FeedResponseDto;
-import com.starterpack.feed.dto.FeedSimpleResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.service.FeedCommentService;
@@ -49,32 +49,33 @@ public class FeedController {
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<FeedResponseDto> addFeed (
             @Login Member member,
-            @RequestBody FeedCreateRequestDto feedCreateDto
+            @Valid @RequestBody FeedCreateRequestDto feedCreateDto
     ) {
         Feed feed = feedService.addFeed(member, feedCreateDto);
 
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+        FeedResponseDto responseDto = FeedResponseDto.forAnonymous(feed);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{feedId}")
     @Operation(summary = "피드 상세 조회", description = "특정 피드의 상세 정보를 조회합니다.")
-    public ResponseEntity<FeedResponseDto> getFeed (@PathVariable Long feedId) {
-        Feed feed = feedService.getFeed(feedId);
-
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+    public ResponseEntity<FeedResponseDto> getFeed (
+            @PathVariable Long feedId,
+            @Login(required = false) Member member
+    ) {
+        FeedResponseDto responseDto = feedService.getFeed(member, feedId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping
     @Operation(summary = "피드 목록 조회", description = "모든 피드 목록을 페이지로 조회합니다.")
-    public ResponseEntity<Page<FeedSimpleResponseDto>> getAllFeeds(
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Feed> feedPage = feedService.getAllFeeds(pageable);
-
-        Page<FeedSimpleResponseDto> responseDto = feedPage.map(FeedSimpleResponseDto::from);
+    public ResponseEntity<Page<FeedResponseDto>> getAllFeeds(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @Login(required = false) Member member
+    ) {
+        Page<FeedResponseDto> responseDto = feedService.getAllFeeds(member, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -85,11 +86,11 @@ public class FeedController {
     public ResponseEntity<FeedResponseDto> updateFeed(
             @PathVariable Long feedId,
             @Login Member member,
-            @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
+            @Valid @RequestBody FeedUpdateRequestDto feedUpdateRequestDto
     ) {
-        Feed feed = feedService.updateFeed(feedId, member, feedUpdateRequestDto);
+        feedService.updateFeed(feedId, member, feedUpdateRequestDto);
 
-        FeedResponseDto responseDto = FeedResponseDto.from(feed);
+        FeedResponseDto responseDto = feedService.getFeed(member, feedId);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -185,5 +186,14 @@ public class FeedController {
         return ResponseEntity.ok(responseDto);
     }
 
-
+    @PostMapping("/{feedId}/bookmark")
+    @Operation(summary = "사용자 피드 북마크 토글", description = "유저가 피드에 북마크를 추가하거나 취소합니다.")
+    @SecurityRequirement(name = "cookieAuth")
+    public ResponseEntity<FeedBookmarkResponseDto> toggleFeedBookmark(
+            @PathVariable Long feedId,
+            @Login Member member
+    ) {
+        FeedBookmarkResponseDto responseDto = feedService.toggleFeedBookmark(feedId, member);
+        return ResponseEntity.ok(responseDto);
+    }
 }

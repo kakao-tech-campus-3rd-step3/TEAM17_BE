@@ -13,14 +13,19 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
+
         return new OpenAPI()
                 .info(new Info()
                         .title("Starter Pack API")
                         .description("스타터팩 정보 제공 API")
                         .version("v1.0"))
-                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList("Bearer Authentication")
+                        .addList("CookieAuthentication"))
                 .components(new Components()
-                        .addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()));
+                        .addSecuritySchemes("Bearer Authentication", createAPIKeyScheme())
+                        .addSecuritySchemes("CookieAuthentication", createCookieScheme())
+                );
     }
 
     private SecurityScheme createAPIKeyScheme() {
@@ -28,5 +33,12 @@ public class SwaggerConfig {
                 .type(SecurityScheme.Type.HTTP)
                 .bearerFormat("JWT")
                 .scheme("bearer");
+    }
+
+    private SecurityScheme createCookieScheme() {
+        return new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.COOKIE)
+                .name("jwt_token");
     }
 }

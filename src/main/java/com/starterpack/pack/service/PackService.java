@@ -167,6 +167,7 @@ public class PackService {
         return PackLikeResponseDto.of(pack.getPackLikeCount(), !exists);
     }
 
+    @Transactional
     public PackBookmarkResponseDto togglePackBookmark(Long id, Member member) {
         Pack pack = findPackById(id);
 

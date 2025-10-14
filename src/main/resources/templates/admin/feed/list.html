@@ -79,7 +79,6 @@
               <th class="col-id">ID</th>
               <th>내용</th>
               <th class="col-author">작성자</th>
-              <th class="col-type">타입</th>
               <th class="col-likes">좋아요</th>
               <th class="col-date">작성일</th>
               <th class="col-actions">관리</th>
@@ -97,13 +96,14 @@
                 </a>
               </td>
               <td th:text="${feed.user.email}">user@example.com</td>
-              <td th:text="${feed.feedType}">INFO</td>
               <td class="text-center" th:text="${feed.likeCount}">0</td>
               <td th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm')}">2024-01-01 12:00</td>
               <td class="actions">
                 <a th:href="@{/admin/feeds/{id}/edit(id=${feed.id})}" class="btn-like-link">수정</a>
                 <form th:action="@{/admin/feeds/{id}/delete(id=${feed.id})}" method="post"
                       onsubmit="return confirm('정말로 삭제하시겠습니까?');" class="inline-form">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
                   <button type="submit" class="btn-like-link">삭제</button>
                 </form>
               </td>

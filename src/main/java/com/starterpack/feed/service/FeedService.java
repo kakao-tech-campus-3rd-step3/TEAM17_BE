@@ -4,20 +4,29 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.feed.dto.FeedBookmarkResponseDto;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedLikeResponseDto;
+import com.starterpack.feed.dto.FeedResponseDto;
+import com.starterpack.feed.dto.InteractionStatusResponseDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
-import com.starterpack.feed.dto.ProductTagRequestDto;
 import com.starterpack.feed.entity.Feed;
+import com.starterpack.feed.entity.FeedBookmark;
 import com.starterpack.feed.entity.FeedLike;
-import com.starterpack.feed.entity.FeedProduct;
+import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
+import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
-import com.starterpack.product.entity.Product;
-import com.starterpack.product.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class FeedService {
     private final FeedRepository feedRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductRepository productRepository;
     private final FeedLikeRepository feedLikeRepository;
     private final EntityManager entityManager;
+    private final FeedBookmarkRepository feedBookmarkRepository;
+    private final HashtagService hashtagService;
 
     @Transactional
     public Feed addFeed(
@@ -40,33 +50,61 @@ public class FeedService {
             FeedCreateRequestDto createDto) {
         Category category = getCategory(createDto.categoryId());
 
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(createDto.hashtagNames());
+
         Feed feed = Feed.builder()
                 .user(member)
                 .description(createDto.description())
                 .imageUrl(createDto.imageUrl())
-                .feedType(createDto.feedType())
                 .category(category)
+                .hashtags(hashtags)
                 .build();
 
-        if (createDto.isInfoFeedWithProducts()) {
-            createDto.products().forEach(productDto -> addProductToFeed(feed, productDto));
-        }
+        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
 
         return feedRepository.save(feed);
     }
 
     @Transactional(readOnly = true)
-    public Feed getFeed(Long feedId) {
+    public FeedResponseDto getFeed(
+            Member member,
+            Long feedId
+    ) {
+        Feed feed = getFeedByIdWithDetails(feedId);
+
+        if (member == null) {
+            return FeedResponseDto.forAnonymous(feed);
+        } else {
+            boolean isLiked = feedLikeRepository.existsByFeedAndMember(feed, member);
+            boolean isBookmarked = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+
+            return FeedResponseDto.forMember(feed, InteractionStatusResponseDto.of(isLiked, isBookmarked));
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Feed getFeedByAdmin(Long feedId) {
         return getFeedByIdWithDetails(feedId);
     }
 
     @Transactional(readOnly = true)
-    public Page<Feed> getAllFeeds(Pageable pageable) {
-        return feedRepository.findAll(pageable);
+    public Page<FeedResponseDto> getAllFeeds(Member member, Pageable pageable) {
+        Page<Feed> feedPage = feedRepository.findAll(pageable);
+
+        if (member == null) { //비로그인
+            return feedPage.map(FeedResponseDto::forAnonymous);
+        } else { //로그인
+            Map<Long, InteractionStatusResponseDto> statusMap = getFeedInteractionStatusMap(member, feedPage.getContent());
+
+            return feedPage.map(feed -> {
+                InteractionStatusResponseDto statusDto = statusMap.getOrDefault(feed.getId(), InteractionStatusResponseDto.anonymousStatus());
+                return FeedResponseDto.forMember(feed, statusDto);
+            });
+        }
     }
 
     @Transactional
-    public Feed updateFeed(
+    public void updateFeed(
             Long feedId,
             Member member,
             FeedUpdateRequestDto updateDto
@@ -81,7 +119,12 @@ public class FeedService {
                 updateDto.imageUrl(),
                 category);
 
-        return feed;
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(updateDto.hashtagNames());
+
+        Feed.HashtagUpdateResult result = feed.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
     }
 
     @Transactional
@@ -89,6 +132,9 @@ public class FeedService {
         Feed feed = getFeedByIdWithDetails(feedId);
 
         feed.validateOwner(member);
+
+        List<Hashtag> hashtags = feed.getHashtags();
+        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
 
         feedRepository.delete(feed);
     }
@@ -126,27 +172,6 @@ public class FeedService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
-    private void addProductToFeed(Feed feed, ProductTagRequestDto productDto) {
-        Product product = new Product(
-                productDto.name(),
-                "link",
-                "productType",
-                productDto.imageUrl(),
-                0,
-                feed.getCategory()
-        );
-
-        productRepository.save(product);
-
-        FeedProduct feedProduct = FeedProduct.builder()
-                .feed(feed)
-                .product(product)
-                .description(productDto.description())
-                .build();
-
-        feed.getFeedProducts().add(feedProduct);
-    }
-
     @Transactional(readOnly = true)
     public Page<Feed> searchFeeds(String keyword, Long categoryId, Pageable pageable) {
         Specification<Feed> spec = FeedSpecification.hasKeyword(keyword)
@@ -172,12 +197,49 @@ public class FeedService {
     }
 
     private Feed getFeedByIdWithDetails(Long feedId) {
-        return feedRepository.findByIdWithDetails(feedId)
+        return feedRepository.findWithDetailsById(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
     }
 
     private Feed getFeedById(Long feedId) {
         return feedRepository.findById(feedId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FEED_NOT_FOUND));
+    }
+
+    @Transactional
+    public FeedBookmarkResponseDto toggleFeedBookmark(Long feedId, Member member) {
+        Feed feed = getFeedById(feedId);
+
+        boolean exists = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+
+        if (exists) {
+            feedBookmarkRepository.deleteByFeedAndMember(feed, member);
+            feedRepository.decrementBookmarkCount(feedId);
+        } else {
+            feedBookmarkRepository.save(new FeedBookmark(feed, member));
+            feedRepository.incrementBookmarkCount(feedId);
+        }
+
+        return FeedBookmarkResponseDto.of(!exists);
+    }
+
+    private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
+        if (feeds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> feedIds = feeds.stream().map(Feed::getId).toList();
+
+        Set<Long> likedFeedIds = feedLikeRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+        Set<Long> bookmarkedFeedIds = feedBookmarkRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+
+        return feeds.stream()
+                .collect(Collectors.toMap(
+                        Feed::getId,
+                        feed -> InteractionStatusResponseDto.of(
+                                likedFeedIds.contains(feed.getId()),
+                                bookmarkedFeedIds.contains(feed.getId())
+                        )
+                ));
     }
 }

@@ -19,17 +19,20 @@ import org.springframework.stereotype.Component;
 public class JwtTokenUtil {
 
     private final String secretKeyString;
-    private final long expirationMs;
+    private final long accessExpirationMs;
+    private final long refreshExpirationMs;
 
     private Key signingKey;
 
     // @Value 어노테이션으로 .env의 값을 주입받음
     public JwtTokenUtil(
             @Value("${jwt.secret-key}") String secretKeyString,
-            @Value("${jwt.expiration-ms}") long expirationMs
+            @Value("${jwt.access-expiration-ms}") long accessExpirationMs,
+            @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs
     ) {
         this.secretKeyString = secretKeyString;
-        this.expirationMs = expirationMs;
+        this.accessExpirationMs = accessExpirationMs;
+        this.refreshExpirationMs = refreshExpirationMs;
     }
 
     /**
@@ -42,6 +45,13 @@ public class JwtTokenUtil {
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public String createAccessToken(String email, Role role) {
+        return createToken(email, role, accessExpirationMs);
+    }
+
+    public String createRefreshToken(String email) {
+        return createToken(email, null, refreshExpirationMs);
+    }
     /**
      * JWT 토큰을 생성
      *
@@ -49,9 +59,11 @@ public class JwtTokenUtil {
      * @param role  사용자의 권한 정보
      * @return 생성된 JWT 토큰
      */
-    public String createToken(String email, Role role) {
+    public String createToken(String email, Role role, long expirationMs) {
         Claims claims = Jwts.claims();
-        claims.put("role", role.getKey());
+        if (role != null) {
+            claims.put("role", role.getKey());
+        }
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + expirationMs);

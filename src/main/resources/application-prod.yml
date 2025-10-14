@@ -5,27 +5,44 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 5000
-      idle-timeout: 300000
-      max-lifetime: 1200000
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 3000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
     properties:
-      hibernate:
+        hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: false
         jdbc:
-          batch_size: 20
+          batch_size: 25
+          fetch_size: 50
         order_inserts: true
         order_updates: true
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+        connection:
+          provider_disables_autocommit: true
   sql:
     init:
       mode: never
-
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+        provider:
+          kakao:
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
 server:
   port: ${PORT:8080}
   servlet:
@@ -33,7 +50,14 @@ server:
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
-    min-response-size: 1024
+    min-response-size: 512
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 5
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
 
 logging:
   level:
@@ -53,3 +77,12 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    region:
+      static: ${AWS_REGION}

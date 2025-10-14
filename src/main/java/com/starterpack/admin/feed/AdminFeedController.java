@@ -7,7 +7,6 @@ import com.starterpack.exception.ErrorCode;
 import com.starterpack.feed.dto.FeedCreateRequestDto;
 import com.starterpack.feed.dto.FeedUpdateRequestDto;
 import com.starterpack.feed.entity.Feed;
-import com.starterpack.feed.entity.FeedType;
 import com.starterpack.feed.service.FeedService;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.service.MemberService;
@@ -49,7 +48,6 @@ public class AdminFeedController {
         model.addAttribute("feeds", feedPage.getContent());
         model.addAttribute("feedPage", feedPage);
         model.addAttribute("categories", categories);
-        model.addAttribute("feedTypes", FeedType.values());
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategoryId", categoryId);
@@ -66,7 +64,6 @@ public class AdminFeedController {
 
         model.addAttribute("members", members);
         model.addAttribute("categories", categories);
-        model.addAttribute("feedTypes", FeedType.values());
 
         return "admin/feed/form";
     }
@@ -88,14 +85,14 @@ public class AdminFeedController {
 
     @GetMapping("/{id}")
     public String showFeed(@PathVariable Long id, Model model) {
-        Feed feed = feedService.getFeed(id);
+        Feed feed = feedService.getFeedByAdmin(id);
         model.addAttribute("feed", feed);
         return "admin/feed/detail";
     }
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
-        Feed feed = feedService.getFeed(id);
+        Feed feed = feedService.getFeedByAdmin(id);
         List<Category> categories = categoryService.findAllCategories();
 
         model.addAttribute("feed", feed);

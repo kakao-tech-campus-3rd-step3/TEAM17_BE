@@ -1,40 +1,42 @@
 package com.starterpack.feed.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.starterpack.feed.entity.Feed;
-import com.starterpack.feed.entity.FeedType;
+import com.starterpack.hashtag.dto.HashtagResponseDto;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record FeedResponseDto(
         Long feedId,
         AuthorResponseDto author,
         String description,
         String imageUrl,
-        FeedType feedType,
         CategoryResponseDto category,
-        Long likeCount,
-        LocalDateTime createdAt,
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        List<TaggedProductResponseDto> products
+        List<HashtagResponseDto> hashtags,
+        FeedStatsResponseDto stats,
+        InteractionStatusResponseDto interactionStatus,
+        LocalDateTime createdAt
 ) {
-    public static FeedResponseDto from(Feed feed) {
-        CategoryResponseDto category = (feed.getCategory() != null) ? CategoryResponseDto.from(feed.getCategory()) : null;
-
-        return new FeedResponseDto(
+    public FeedResponseDto(Feed feed, InteractionStatusResponseDto interactionStatus) {
+        this(
                 feed.getId(),
                 AuthorResponseDto.from(feed.getUser()),
                 feed.getDescription(),
                 feed.getImageUrl(),
-                feed.getFeedType(),
-                category,
-                feed.getLikeCount(),
-                feed.getCreatedAt(),
-                feed.getFeedProducts().stream()
-                        .map(TaggedProductResponseDto::from)
-                        .collect(Collectors.toList())
+                CategoryResponseDto.from(feed.getCategory()),
+                feed.getHashtags().stream()
+                                .map(HashtagResponseDto::from)
+                                .toList(),
+                FeedStatsResponseDto.from(feed),
+                interactionStatus,
+                feed.getCreatedAt()
         );
+    }
+
+    public static FeedResponseDto forAnonymous(Feed feed) {
+        return new FeedResponseDto(feed, InteractionStatusResponseDto.anonymousStatus());
+    }
+
+    public static FeedResponseDto forMember(Feed feed, InteractionStatusResponseDto interactionStatus) {
+        return new FeedResponseDto(feed, interactionStatus);
     }
 }
