@@ -24,6 +24,7 @@ public class S3Service {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private static final Duration PRESIGNED_URL_EXPIRATION = Duration.ofMinutes(5);
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -41,8 +42,6 @@ public class S3Service {
 
                         return new PresignedUrlsResponseDto(presignedUrl, fileUrl);
 
-                    } catch (BusinessException e) {
-                        throw e;
                     } catch (Exception e) {
                         log.error("파일 처리 중 예상치 못한 오류 - fileName: {}, error: {}",
                                 fileInfo.fileName(), e.getMessage(), e);
@@ -80,6 +79,13 @@ public class S3Service {
                     .replaceAll("[:\\*\\?\"<>|]", "")
                     .trim();
 
+            String sanitizedFileName = fileName.replace("..", "")
+                    .replace("\0", "")
+                    .replace("/", "")
+                    .replace("\\", "")
+                    .replaceAll("[:\\*\\?\"<>|]", "")
+                    .trim();
+
             if (sanitizedDirName.isEmpty()) {
                 throw new BusinessException(
                         ErrorCode.INVALID_FILE_PATH,
@@ -87,7 +93,13 @@ public class S3Service {
                 );
             }
 
-            return sanitizedDirName + "/" + UUID.randomUUID() + "_" + fileName;
+            if (sanitizedFileName.isEmpty()) {
+                throw new BusinessException(
+                        ErrorCode.INVALID_FILE_PATH,
+                        "파일 이름이 유효하지 않습니다."
+                );
+            }
+            return sanitizedDirName + "/" + UUID.randomUUID() + "_" + sanitizedFileName;
 
         } catch (BusinessException e) {
             throw e;
@@ -114,7 +126,7 @@ public class S3Service {
                     .build();
 
             PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(5))
+                    .signatureDuration(PRESIGNED_URL_EXPIRATION)
                     .putObjectRequest(putObjectRequest)
                     .build();
 
