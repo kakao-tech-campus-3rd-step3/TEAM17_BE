@@ -1,5 +1,6 @@
 package com.starterpack.pack.dto;
 
+import com.starterpack.hashtag.validator.HashtagCheck;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,7 +30,11 @@ public record PackCreateRequestDto(
 
         @NotEmpty(message = "최소 1개 이상의 아이템이 필요합니다.")
         @Valid
-        List<PackItemDto> items
+        List<PackItemDto> items,
+
+        @Size(max = 10, message = "해쉬태그는 최대 10개까지 가능합니다.")
+        @HashtagCheck
+        List<String> hashtagNames
 ) {
     public static final PackCreateRequestDto EMPTY_FORM = new PackCreateRequestDto(
             null,
@@ -37,6 +42,7 @@ public record PackCreateRequestDto(
             null,
             "",
             "",
+            List.of(),
             List.of()
     );
 }
