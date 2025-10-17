@@ -5,7 +5,6 @@ import com.starterpack.auth.dto.TokenResponseDto;
 import com.starterpack.auth.login.Login;
 import com.starterpack.auth.service.AuthService;
 import com.starterpack.auth.dto.LocalSignUpRequestDto;
-import com.starterpack.config.PlainTextCookieCsrfTokenRepository;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
@@ -184,7 +183,6 @@ public class AuthController {
             csrfToken = csrfTokenRepository.generateToken(request);
             csrfTokenRepository.saveToken(csrfToken, request, response);
         } else {
-            // ⭐ 기존 토큰도 응답 헤더에 포함
             response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
         }
 
