@@ -60,6 +60,7 @@ public class Pack {
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PackItem> items = new ArrayList<>();
 
+    @org.hibernate.annotations.BatchSize(size = 100)
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PackHashtag> packHashtags = new ArrayList<>();
 

@@ -49,18 +49,29 @@ public class PackService {
 
     @Transactional(readOnly = true)
     public List<Pack> getPacks() {
-        return packRepository.findAll();
+        List<Pack> packs = packRepository.findAll();
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
+
     }
 
     @Transactional(readOnly = true)
     public List<Pack> getPacksByCategory(Long categoryId) {
-        return packRepository.findAllByCategoryIdWithItems(categoryId);
+        List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
     }
 
     @Transactional(readOnly = true)
     public Pack getPackDetail(Long id) {
-        return packRepository.findWithItemsById(id)
+        Pack pack = packRepository.findWithItemsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+        pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
+        return pack;
     }
 
     @Transactional
