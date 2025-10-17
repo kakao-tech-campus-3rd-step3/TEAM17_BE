@@ -1,11 +1,15 @@
 package com.starterpack.pack.entity;
 
 import com.starterpack.category.entity.Category;
+import com.starterpack.hashtag.dto.HashtagUpdateResult;
+import com.starterpack.hashtag.entity.Hashtag;
 import com.starterpack.member.entity.Member;
 import com.starterpack.pack.dto.PackItemDto;
 import jakarta.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,6 +60,9 @@ public class Pack {
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PackItem> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PackHashtag> packHashtags = new ArrayList<>();
+
     public void changeName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Pack name must not be blank");
@@ -65,7 +72,7 @@ public class Pack {
 
     @Builder
     public Pack(Category category, Member member, String name, Integer price,
-            String mainImageUrl, String description) {
+            String mainImageUrl, String description, List<Hashtag> hashtags) {
         validateCreate(category, member, name);
         this.category = category;
         this.member = member;
@@ -76,6 +83,7 @@ public class Pack {
         this.packLikeCount = 0;
         this.packBookmarkCount = 0;
         this.packCommentCount = 0;
+        setPackHashtags(hashtags);
     }
 
     private void validateCreate(Category category, Member member, String name) {
@@ -150,5 +158,36 @@ public class Pack {
         return member != null && this.member != null
                 && this.member.getUserId() != null
                 && this.member.getUserId().equals(member.getUserId());
+    }
+
+    public List<Hashtag> getHashtags() {
+        return this.packHashtags.stream()
+                .map(PackHashtag::getHashtag)
+                .toList();
+    }
+
+    public HashtagUpdateResult updateHashtag(List<Hashtag> newHashtagList) {
+        if (newHashtagList == null) {
+            return HashtagUpdateResult.EMPTY_HASHTAG;
+        }
+
+        Set<Hashtag> oldHashtags = new HashSet<>(this.getHashtags());
+        Set<Hashtag> newHashtags = new HashSet<>(newHashtagList);
+
+        Set<Hashtag> added = new HashSet<>(newHashtags);
+        added.removeAll(oldHashtags);
+
+        Set<Hashtag> removed = new HashSet<>(oldHashtags);
+        removed.removeAll(newHashtags);
+
+        setPackHashtags(newHashtagList);
+        return new HashtagUpdateResult(added, removed);
+    }
+
+    private void setPackHashtags(List<Hashtag> hashtags) {
+        this.packHashtags.clear();
+        for (int i = 0; i < hashtags.size(); i++) {
+            this.packHashtags.add(new PackHashtag(this, hashtags.get(i), i));
+        }
     }
 }
