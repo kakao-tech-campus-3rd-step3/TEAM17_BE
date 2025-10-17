@@ -4,6 +4,9 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.hashtag.dto.HashtagUpdateResult;
+import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.entity.Role;
 import com.starterpack.pack.dto.PackBookmarkResponseDto;
@@ -42,27 +45,41 @@ public class PackService {
     private final PackLikeRepository packLikeRepository;
     private final PackBookmarkRepository packBookmarkRepository;
     private final EntityManager entityManager;
+    private final HashtagService hashtagService;
 
     @Transactional(readOnly = true)
     public List<Pack> getPacks() {
-        return packRepository.findAll();
+        List<Pack> packs = packRepository.findAll();
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
+
     }
 
     @Transactional(readOnly = true)
     public List<Pack> getPacksByCategory(Long categoryId) {
-        return packRepository.findAllByCategoryIdWithItems(categoryId);
+        List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
     }
 
     @Transactional(readOnly = true)
     public Pack getPackDetail(Long id) {
-        return packRepository.findWithItemsById(id)
+        Pack pack = packRepository.findWithItemsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+        pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
+        return pack;
     }
 
     @Transactional
     public Pack create(PackCreateRequestDto req, Member member) {
 
         Category category = findCategoryById(req.categoryId());
+
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(req.hashtagNames());
 
         Pack pack = Pack.builder()
                 .category(category)
@@ -71,6 +88,7 @@ public class PackService {
                 .price(req.price())
                 .mainImageUrl(req.mainImageUrl())
                 .description(req.description())
+                .hashtags(hashtags)
                 .build();
 
         if (req.items() != null) {
@@ -85,6 +103,8 @@ public class PackService {
                 pack.addItem(item);
             }
         }
+
+        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
 
         return packRepository.save(pack);
     }
@@ -110,6 +130,13 @@ public class PackService {
         );
 
         pack.updateItems(req.items());
+
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(req.hashtagNames());
+
+        HashtagUpdateResult result = pack.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
 
         return pack; 
     }
@@ -140,8 +167,10 @@ public class PackService {
         // 권한 체크
         validatePackOwnership(pack, member);
 
-        packRepository.delete(pack);
+        List<Hashtag> hashtags = pack.getHashtags();
+        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
 
+        packRepository.delete(pack);
     }
 
     private Set<Product> loadProducts(List<Long> productIds) {

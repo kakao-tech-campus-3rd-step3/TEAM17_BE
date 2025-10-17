@@ -1,5 +1,6 @@
 package com.starterpack.pack.dto;
 
+import com.starterpack.hashtag.validator.HashtagCheck;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,10 @@ public record PackUpdateRequestDto(
         String description,
 
         @Valid
-        List<PackItemDto> items
+        List<PackItemDto> items,
+
+        @Size(max = 10, message = "해쉬태그는 최대 10개까지 가능합니다.")
+        @HashtagCheck
+        List<String> hashtagNames
 ) {
 }

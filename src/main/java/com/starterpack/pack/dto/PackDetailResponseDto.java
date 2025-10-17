@@ -1,5 +1,6 @@
 package com.starterpack.pack.dto;
 
+import com.starterpack.hashtag.dto.HashtagResponseDto;
 import com.starterpack.pack.entity.Pack;
 import java.util.List;
 
@@ -12,6 +13,7 @@ public record PackDetailResponseDto(
         Long categoryId,
         String categoryName,
         List<PackItemDto> items,
+        List<HashtagResponseDto> hashtags,
         Integer likeCount,
         Integer bookmarkCount,
         Integer commentCount,
@@ -32,6 +34,9 @@ public record PackDetailResponseDto(
                 pack.getCategory().getId(),
                 pack.getCategory().getName(),
                 items,
+                pack.getHashtags().stream()
+                        .map(HashtagResponseDto::from)
+                        .toList(),
                 pack.getPackLikeCount(),
                 pack.getPackBookmarkCount(),
                 pack.getPackCommentCount(),

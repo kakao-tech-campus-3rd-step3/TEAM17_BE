@@ -21,7 +21,11 @@ public class HashtagService {
 
     @Transactional
     public List<Hashtag> resolveHashtags(List<String> hashtagNames) {
-        if (hashtagNames == null || hashtagNames.isEmpty()) {
+        if (hashtagNames == null) {
+            return null;
+        }
+
+        if (hashtagNames.isEmpty()) {
             return Collections.emptyList();
         }
 

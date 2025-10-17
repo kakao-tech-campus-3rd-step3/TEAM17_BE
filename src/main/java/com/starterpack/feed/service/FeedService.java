@@ -17,6 +17,7 @@ import com.starterpack.feed.repository.FeedBookmarkRepository;
 import com.starterpack.feed.repository.FeedLikeRepository;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.feed.specification.FeedSpecification;
+import com.starterpack.hashtag.dto.HashtagUpdateResult;
 import com.starterpack.hashtag.entity.Hashtag;
 import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
@@ -121,7 +122,7 @@ public class FeedService {
 
         List<Hashtag> hashtags = hashtagService.resolveHashtags(updateDto.hashtagNames());
 
-        Feed.HashtagUpdateResult result = feed.updateHashtag(hashtags);
+        HashtagUpdateResult result = feed.updateHashtag(hashtags);
 
         hashtagService.incrementUsageCount(result.added());
         hashtagService.decrementUsageCount(result.removed());

@@ -351,6 +351,25 @@ CREATE TABLE feed_hashtag (
       CONSTRAINT chk_fh_tag_order CHECK (tag_order >= 0)
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 15) 취미 팩-해시태그 연관테이블 (pack_hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE pack_hashtag (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pack_id    BIGINT UNSIGNED NOT NULL,
+  hashtag_id BIGINT UNSIGNED NOT NULL,
+  tag_order  INT             NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_pack_hashtag (pack_id, hashtag_id),
+  KEY idx_ph_hashtag (hashtag_id),
+  CONSTRAINT fk_ph_pack
+      FOREIGN KEY (pack_id) REFERENCES pack(id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_ph_hashtag
+      FOREIGN KEY (hashtag_id) REFERENCES hashtag(id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT chk_ph_tag_order CHECK (tag_order >= 0)
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹

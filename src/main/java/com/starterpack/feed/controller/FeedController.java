@@ -25,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,7 +82,7 @@ public class FeedController {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    @PutMapping("/{feedId}")
+    @PatchMapping("/{feedId}")
     @Operation(summary = "피드 수정", description = "기존 피드의 정보를 수정합니다.(상품 정보는 변경 불가)")
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<FeedResponseDto> updateFeed(
