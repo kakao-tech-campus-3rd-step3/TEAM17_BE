@@ -59,9 +59,26 @@ public class S3Service {
      */
     private String generateFullPath(String dirName, String fileName) {
         try {
+            if (dirName == null || dirName.isBlank()) {
+                throw new BusinessException(
+                        ErrorCode.INVALID_FILE_PATH,
+                        "디렉토리 이름이 제공되지 않았습니다."
+                );
+            }
+
+            if (fileName == null || fileName.isBlank()) {
+                throw new BusinessException(
+                        ErrorCode.INVALID_FILE_PATH,
+                        "파일 이름이 제공되지 않았습니다."
+                );
+            }
+
             String sanitizedDirName = dirName.replace("..", "")
+                    .replace("\0", "")
                     .replace("/", "")
-                    .replace("\\", "");
+                    .replace("\\", "")
+                    .replaceAll("[:\\*\\?\"<>|]", "")
+                    .trim();
 
             if (sanitizedDirName.isEmpty()) {
                 throw new BusinessException(
