@@ -86,10 +86,10 @@ public class Feed {
     }
 
     public void update(String description, String imageUrl, Category category) {
-        if (description != null) {
+        if (description != null && !description.isBlank()) {
             this.description = description;
         }
-        if (imageUrl != null) {
+        if (imageUrl != null && !imageUrl.isBlank()) {
             this.imageUrl = imageUrl;
         }
         if (category != null) {

@@ -7,11 +7,9 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record FeedUpdateRequestDto(
-        @NotBlank(message = "피드 설명은 필수입니다.")
         @Size(max = 2000, message = "피드 설명은 2000자까지 입니다.")
         String description,
 
-        @NotBlank(message = "이미지 링크는 필수입니다.")
         @Size(max = 500, message= "이미지 링크는 500자까지 입니다.")
         String imageUrl,
 
