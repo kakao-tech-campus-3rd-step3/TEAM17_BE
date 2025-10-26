@@ -1,10 +1,8 @@
 package com.starterpack.member.controller;
 
 import com.starterpack.auth.service.AuthService;
-import com.starterpack.auth.login.Login;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
-import com.starterpack.member.dto.MyPageResponseDto;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -101,18 +99,6 @@ public class MemberController {
             @RequestParam Boolean isActive
     ) {
         MemberResponseDto responseDto = memberService.updateMemberActiveStatus(userId, isActive);
-        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
-    }
-
-    @GetMapping("/{userId}/mypage")
-    @Operation(summary = "마이페이지 조회", description = "특정 회원의 마이페이지 정보를 조회합니다.")
-    @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<MyPageResponseDto> getMyPage(
-            @PathVariable Long userId,
-            @Login(required = false) Member currentMember
-    ) {
-        Long currentUserId = (currentMember != null) ? currentMember.getUserId() : null;
-        MyPageResponseDto responseDto = memberService.getMyPage(userId, currentUserId);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
