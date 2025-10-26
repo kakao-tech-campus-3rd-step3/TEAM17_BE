@@ -3,6 +3,7 @@ package com.starterpack.feed.entity;
 import com.starterpack.category.entity.Category;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.hashtag.dto.HashtagUpdateResult;
 import com.starterpack.hashtag.entity.Hashtag;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.CascadeType;
@@ -13,14 +14,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,12 +74,7 @@ public class Feed {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public record HashtagUpdateResult(
-            Set<Hashtag> added,
-            Set<Hashtag> removed
-    ){
-        public static final HashtagUpdateResult EMPTY_HASHTAG = new HashtagUpdateResult(Collections.emptySet(), Collections.emptySet());
-    }
+
 
     @Builder
     public Feed(Member user, String description, String imageUrl, Category category, List<Hashtag> hashtags) {
@@ -92,10 +86,10 @@ public class Feed {
     }
 
     public void update(String description, String imageUrl, Category category) {
-        if (description != null) {
+        if (description != null && !description.isBlank()) {
             this.description = description;
         }
-        if (imageUrl != null) {
+        if (imageUrl != null && !imageUrl.isBlank()) {
             this.imageUrl = imageUrl;
         }
         if (category != null) {

@@ -1,43 +1,47 @@
 package com.starterpack.pack.dto;
 
+import com.starterpack.hashtag.dto.HashtagResponseDto;
 import com.starterpack.pack.entity.Pack;
-import com.starterpack.product.entity.Product;
 import java.util.List;
 
 public record PackDetailResponseDto(
         Long id,
-        Long categoryId,
         String name,
-        Integer cost,
+        Integer price,
         String description,
-        String src,
-        Integer like,
+        String mainImageUrl,
+        Long categoryId,
+        String categoryName,
+        List<PackItemDto> items,
+        List<HashtagResponseDto> hashtags,
+        Integer likeCount,
         Integer bookmarkCount,
-        List<PartDto> parts
+        Integer commentCount,
+        String authorNickname,
+        Long memberId
 ) {
     public static PackDetailResponseDto from(Pack pack) {
-        List<PartDto> parts = pack.getProducts().stream()
-                .map(PartDto::from)
+        List<PackItemDto> items = pack.getItems().stream()
+                .map(PackItemDto::from)
                 .toList();
-
-        Long categoryId = (pack.getCategory() != null) ? pack.getCategory().getId() : null;
 
         return new PackDetailResponseDto(
                 pack.getId(),
-                categoryId,
                 pack.getName(),
-                pack.getTotalCost(),
+                pack.getPrice(),
                 pack.getDescription(),
-                pack.getSrc(),
+                pack.getMainImageUrl(),
+                pack.getCategory().getId(),
+                pack.getCategory().getName(),
+                items,
+                pack.getHashtags().stream()
+                        .map(HashtagResponseDto::from)
+                        .toList(),
                 pack.getPackLikeCount(),
                 pack.getPackBookmarkCount(),
-                parts
+                pack.getPackCommentCount(),
+                pack.getMember().getNickname(),
+                pack.getMember().getUserId()
         );
-    }
-
-    public record PartDto(Long productId, String name, String imageUrl, Integer price) {
-        public static PartDto from(Product p) {
-            return new PartDto(p.getId(), p.getName(), p.getSrc(), p.getCost());
-        }
     }
 }

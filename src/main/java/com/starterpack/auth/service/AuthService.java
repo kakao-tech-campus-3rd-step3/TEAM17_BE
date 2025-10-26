@@ -117,7 +117,6 @@ public class AuthService {
     /**
      * 카카오 로그인 및 자동 회원가입
      */
-    @Transactional
     public TokenResponseDto kakaoLogin(String code) {
         //  Kakao Api Client를 통해 액세스 토큰 및 사용자 정보 조회
         KakaoTokenResponseDto kakaoToken = kakaoApiClient.fetchAccessToken(code);
@@ -126,11 +125,19 @@ public class AuthService {
         // userInfo를 토대로 MemberCreationRequestDto 생성
         MemberCreationRequestDto creationRequest = MemberCreationRequestDto.fromKakao(userInfo);
 
+        return processKakaoLoginTransaction(creationRequest);
+    }
+
+    /**
+     * 카카오 로그인 DB 작업 함수
+     */
+    @Transactional
+    public TokenResponseDto processKakaoLoginTransaction(MemberCreationRequestDto creationRequest) {
         // providerId와 provider를 통해 존재하는 멤버인지 확인하고 없으면 새롭게 생성
         Member member = memberRepository.findByProviderAndProviderId(Provider.KAKAO, creationRequest.providerId())
                 .orElseGet(() -> {
                     MemberResponseDto responseDto = memberService.addMember(creationRequest);
-                    
+
                     return memberRepository.findById(responseDto.userId())
                             .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND, "신규 회원 생성 후 조회에 실패했습니다."));
                 });

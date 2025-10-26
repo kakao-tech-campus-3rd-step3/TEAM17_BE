@@ -88,6 +88,19 @@ public enum ErrorCode {
     FEED_NOT_FOUND(HttpStatus.NOT_FOUND,
             "F001",
             "해당하는 피드를 찾을 수 없습니다."),
+    //S3
+    S3_PRESIGNED_URL_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,
+            "S3_001",
+            "Presigned URL 생성에 실패했습니다."),
+    S3_FILE_URL_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,
+            "S3_002",
+            "파일 URL 생성에 실패했습니다."),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,
+            "S3_003",
+            "S3 업로드 처리 중 오류가 발생했습니다."),
+    INVALID_FILE_PATH(HttpStatus.BAD_REQUEST,
+            "S3_004",
+            "유효하지 않은 파일 경로입니다."),
 
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "FC001", "해당하는 댓글을 찾을 수 없습니다."),
     COMMENT_ALREADY_DELETED(HttpStatus.CONFLICT, "FC002", "이미 삭제된 댓글입니다.");

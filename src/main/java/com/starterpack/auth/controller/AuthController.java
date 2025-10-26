@@ -9,9 +9,11 @@ import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final CsrfTokenRepository csrfTokenRepository;
 
     /**
      * 로컬 회원가입 API
@@ -167,11 +171,24 @@ public class AuthController {
     // CSRF 토큰을 쿠키로 발급
     @GetMapping("/csrf-token")
     @Operation(summary = "CSRF 토큰 발급", description = "클라이언트에게 CSRF 토큰을 쿠키로 발급합니다.")
-    public ResponseEntity<java.util.Map<String, String>> getCsrfToken(CsrfToken csrfToken) {
-        // 프론트에서 사용하기 쉽게 JSON 형태로 반환
-        return ResponseEntity.ok(java.util.Map.of(
-            "token", csrfToken.getToken(),
-            "headerName", "X-XSRF-TOKEN"
+    public ResponseEntity<Map<String, String>> getCsrfToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        // 기존 토큰 확인
+        CsrfToken csrfToken = csrfTokenRepository.loadToken(request);
+
+        // 토큰이 없으면 새로 생성
+        if (csrfToken == null) {
+            csrfToken = csrfTokenRepository.generateToken(request);
+            csrfTokenRepository.saveToken(csrfToken, request, response);
+        } else {
+            response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "token", csrfToken.getToken(),
+                "headerName", csrfToken.getHeaderName()
         ));
     }
 }

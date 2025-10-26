@@ -85,45 +85,56 @@ CREATE TABLE link_policy (
 -- 3) 스타터팩 (Pack)
 -- ------------------------------------------------------------
 CREATE TABLE pack (
-  id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name             VARCHAR(100)    NOT NULL,
-  category_id      BIGINT UNSIGNED NULL,
-  total_cost       INT UNSIGNED    NULL,
-  pack_like_count  INT UNSIGNED    NOT NULL DEFAULT 0,
-  pack_bookmark_count INT UNSIGNED NOT NULL DEFAULT 0,
-  src              VARCHAR(500)    NULL,
-  description      TEXT            NULL,
+  id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name                VARCHAR(100) NOT NULL,
+  category_id         BIGINT UNSIGNED NOT NULL,
+  member_id           BIGINT UNSIGNED NOT NULL,
+  price               INT,
+  pack_like_count     INT          NOT NULL DEFAULT 0,
+  pack_bookmark_count INT          NOT NULL DEFAULT 0,
+  pack_comment_count  INT          NOT NULL DEFAULT 0,
+  main_image_url      VARCHAR(1000),
+  description         LONGTEXT,
+  created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
   PRIMARY KEY (id),
   KEY idx_pack_category (category_id),
+  KEY idx_pack_member (member_id),
   CONSTRAINT fk_pack_category
-    FOREIGN KEY (category_id)
-    REFERENCES category(id)
-    ON UPDATE CASCADE
-    ON DELETE SET NULL,
-  CONSTRAINT chk_pack_total_cost_nonneg CHECK (total_cost IS NULL OR total_cost >= 0),
+      FOREIGN KEY (category_id)
+          REFERENCES category(id)
+          ON UPDATE CASCADE
+          ON DELETE RESTRICT,
+  CONSTRAINT fk_pack_member
+      FOREIGN KEY (member_id)
+          REFERENCES member(user_id)
+          ON UPDATE CASCADE
+          ON DELETE CASCADE,
+  CONSTRAINT chk_pack_price_nonneg  CHECK (price IS NULL OR price >= 0),
   CONSTRAINT chk_pack_like_nonneg CHECK (pack_like_count >= 0),
-  CONSTRAINT chk_pack_bookmark_nonneg CHECK (pack_bookmark_count >= 0)
+  CONSTRAINT chk_pack_bookmark_nonneg CHECK (pack_bookmark_count >= 0),
+  CONSTRAINT chk_pack_comment_nonneg CHECK (pack_comment_count >= 0)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
--- 4) 상품_스타터팩 매핑 (PtoP)
---    복합 PK + FK, 부모 삭제 시 매핑도 함께 삭제
+-- 6) 팩 아이템 (PackItem) - 새로운 구조
 -- ------------------------------------------------------------
-CREATE TABLE pack_product (
-  pack_id     BIGINT UNSIGNED NOT NULL,
-  product_id  BIGINT UNSIGNED NOT NULL,
-  PRIMARY KEY (pack_id, product_id),
-  KEY idx_pp_product (product_id),
-  CONSTRAINT fk_pp_pack
-    FOREIGN KEY (pack_id)
-    REFERENCES pack(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE,
-  CONSTRAINT fk_pp_product
-    FOREIGN KEY (product_id)
-    REFERENCES product(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+CREATE TABLE pack_item (
+    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    pack_id     BIGINT UNSIGNED NOT NULL,
+    name        VARCHAR(200)    NOT NULL,
+    link_url    VARCHAR(1000)    NULL,
+    description VARCHAR(1000)   NULL,
+    image_url   VARCHAR(1000)    NULL,
+    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_pack_item_pack (pack_id),
+    CONSTRAINT fk_pack_item_pack
+        FOREIGN KEY (pack_id)
+            REFERENCES pack(id)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 5) 사용자 피드 (Feed)
@@ -307,6 +318,7 @@ CREATE TABLE pack_comment (
   CONSTRAINT fk_pack_comment_parent
     FOREIGN KEY (parent_id) REFERENCES pack_comment(id)
     ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
 -- ------------------------------------------------------------
 -- 13) 해시태그 (Hashtag)
 -- ------------------------------------------------------------
@@ -339,6 +351,25 @@ CREATE TABLE feed_hashtag (
       CONSTRAINT chk_fh_tag_order CHECK (tag_order >= 0)
 ) ENGINE=InnoDB;
 -- ------------------------------------------------------------
+-- 15) 취미 팩-해시태그 연관테이블 (pack_hashtag)
+-- ------------------------------------------------------------
+CREATE TABLE pack_hashtag (
+  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pack_id    BIGINT UNSIGNED NOT NULL,
+  hashtag_id BIGINT UNSIGNED NOT NULL,
+  tag_order  INT             NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_pack_hashtag (pack_id, hashtag_id),
+  KEY idx_ph_hashtag (hashtag_id),
+  CONSTRAINT fk_ph_pack
+      FOREIGN KEY (pack_id) REFERENCES pack(id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_ph_hashtag
+      FOREIGN KEY (hashtag_id) REFERENCES hashtag(id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT chk_ph_tag_order CHECK (tag_order >= 0)
+) ENGINE=InnoDB;
+-- ------------------------------------------------------------
 -- (옵션) 조회 최적화용 인덱스 예시.
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
@@ -348,4 +379,4 @@ CREATE INDEX idx_pack_bookmark ON pack(pack_bookmark_count DESC);
 
 -- 카테고리별 비용/정렬 조회가 많다면
 CREATE INDEX idx_product_category_cost ON product(category_id, cost);
-CREATE INDEX idx_pack_category_cost ON pack(category_id, total_cost);
+CREATE INDEX idx_pack_category_cost ON pack(category_id, price);

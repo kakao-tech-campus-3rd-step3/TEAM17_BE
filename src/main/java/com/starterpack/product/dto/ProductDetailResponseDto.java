@@ -14,14 +14,9 @@ public record ProductDetailResponseDto(
         Integer cost,
         Integer likeCount,
         Long categoryId,
-        String categoryName,
-        List<PackInfo> packs
+        String categoryName
 ) {
     public static ProductDetailResponseDto from(Product product) {
-        List<PackInfo> packInfos = product.getPacks().stream()
-                .map(PackInfo::from)
-                .toList();
-
         Long categoryId = (product.getCategory() != null) ? product.getCategory().getId() : null;
         String categoryName = (product.getCategory() != null) ? product.getCategory().getName() : "미지정";
         return new ProductDetailResponseDto(
@@ -33,17 +28,7 @@ public record ProductDetailResponseDto(
                 product.getCost(),
                 product.getLikeCount(),
                 categoryId,
-                categoryName,
-                packInfos
+                categoryName
         );
-    }
-
-    public record PackInfo(
-            Long id,
-            String name
-    ) {
-        public static PackInfo from(Pack pack) {
-            return new PackInfo(pack.getId(), pack.getName()); // ← description 말고 name
-        }
     }
 }

@@ -24,37 +24,36 @@
     .btnbar{ display:flex; gap:8px; margin-top:18px; }
     .btn{ padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
     .btn-primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
-    .btn-danger{ background:#fff; color:#b91c1c; border-color:#fecaca; }
+    .btn-danger{ background:#dc2626; color:#fff; border-color:#dc2626; }
     .muted{ color:#6b7280; }
     .small{ font-size:12px; }
-    .list{ border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; }
-    .list-header{ position:relative; display:flex; gap:10px; align-items:center; padding:10px 12px; background:#fafafa; border-bottom:1px solid var(--border); }
-    .list-body{ max-height:420px; overflow:auto; }
-    .row{ display:grid; grid-template-columns: 1fr 120px 90px; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border); }
-    .row:last-child{ border-bottom:none; }
-    .row .price{ text-align:right; font-variant-numeric: tabular-nums; }
-    .row .actions{ text-align:right; }
-    .search{ flex:1; }
     .image-preview{ width:260px; aspect-ratio:16/10; background:#f9fafb; border:1px dashed var(--border); border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
     .image-preview img{ width:100%; height:100%; object-fit:cover; }
-    .basket-summary{ display:flex; justify-content:space-between; padding:10px 12px; background:#fafafa; border-top:1px solid var(--border); }
-    .pill{ display:inline-block; padding:2px 8px; border-radius:999px; background:#F1F5F9; font-size:12px; }
 
-    /* ▼ 타입 드롭다운 */
-    .type-dropdown{ position:relative; }
-    .type-menu{
-      position:absolute; top:100%; right:0;
-      width:200px; max-height:260px; overflow:auto;
-      background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 24px rgba(0,0,0,.08);
-      padding:6px; margin-top:6px; z-index:30; display:none;
+    /* PackItem 관리 영역 */
+    .items-section{ border:1px solid var(--border); border-radius:12px; padding:16px; background:#fafafa; }
+    .items-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .item-card{
+      background:#fff; border:1px solid var(--border); border-radius:10px;
+      padding:12px; margin-bottom:10px; position:relative;
     }
-    .type-menu.open{ display:block; }
-    .type-item{
-      padding:8px 10px; border-radius:8px; cursor:pointer;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    .item-card:last-child{ margin-bottom:0; }
+    .item-remove{
+      position:absolute; top:8px; right:8px;
+      background:#dc2626; color:#fff; border:none; border-radius:6px;
+      padding:4px 8px; cursor:pointer; font-size:11px;
     }
-    .type-item:hover{ background:#f3f4f6; }
-    .type-item.active{ background:#EEF2FF; color:#3730A3; font-weight:700; }
+    .item-field{ margin-bottom:8px; }
+    .item-field:last-child{ margin-bottom:0; }
+    .item-field label{ font-size:12px; font-weight:600; color:#6b7280; margin-bottom:4px; }
+    .item-field input{ font-size:13px; padding:8px 10px; }
+    .item-preview{
+      width:100%; height:80px; background:#f9fafb;
+      border:1px dashed var(--border); border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden; margin-top:4px;
+    }
+    .item-preview img{ width:100%; height:100%; object-fit:cover; }
   </style>
 </head>
 <body>
@@ -76,16 +75,17 @@
           <input type="hidden" name="id" th:value="${packId}"/>
 
           <div class="grid-2">
+            <!-- 좌측: 기본 정보 -->
             <div>
               <div class="field">
-                <label for="name">패키지 이름</label>
-                <input type="text" id="name" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'invalid'"/>
+                <label for="name">패키지 이름 *</label>
+                <input type="text" id="name" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'invalid'" required/>
                 <div class="error" th:errors="*{name}"></div>
               </div>
 
               <div class="field">
-                <label for="categoryId">카테고리</label>
-                <select id="categoryId" th:field="*{categoryId}" th:classappend="${#fields.hasErrors('categoryId')} ? 'invalid'">
+                <label for="categoryId">카테고리 *</label>
+                <select id="categoryId" th:field="*{categoryId}" th:classappend="${#fields.hasErrors('categoryId')} ? 'invalid'" required>
                   <option value="">-- 카테고리 선택 --</option>
                   <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
                 </select>
@@ -93,21 +93,20 @@
               </div>
 
               <div class="field">
-                <label for="totalCost">총 비용</label>
-                <div style="display:flex; gap:8px;">
-                  <input type="number" id="totalCost" th:field="*{totalCost}" step="1" th:classappend="${#fields.hasErrors('totalCost')} ? 'invalid'"/>
-                  <button type="button" class="btn" onclick="fillCostBySum()">선택 합계로 채우기</button>
-                </div>
-                <div class="error" th:errors="*{totalCost}"></div>
-                <div class="small muted">※ 합계로 채운 뒤 필요하면 직접 수정하세요.</div>
+                <label for="price">전체 가격</label>
+                <input type="number" id="price" th:field="*{price}" step="1" min="0" th:classappend="${#fields.hasErrors('price')} ? 'invalid'"/>
+                <div class="error" th:errors="*{price}"></div>
+                <div class="small muted">※ 팩 전체의 대략적인 가격을 입력하세요.</div>
               </div>
 
               <div class="field">
-                <label for="src">대표 이미지 URL</label>
-                <input type="text" id="src" th:field="*{src}" placeholder="https://..." oninput="previewImage()"
-                       th:classappend="${#fields.hasErrors('src')} ? 'invalid'"/>
-                <div class="error" th:errors="*{src}"></div>
-                <div class="image-preview" id="imagePreview" style="margin-top:8px;"><span class="small muted">미리보기</span></div>
+                <label for="mainImageUrl">대표 이미지 URL</label>
+                <input type="text" id="mainImageUrl" th:field="*{mainImageUrl}" placeholder="https://..." oninput="previewMainImage()"
+                       th:classappend="${#fields.hasErrors('mainImageUrl')} ? 'invalid'"/>
+                <div class="error" th:errors="*{mainImageUrl}"></div>
+                <div class="image-preview" id="mainImagePreview" style="margin-top:8px;">
+                  <span class="small muted">미리보기</span>
+                </div>
               </div>
 
               <div class="field">
@@ -117,45 +116,68 @@
               </div>
             </div>
 
+            <!-- 우측: PackItem 관리 -->
             <div>
-              <div class="list" style="margin-bottom:16px;">
-                <div class="list-header">
-                  <strong>상품 목록</strong>
-                  <input type="text" class="search" id="productFilter" placeholder="상품 검색(이름/가격)" oninput="filterProducts()"/>
-                  <!-- ▼ 추가: 타입 드롭다운 -->
-                  <div class="type-dropdown">
-                    <button type="button" class="btn" id="typeMenuBtn" aria-haspopup="listbox" aria-expanded="false">타입: 전체</button>
-                    <div class="type-menu" id="typeMenu" role="listbox" aria-labelledby="typeMenuBtn"></div>
-                  </div>
-                  <span class="pill small" id="allCount"></span>
+              <div class="items-section">
+                <div class="items-header">
+                  <strong>팩 구성 아이템 *</strong>
+                  <button type="button" class="btn btn-primary" onclick="addItem()">+ 아이템 추가</button>
                 </div>
-                <div class="list-body" id="productList">
-                  <div class="row"
-                       th:each="p : ${products}"
-                       th:attr="data-id=${p.id}, data-name=${p.name}, data-price=${p.cost}, data-type=${p.productType}">
-                    <div th:text="${p.name}">상품명</div>
-                    <div class="price" th:text="${p.cost}">0</div>
-                    <div class="actions">
-                      <button type="button" class="btn" th:attr="data-id=${p.id}" onclick="addToCart(this)">추가</button>
+
+                <div id="itemsContainer">
+                  <!-- 기존 아이템들 (수정 모드일 때) -->
+                  <div th:each="item, stat : *{items}" class="item-card">
+                    <button type="button" class="item-remove" onclick="removeItem(this)">삭제</button>
+
+                    <div class="item-field">
+                      <label th:for="'item-name-' + ${stat.index}">아이템 이름 *</label>
+                      <input type="text"
+                             th:id="'item-name-' + ${stat.index}"
+                             th:name="'items[' + ${stat.index} + '].name'"
+                             th:value="${item.name}"
+                             placeholder="예: 스마트폰 짐벌"
+                             required/>
+                    </div>
+
+                    <div class="item-field">
+                      <label th:for="'item-link-' + ${stat.index}">링크 URL</label>
+                      <input type="text"
+                             th:id="'item-link-' + ${stat.index}"
+                             th:name="'items[' + ${stat.index} + '].linkUrl'"
+                             th:value="${item.linkUrl}"
+                             placeholder="https://example.com/product"/>
+                    </div>
+
+                    <div class="item-field">
+                      <label th:for="'item-desc-' + ${stat.index}">설명</label>
+                      <textarea th:id="'item-desc-' + ${stat.index}"
+                                th:name="'items[' + ${stat.index} + '].description'"
+                                th:text="${item.description}"
+                                placeholder="아이템 설명"
+                                rows="2"></textarea>
+                    </div>
+
+                    <div class="item-field">
+                      <label th:for="'item-img-' + ${stat.index}">이미지 URL</label>
+                      <input type="text"
+                             th:id="'item-img-' + ${stat.index}"
+                             th:name="'items[' + ${stat.index} + '].imageUrl'"
+                             th:value="${item.imageUrl}"
+                             placeholder="https://..."
+                             th:oninput="'previewItemImage(this, ' + ${stat.index} + ')'"/>
+                      <div th:id="'item-preview-' + ${stat.index}" class="item-preview">
+                        <span class="small muted">미리보기</span>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- 신규 아이템이 동적으로 추가될 영역 -->
+                </div>
+
+                <div class="small muted" style="margin-top:12px;">
+                  ※ 최소 1개 이상의 아이템이 필요합니다.
                 </div>
               </div>
-
-              <div class="list">
-                <div class="list-header">
-                  <strong>선택한 상품</strong>
-                  <span class="pill small" id="selCount">0개</span>
-                </div>
-                <div class="list-body" id="cartList"></div>
-                <div class="basket-summary">
-                  <div class="small muted">※ 동일 상품은 중복 추가되지 않습니다.</div>
-                  <div><b>합계:</b> <span id="sumPrice">0</span></div>
-                </div>
-              </div>
-
-              <div id="hiddenInputs"></div>
-              <div class="small muted" style="margin-top:8px;">폼 제출 시 선택한 상품들의 ID가 <code>productIds</code>로 전송됩니다.</div>
             </div>
           </div>
 
@@ -170,127 +192,153 @@
 </div>
 
 <script th:inline="javascript">
-  const presetIds = /*[[${packDto.productIds}]]*/ [];
-  const $productList = document.getElementById('productList');
-  const $cartList    = document.getElementById('cartList');
-  const $hidden      = document.getElementById('hiddenInputs');
-  const $sumPrice    = document.getElementById('sumPrice');
-  const $selCount    = document.getElementById('selCount');
-  const $allCount    = document.getElementById('allCount');
-  const $filter      = document.getElementById('productFilter');
-  const $totalCost   = document.getElementById('totalCost');
-  const $src         = document.getElementById('src');
-  const $imagePreview= document.getElementById('imagePreview');
+  let itemIndex = /*[[${packDto.items != null ? #lists.size(packDto.items) : 0}]]*/ 0;
 
-  // ▼ 타입 드롭다운 관련
-  const $typeBtn  = document.getElementById('typeMenuBtn');
-  const $typeMenu = document.getElementById('typeMenu');
-  let productTypes = [];      // 수집된 타입들
-  let selectedType = '';      // '' 이면 전체
-
-  function formatInt(n){ return Number(n||0); }
-  function readRow(el){ return { id:formatInt(el.getAttribute('data-id')), name:el.getAttribute('data-name'), price:formatInt(el.getAttribute('data-price')) }; }
-  function cartHas(id){ return !!$cartList.querySelector(`[data-id="${id}"]`); }
-  function updateHiddenInputs(){
-    $hidden.innerHTML = '';
-    const ids = Array.from($cartList.querySelectorAll('.row')).map(r => r.getAttribute('data-id'));
-    ids.forEach(id => { const i=document.createElement('input'); i.type='hidden'; i.name='productIds'; i.value=id; $hidden.appendChild(i); });
-    $selCount.textContent = ids.length + '개';
-  }
-  function updateSum(){ const sum = Array.from($cartList.querySelectorAll('.row')).reduce((a,r)=>a+formatInt(r.getAttribute('data-price')),0); $sumPrice.textContent = sum; }
-  function disableAddButton(id, d){ const btn=$productList.querySelector(`button[data-id="${id}"]`); if(!btn) return; btn.disabled=!!d; btn.textContent=d?'추가됨':'추가'; }
-  function addToCart(btn){
-    const row=btn.closest('.row'); const item=readRow(row); if(cartHas(item.id)) return;
-    const el=document.createElement('div'); el.className='row'; el.setAttribute('data-id',item.id); el.setAttribute('data-name',item.name); el.setAttribute('data-price',item.price);
-    el.innerHTML=`<div>${item.name}</div><div class="price">${item.price}</div><div class="actions"><button type="button" class="btn btn-danger" onclick="removeFromCart(${item.id})">제거</button></div>`;
-    $cartList.appendChild(el); disableAddButton(item.id,true); updateHiddenInputs(); updateSum();
-  }
-  function removeFromCart(id){ const el=$cartList.querySelector(`.row[data-id="${id}"]`); if(el) el.remove(); disableAddButton(id,false); updateHiddenInputs(); updateSum(); }
-
-  // 검색 + 타입 동시 적용
-  function filterProducts(){
-    const q=($filter.value||'').toLowerCase().trim();
-    $productList.querySelectorAll('.row').forEach(r=>{
-      const n=(r.getAttribute('data-name')||'').toLowerCase();
-      const p=(r.getAttribute('data-price')||'').toString();
-      const t=(r.getAttribute('data-type')||'');
-      const matchesKeyword = (n.includes(q) || p.includes(q));
-      const matchesType = !selectedType || t === selectedType;
-      r.style.display = (matchesKeyword && matchesType) ? '' : 'none';
-    });
+  // 대표 이미지 미리보기
+  function previewMainImage() {
+    const url = document.getElementById('mainImageUrl')?.value?.trim();
+    const preview = document.getElementById('mainImagePreview');
+    if (!url) {
+      preview.innerHTML = '<span class="small muted">미리보기</span>';
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      preview.innerHTML = '';
+      preview.appendChild(img);
+    };
+    img.onerror = () => {
+      preview.innerHTML = '<span class="error small">이미지를 불러올 수 없습니다.</span>';
+    };
+    img.src = url;
   }
 
-  // ▼ 타입 드롭다운
-  function collectTypes(){
-    const set = new Set();
-    $productList.querySelectorAll('.row').forEach(r=>{
-      const t = (r.getAttribute('data-type')||'').trim();
-      if (t) set.add(t);
-    });
-    productTypes = Array.from(set).sort();
-  }
-  function updateTypeButtonLabel(){
-    $typeBtn.textContent = '타입: ' + (selectedType || '전체');
-    $typeBtn.setAttribute('aria-expanded', $typeMenu.classList.contains('open') ? 'true' : 'false');
-  }
-  function openTypeMenu(){
-    buildTypeMenu();
-    $typeMenu.classList.add('open');
-    updateTypeButtonLabel();
-  }
-  function closeTypeMenu(){
-    $typeMenu.classList.remove('open');
-    updateTypeButtonLabel();
-  }
-  function toggleTypeMenu(){
-    if ($typeMenu.classList.contains('open')) closeTypeMenu(); else openTypeMenu();
-  }
-  function buildTypeMenu(){
-    // 메뉴 아이템 구성: 전체 + 타입들
-    const items = [''].concat(productTypes);
-    $typeMenu.innerHTML = items.map(t => {
-      const active = (t === selectedType);
-      const label = t || '전체';
-      return `<div class="type-item ${active?'active':''}" role="option" data-type="${t}">${label}</div>`;
-    }).join('');
-  }
-  $typeMenu?.addEventListener('click', (e)=>{
-    const item = e.target.closest('.type-item');
-    if (!item) return;
-    selectedType = item.getAttribute('data-type') || '';
-    filterProducts();
-    closeTypeMenu();
-    updateTypeButtonLabel();
-  });
+  // 아이템 이미지 미리보기
+  function previewItemImage(input, index) {
+    const url = input.value?.trim();
+    const preview = document.getElementById('item-preview-' + index);
+    if (!preview) return;
 
-  // 외부 클릭/ESC 닫기
-  document.addEventListener('click', (e)=>{
-    const within = e.target.closest('.type-dropdown');
-    if (!within) closeTypeMenu();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if (e.key === 'Escape') closeTypeMenu();
-  });
+    if (!url) {
+      preview.innerHTML = '<span class="small muted">미리보기</span>';
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      preview.innerHTML = '';
+      preview.appendChild(img);
+    };
+    img.onerror = () => {
+      preview.innerHTML = '<span class="error small">이미지 로드 실패</span>';
+    };
+    img.src = url;
+  }
 
-  function fillCostBySum(){ const sum=Array.from($cartList.querySelectorAll('.row')).reduce((a,r)=>a+formatInt(r.getAttribute('data-price')),0); if(!isNaN(sum)&&$totalCost){$totalCost.value=sum;} }
-  function previewImage(){ const url=$src&&$src.value&&$src.value.trim(); if(!url){ $imagePreview.innerHTML='<span class="small muted">미리보기</span>'; return;} const img=new Image(); img.onload=()=>{$imagePreview.innerHTML=''; $imagePreview.appendChild(img);}; img.onerror=()=>{$imagePreview.innerHTML='<span class="error small">이미지를 불러올 수 없습니다.</span>';}; img.src=url; }
-  function beforeSubmit(){ const b=document.getElementById('submitBtn'); if(b){ b.disabled=true; b.textContent='저장 중...'; } return true; }
+  // 새 아이템 추가
+  function addItem() {
+    const container = document.getElementById('itemsContainer');
+    const itemCard = document.createElement('div');
+    itemCard.className = 'item-card';
+    itemCard.innerHTML = `
+      <button type="button" class="item-remove" onclick="removeItem(this)">삭제</button>
 
-  (function init(){
-    $allCount.textContent = ($productList.querySelectorAll('.row').length) + '개';
+      <div class="item-field">
+        <label for="item-name-${itemIndex}">아이템 이름 *</label>
+        <input type="text" id="item-name-${itemIndex}" name="items[${itemIndex}].name" placeholder="예: 스마트폰 짐벌" required/>
+      </div>
 
-    if(Array.isArray(presetIds)){
-      presetIds.forEach(id=>{
-        const row=$productList.querySelector(`.row[data-id="${id}"]`);
-        if(row){ const btn=row.querySelector('button[data-id]'); if(btn) addToCart(btn); }
+      <div class="item-field">
+        <label for="item-link-${itemIndex}">링크 URL</label>
+        <input type="text" id="item-link-${itemIndex}" name="items[${itemIndex}].linkUrl" placeholder="https://example.com/product"/>
+      </div>
+
+      <div class="item-field">
+        <label for="item-desc-${itemIndex}">설명</label>
+        <textarea id="item-desc-${itemIndex}" name="items[${itemIndex}].description" placeholder="아이템 설명" rows="2"></textarea>
+      </div>
+
+      <div class="item-field">
+        <label for="item-img-${itemIndex}">이미지 URL</label>
+        <input type="text" id="item-img-${itemIndex}" name="items[${itemIndex}].imageUrl" placeholder="https://..." oninput="previewItemImage(this, ${itemIndex})"/>
+        <div id="item-preview-${itemIndex}" class="item-preview">
+          <span class="small muted">미리보기</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(itemCard);
+    itemIndex++;
+  }
+
+  // 아이템 삭제
+  function removeItem(button) {
+    const itemCard = button.closest('.item-card');
+    if (itemCard) {
+      // 최소 1개는 남겨야 함
+      const container = document.getElementById('itemsContainer');
+      const remainingItems = container.querySelectorAll('.item-card');
+      if (remainingItems.length <= 1) {
+        alert('최소 1개의 아이템이 필요합니다.');
+        return;
+      }
+      itemCard.remove();
+      reindexItems();
+    }
+  }
+
+  // 인덱스 재정렬 함수 추가
+  function reindexItems() {
+    const container = document.getElementById('itemsContainer');
+    const items = container.querySelectorAll('.item-card');
+
+    items.forEach((item, newIndex) => {
+      // name 속성 업데이트
+      item.querySelectorAll('input, textarea').forEach(field => {
+        const name = field.getAttribute('name');
+        if (name && name.startsWith('items[')) {
+          const newName = name.replace(/items\[\d+\]/, `items[${newIndex}]`);
+          field.setAttribute('name', newName);
+        }
       });
+
+      // id 속성 업데이트 (미리보기용)
+      const previewDiv = item.querySelector('[id^="item-preview-"]');
+      if (previewDiv) {
+        previewDiv.setAttribute('id', `item-preview-${newIndex}`);
+      }
+    });
+  }
+
+  // 폼 제출 전 검증
+  function beforeSubmit() {
+    reindexItems();
+
+    const container = document.getElementById('itemsContainer');
+    const items = container.querySelectorAll('.item-card');
+
+    if (items.length === 0) {
+      alert('최소 1개 이상의 아이템을 추가해주세요.');
+      return false;
     }
 
-    collectTypes();
-    updateTypeButtonLabel();
-    $typeBtn?.addEventListener('click', toggleTypeMenu);
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '저장 중...';
+    }
+    return true;
+  }
 
-    previewImage();
+  // 초기화
+  (function init() {
+    previewMainImage();
+
+    // 기존 아이템 이미지 미리보기 (수정 모드)
+    const existingItems = document.querySelectorAll('.item-card input[name$=".imageUrl"]');
+    existingItems.forEach((input, idx) => {
+      if (input.value) {
+        previewItemImage(input, idx);
+      }
+    });
   })();
 </script>
 </body>

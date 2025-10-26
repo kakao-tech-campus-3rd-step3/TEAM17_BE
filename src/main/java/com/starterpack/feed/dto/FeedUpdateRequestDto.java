@@ -1,16 +1,15 @@
 package com.starterpack.feed.dto;
 
 import com.starterpack.hashtag.validator.HashtagCheck;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record FeedUpdateRequestDto(
-        @NotNull(message = "피드 설명은 필수입니다.")
         @Size(max = 2000, message = "피드 설명은 2000자까지 입니다.")
         String description,
 
-        @NotNull(message = "이미지 링크는 필수입니다.")
         @Size(max = 500, message= "이미지 링크는 500자까지 입니다.")
         String imageUrl,
 

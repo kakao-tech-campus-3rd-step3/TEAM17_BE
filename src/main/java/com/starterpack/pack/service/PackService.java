@@ -4,12 +4,18 @@ import com.starterpack.category.entity.Category;
 import com.starterpack.category.repository.CategoryRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.hashtag.dto.HashtagUpdateResult;
+import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
+import com.starterpack.member.entity.Role;
 import com.starterpack.pack.dto.PackBookmarkResponseDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
+import com.starterpack.pack.dto.PackItemDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.entity.PackItem;
 import com.starterpack.pack.entity.PackLike;
 import com.starterpack.pack.repository.PackLikeRepository;
 import com.starterpack.pack.entity.PackBookmark;
@@ -39,65 +45,99 @@ public class PackService {
     private final PackLikeRepository packLikeRepository;
     private final PackBookmarkRepository packBookmarkRepository;
     private final EntityManager entityManager;
+    private final HashtagService hashtagService;
 
     @Transactional(readOnly = true)
     public List<Pack> getPacks() {
-        return packRepository.findAll();
+        List<Pack> packs = packRepository.findAll();
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
+
     }
 
     @Transactional(readOnly = true)
     public List<Pack> getPacksByCategory(Long categoryId) {
-        return packRepository.findAllByCategoryIdWithProducts(categoryId);
+        List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return packs;
     }
 
     @Transactional(readOnly = true)
     public Pack getPackDetail(Long id) {
-        return packRepository.findWithProductsById(id)
+        Pack pack = packRepository.findWithItemsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+        pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
+        return pack;
     }
 
     @Transactional
-    public Pack create(PackCreateRequestDto req) {
+    public Pack create(PackCreateRequestDto req, Member member) {
 
-        Category category = categoryRepository.findById(req.categoryId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        Category category = findCategoryById(req.categoryId());
 
-        Set<Product> products = loadProducts(req.productIds());
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(req.hashtagNames());
 
-        Pack pack = Pack.create(
-                category,
-                req.name(),
-                req.description(),
-                req.src(),
-                products,
-                req.totalCost()
-        );
+        Pack pack = Pack.builder()
+                .category(category)
+                .member(member)
+                .name(req.name())
+                .price(req.price())
+                .mainImageUrl(req.mainImageUrl())
+                .description(req.description())
+                .hashtags(hashtags)
+                .build();
+
+        if (req.items() != null) {
+            for (PackItemDto itemDto : req.items()) {
+                PackItem item = PackItem.builder()
+                        .pack(pack)
+                        .name(itemDto.name())
+                        .linkUrl(itemDto.linkUrl())
+                        .description(itemDto.description())
+                        .imageUrl(itemDto.imageUrl())
+                        .build();
+                pack.addItem(item);
+            }
+        }
+
+        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
 
         return packRepository.save(pack);
     }
 
     @Transactional
-    public Pack update(Long id, PackUpdateRequestDto req) {
+    public Pack update(Long id, PackUpdateRequestDto req, Member member) {
         Pack pack = findPackById(id);
 
-        validateUpdateRequest(req);
+        // 권한 체크
+        validatePackOwnership(pack, member);
 
         Category newCategory = (req.categoryId() != null)
                 ? findCategoryById(req.categoryId())
                 : null;
 
-        Set<Product> newProducts = (req.productIds() != null)
-                ? loadProducts(req.productIds())
-                : null;
-
-        pack.applyUpdate(
+        // Pack 기본 정보 업데이트
+        pack.update(
                 newCategory,
                 req.name(),
-                newProducts,
-                req.totalCost(),
-                req.description(),
-                req.src()
+                req.price(),
+                req.mainImageUrl(),
+                req.description()
         );
+
+        pack.updateItems(req.items());
+
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(req.hashtagNames());
+
+        HashtagUpdateResult result = pack.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
+
         return pack; 
     }
 
@@ -121,12 +161,15 @@ public class PackService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        Pack pack = packRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
-        for (Product p : new HashSet<>(pack.getProducts())) {
-            pack.removeProduct(p);
-        }
+    public void delete(Long id, Member member) {
+        Pack pack = findPackById(id);
+
+        // 권한 체크
+        validatePackOwnership(pack, member);
+
+        List<Hashtag> hashtags = pack.getHashtags();
+        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
+
         packRepository.delete(pack);
     }
 
@@ -190,5 +233,12 @@ public class PackService {
         Page<PackLike> packLikes = packLikeRepository.findByPack(pack, pageable);
 
         return packLikes.map(PackLike::getMember);
+    }
+
+    private void validatePackOwnership(Pack pack, Member member) {
+        // 관리자이거나 작성자 본인인 경우만 허용
+        if (!member.getRole().equals(Role.ADMIN) && !pack.isOwner(member)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "Pack을 수정/삭제할 권한이 없습니다.");
+        }
     }
 }

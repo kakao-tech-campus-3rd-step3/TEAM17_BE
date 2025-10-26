@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+@org.hibernate.annotations.BatchSize(size = 100)
 @Entity
 @Table(name = "hashtag")
 @Getter

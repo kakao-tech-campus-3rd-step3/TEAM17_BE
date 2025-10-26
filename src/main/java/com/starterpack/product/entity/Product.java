@@ -39,10 +39,6 @@ public class Product {
     @JoinColumn(name = "category_id") // ERD: category
     private Category category;
 
-    // pack_product 역방향 (선택)
-    @ManyToMany(mappedBy = "products")
-    private Set<Pack> packs = new HashSet<>();
-
     public Product() {}
 
     public Product(Long id, String name, String link, String productType, String src, Integer cost, Category category) {
