@@ -118,8 +118,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(
                         new JwtTokenFilter(userDetailsService, jwtTokenUtil,
-                                Stream.of(API_PUBLIC_URLS, COMMON_PUBLIC_URLS, 
-                                         new String[]{"/api/members/*/mypage"}).flatMap(Stream::of).toList(),
+                                Stream.of(API_PUBLIC_URLS, COMMON_PUBLIC_URLS).flatMap(Stream::of).toList(),
                                 jwtTokenResolver),
                         UsernamePasswordAuthenticationFilter.class
                 )
