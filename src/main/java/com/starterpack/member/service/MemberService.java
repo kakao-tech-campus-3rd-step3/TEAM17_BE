@@ -169,9 +169,15 @@ public class MemberService {
     }
 
     // 마이페이지 조회
+    @Transactional(readOnly = true)
     public MyPageResponseDto getMyPage(Long targetUserId, Long currentUserId) {
         Member member = memberRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 비활성화된 회원은 조회 불가 (본인 제외)
+        if (!member.getIsActive() && (currentUserId == null || !currentUserId.equals(targetUserId))) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
 
         List<Pack> packs = packRepository.findByMemberId(targetUserId);
         List<Feed> feeds = feedRepository.findByUserId(targetUserId, 
