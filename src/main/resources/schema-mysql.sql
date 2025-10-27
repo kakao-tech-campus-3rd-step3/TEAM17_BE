@@ -189,6 +189,9 @@ CREATE TABLE feed_like (
            ON UPDATE CASCADE
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE INDEX idx_pack_like_pack_created_at
+ON pack_like (pack_id, created_at);
 -- ------------------------------------------------------------
 -- 8) 피드 북마크 (Feed Bookmark)
 -- ------------------------------------------------------------
