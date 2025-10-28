@@ -96,7 +96,7 @@ CREATE TABLE pack (
   main_image_url      VARCHAR(1000),
   description         LONGTEXT,
   created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_pack_category (category_id),
   KEY idx_pack_member (member_id),
@@ -117,15 +117,15 @@ CREATE TABLE pack (
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
--- 6) 팩 아이템 (PackItem) - 새로운 구조
+-- 6) 팩 아이템 (PackItem)
 -- ------------------------------------------------------------
 CREATE TABLE pack_item (
     id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     pack_id     BIGINT UNSIGNED NOT NULL,
     name        VARCHAR(200)    NOT NULL,
-    link_url    VARCHAR(1000)    NULL,
+    link_url    VARCHAR(1000)   NULL,
     description VARCHAR(1000)   NULL,
-    image_url   VARCHAR(1000)    NULL,
+    image_url   VARCHAR(1000)   NULL,
     created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -136,20 +136,21 @@ CREATE TABLE pack_item (
             ON UPDATE CASCADE
             ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 5) 사용자 피드 (Feed)
 -- ------------------------------------------------------------
 CREATE TABLE feed (
-    id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
-    user_id     BIGINT UNSIGNED     NOT NULL,
-    description VARCHAR(2000)       NOT NULL,
-    image_url   VARCHAR(500)        NOT NULL,
-    category_id BIGINT UNSIGNED     NOT NULL,
-    like_count  BIGINT     UNSIGNED    NOT NULL DEFAULT 0,
-    bookmark_count  BIGINT UNSIGNED    NOT NULL DEFAULT 0,
-    comment_count BIGINT   UNSIGNED    NOT NULL DEFAULT 0,
-    created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id         BIGINT UNSIGNED NOT NULL,
+    description     VARCHAR(2000)   NOT NULL,
+    image_url       VARCHAR(500)    NOT NULL,
+    category_id     BIGINT UNSIGNED NOT NULL,
+    like_count      BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    bookmark_count  BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    comment_count   BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_feed_user (user_id),
     KEY idx_feed_category (category_id),
@@ -167,6 +168,7 @@ CREATE TABLE feed (
             ON UPDATE CASCADE
             ON DELETE RESTRICT
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 7) 피드 좋아요 (Feed Like)
 -- ------------------------------------------------------------
@@ -190,8 +192,6 @@ CREATE TABLE feed_like (
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE INDEX idx_pack_like_pack_created_at
-ON pack_like (pack_id, created_at);
 -- ------------------------------------------------------------
 -- 8) 피드 북마크 (Feed Bookmark)
 -- ------------------------------------------------------------
@@ -214,6 +214,7 @@ CREATE TABLE feed_bookmark (
            ON UPDATE CASCADE
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 9) 피드 댓글 (Feed Comment)
 -- ------------------------------------------------------------
@@ -249,8 +250,9 @@ CREATE TABLE feed_comment (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
--- 10) 팩 좋아요 (Pack Like)
+-- 10) 팩 좋아요 (Pack Like)  ← 옵션 A: 인덱스를 테이블 내부 KEY로 정의
 -- ------------------------------------------------------------
 CREATE TABLE pack_like (
    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -260,6 +262,7 @@ CREATE TABLE pack_like (
    PRIMARY KEY (id),
    UNIQUE KEY uk_pack_like_member (pack_id, member_id),
    KEY idx_pl_member (member_id),
+   KEY idx_pack_like_pack_created_at (pack_id, created_at),
    CONSTRAINT fk_pl_pack
        FOREIGN KEY (pack_id)
            REFERENCES pack(id)
@@ -271,6 +274,7 @@ CREATE TABLE pack_like (
            ON UPDATE CASCADE
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 11) 팩 북마크 (Pack Bookmark)
 -- ------------------------------------------------------------
@@ -293,6 +297,7 @@ CREATE TABLE pack_bookmark (
            ON UPDATE CASCADE
            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 12) 팩 댓글 (Pack Comment)
 -- ------------------------------------------------------------
@@ -322,6 +327,7 @@ CREATE TABLE pack_comment (
     FOREIGN KEY (parent_id) REFERENCES pack_comment(id)
     ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 13) 해시태그 (Hashtag)
 -- ------------------------------------------------------------
@@ -334,6 +340,7 @@ CREATE TABLE hashtag (
      PRIMARY KEY (id),
      UNIQUE KEY uk_hashtag_name (name)
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 14) 피드-해시태그 연관테이블 (feed_hashtag)
 -- ------------------------------------------------------------
@@ -353,6 +360,7 @@ CREATE TABLE feed_hashtag (
               ON UPDATE CASCADE ON DELETE CASCADE,
       CONSTRAINT chk_fh_tag_order CHECK (tag_order >= 0)
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
 -- 15) 취미 팩-해시태그 연관테이블 (pack_hashtag)
 -- ------------------------------------------------------------
@@ -372,8 +380,9 @@ CREATE TABLE pack_hashtag (
           ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT chk_ph_tag_order CHECK (tag_order >= 0)
 ) ENGINE=InnoDB;
+
 -- ------------------------------------------------------------
--- (옵션) 조회 최적화용 인덱스 예시.
+-- (옵션) 조회 최적화용 인덱스 예시
 -- ------------------------------------------------------------
 -- 좋아요 순 상품/팩 랭킹
 CREATE INDEX idx_product_like ON product(like_count DESC);
