@@ -48,4 +48,13 @@ public interface FeedRepository extends JpaRepository<Feed, Long>, JpaSpecificat
     @Modifying
     @Query("UPDATE Feed f SET f.commentCount = f.commentCount - 1 WHERE f.id = :feedId AND f.commentCount > 0")
     void decrementCommentCount(@Param("feedId") Long id);
+
+    // 멤버별 피드 목록 조회
+    @EntityGraph(attributePaths = {"user", "category"})
+    @Query("select f from Feed f where f.user.userId = :memberId order by f.id desc")
+    Page<Feed> findByUserId(@Param("memberId") Long memberId, Pageable pageable);
+
+    // 멤버별 피드 개수 조회
+    @Query("select count(f) from Feed f where f.user.userId = :memberId")
+    long countByUserId(@Param("memberId") Long memberId);
 }
