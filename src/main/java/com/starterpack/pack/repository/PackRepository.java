@@ -100,4 +100,24 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     """)
     List<LocalDateTime> findLikeTimesSince(@Param("packId") Long packId,
             @Param("from") LocalDateTime from);
+
+    // 멤버별 팩 목록 조회
+    @Query("""
+        select distinct p
+        from Pack p
+        left join fetch p.items
+        left join fetch p.category
+        where p.member.userId = :memberId
+        order by p.id desc
+    """)
+    List<Pack> findByMemberId(@Param("memberId") Long memberId);
+
+    // 멤버별 팩 개수 조회
+    @Query("""
+        select count(p)
+        from Pack p
+        where p.member.userId = :memberId
+    """)
+    long countByMemberId(@Param("memberId") Long memberId);
+
 }
