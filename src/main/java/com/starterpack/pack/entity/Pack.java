@@ -63,6 +63,7 @@ public class Pack {
 
     @org.hibernate.annotations.BatchSize(size = 100)
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("tagOrder ASC")
     private List<PackHashtag> packHashtags = new ArrayList<>();
 
     public void changeName(String name) {
