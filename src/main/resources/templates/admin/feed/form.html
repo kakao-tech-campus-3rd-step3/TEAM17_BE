@@ -49,6 +49,14 @@
             </select>
           </div>
 
+          <div class="field">
+            <label for="hashtagNames">해시태그 (쉼표로 구분)</label>
+            <input type="text" id="hashtagNames" name="hashtagNames" 
+                   th:value="${isEdit ? #strings.listJoin(feed.hashtags.![name], ', ') : ''}" 
+                   placeholder="예: 해시태그1, 해시태그2, 해시태그3"/>
+            <small class="text-xs text-muted">최대 10개까지 가능합니다.</small>
+          </div>
+
           <div class="btnbar">
             <button type="submit" class="btn btn-primary">저장</button>
             <a th:href="@{/admin/feeds}" class="btn">취소</a>
@@ -58,20 +66,5 @@
     </div>
   </main>
 </div>
-
-
-<template id="product-item-template">
-  <div class="product-item">
-    <div class="product-item-header">
-      <strong class="product-title">상품</strong>
-      <button type="button" class="remove-product-btn">삭제</button>
-    </div>
-    <div class="product-fields">
-      <input type="text" class="product-name" placeholder="상품명" required>
-      <input type="url" class="product-image-url" placeholder="상품 이미지 URL">
-      <textarea class="product-description" placeholder="상품 설명" rows="2"></textarea>
-    </div>
-  </div>
-</template>
 </body>
 </html>
