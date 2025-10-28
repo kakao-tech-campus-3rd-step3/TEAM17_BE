@@ -183,12 +183,18 @@ public class FeedService {
 
     @Transactional
     public void updateFeedByAdmin(Long feedId, FeedUpdateRequestDto request) {
-        Feed feed = getFeedById(feedId);
+        Feed feed = getFeedByIdWithDetails(feedId);
 
         Category category = getCategory(request.categoryId());
 
-
         feed.update(request.description(), request.imageUrl(), category);
+
+        // 해시태그 처리 로직 추가
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(request.hashtagNames());
+        HashtagUpdateResult result = feed.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
     }
 
     @Transactional
