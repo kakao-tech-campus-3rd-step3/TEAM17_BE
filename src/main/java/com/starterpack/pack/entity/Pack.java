@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.core.annotation.Order;
 
 @Entity
 @Getter
@@ -186,6 +187,10 @@ public class Pack {
     }
 
     private void setPackHashtags(List<Hashtag> hashtags) {
+        if (hashtags == null) {
+            return;
+        }
+
         this.packHashtags.clear();
         for (int i = 0; i < hashtags.size(); i++) {
             this.packHashtags.add(new PackHashtag(this, hashtags.get(i), i));
