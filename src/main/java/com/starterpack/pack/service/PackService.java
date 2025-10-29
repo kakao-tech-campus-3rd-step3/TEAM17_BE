@@ -104,7 +104,7 @@ public class PackService {
             }
         }
 
-        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.incrementUsageCount(hashtags);
 
         return packRepository.save(pack);
     }
@@ -168,7 +168,7 @@ public class PackService {
         validatePackOwnership(pack, member);
 
         List<Hashtag> hashtags = pack.getHashtags();
-        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.decrementUsageCount(hashtags);
 
         packRepository.delete(pack);
     }

@@ -23,7 +23,6 @@ import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +60,7 @@ public class FeedService {
                 .hashtags(hashtags)
                 .build();
 
-        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.incrementUsageCount(hashtags);
 
         return feedRepository.save(feed);
     }
@@ -135,7 +134,7 @@ public class FeedService {
         feed.validateOwner(member);
 
         List<Hashtag> hashtags = feed.getHashtags();
-        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.decrementUsageCount(hashtags);
 
         feedRepository.delete(feed);
     }

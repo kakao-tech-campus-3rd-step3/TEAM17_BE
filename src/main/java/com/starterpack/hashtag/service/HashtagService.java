@@ -3,6 +3,7 @@ package com.starterpack.hashtag.service;
 
 import com.starterpack.hashtag.entity.Hashtag;
 import com.starterpack.hashtag.repository.HashtagRepository;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +43,7 @@ public class HashtagService {
     }
 
     @Transactional
-    public void incrementUsageCount(Set<Hashtag> hashtags) {
+    public void incrementUsageCount(Collection<Hashtag> hashtags) {
         if (hashtags == null || hashtags.isEmpty()) return;
 
         Set<Long> ids = hashtags.stream()
@@ -53,7 +54,7 @@ public class HashtagService {
     }
 
     @Transactional
-    public void decrementUsageCount(Set<Hashtag> hashtags) {
+    public void decrementUsageCount(Collection<Hashtag> hashtags) {
         if (hashtags == null || hashtags.isEmpty()) return;
 
         Set<Long> ids = hashtags.stream()
