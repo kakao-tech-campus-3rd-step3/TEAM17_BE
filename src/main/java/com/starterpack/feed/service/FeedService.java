@@ -143,19 +143,19 @@ public class FeedService {
     public FeedLikeResponseDto toggleFeedLike(Long feedId, Member liker) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedLikeRepository.existsByFeedAndMember(feed, liker);
+        int deletedRows = feedLikeRepository.deleteByFeedAndMember(feed, liker);
 
-        if (exists) {
-            feedLikeRepository.deleteByFeedAndMember(feed, liker);
+        if (deletedRows > 0) {
             feedRepository.decrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.unliked(feed.getLikeCount());
+
         } else {
             feedLikeRepository.save(new FeedLike(feed, liker));
             feedRepository.incrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.liked(feed.getLikeCount());
         }
-
-        entityManager.refresh(feed);
-
-        return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);
     }
 
     @Transactional(readOnly = true)
