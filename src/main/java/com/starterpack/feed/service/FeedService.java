@@ -216,17 +216,16 @@ public class FeedService {
     public FeedBookmarkResponseDto toggleFeedBookmark(Long feedId, Member member) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+        int deletedRows = feedBookmarkRepository.deleteByFeedAndMember(feed, member);
 
-        if (exists) {
-            feedBookmarkRepository.deleteByFeedAndMember(feed, member);
+        if (deletedRows > 0) {
             feedRepository.decrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.unbookmared();
         } else {
             feedBookmarkRepository.save(new FeedBookmark(feed, member));
             feedRepository.incrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.bookmared();
         }
-
-        return FeedBookmarkResponseDto.of(!exists);
     }
 
     private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
