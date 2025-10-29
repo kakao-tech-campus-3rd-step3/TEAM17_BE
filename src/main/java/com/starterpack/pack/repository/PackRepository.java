@@ -4,7 +4,6 @@ import com.starterpack.pack.entity.Pack;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PackRepository extends JpaRepository<Pack, Long> {
+
     @Override
     @EntityGraph(attributePaths = {"items", "category", "member"})
     List<Pack> findAll();
@@ -57,67 +57,63 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     void incrementCommentCount(@Param("id") Long id);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE Pack p SET p.packCommentCount = CASE WHEN p.packCommentCount > 0 THEN p.packCommentCount - 1 ELSE 0 END WHERE p.id = :id")
+    @Query("""
+        UPDATE Pack p
+        SET p.packCommentCount =
+            CASE WHEN p.packCommentCount > 0 THEN p.packCommentCount - 1 ELSE 0 END
+        WHERE p.id = :id
+    """)
     void decrementCommentCount(@Param("id") Long id);
 
-    /** 최근 from 시각 이후 좋아요 수(L24h/L7d 등) */
-    @Query("""
-        select count(pl) from PackLike pl
-        where pl.pack.id = :packId
-          and pl.createdAt >= :from
-    """)
-    long countLikesSince(@Param("packId") Long packId, @Param("from") LocalDateTime from);
+    // ── N+1 제거용: 배치 집계 (IN + GROUP BY) ──
 
-    /** 구간 좋아요 수(Lprev24h 등) */
     @Query("""
-        select count(pl) from PackLike pl
-        where pl.pack.id = :packId
-          and pl.createdAt >= :from and pl.createdAt < :to
+      select pl.pack.id, count(pl)
+      from com.starterpack.pack.entity.PackLike pl
+      where pl.pack.id in :ids and pl.createdAt >= :from
+      group by pl.pack.id
     """)
-    long countLikesBetween(@Param("packId") Long packId,
+    List<Object[]> countLikesSinceIn(@Param("ids") List<Long> ids,
+            @Param("from") LocalDateTime from);
+
+    @Query("""
+      select pl.pack.id, count(pl)
+      from com.starterpack.pack.entity.PackLike pl
+      where pl.pack.id in :ids and pl.createdAt >= :from and pl.createdAt < :to
+      group by pl.pack.id
+    """)
+    List<Object[]> countLikesBetweenIn(@Param("ids") List<Long> ids,
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to);
 
-    /** 최신 좋아요 시각 */
     @Query("""
-        select max(pl.createdAt) from PackLike pl
-        where pl.pack.id = :packId
+      select pl.pack.id, max(pl.createdAt)
+      from com.starterpack.pack.entity.PackLike pl
+      where pl.pack.id in :ids
+      group by pl.pack.id
     """)
-    Optional<LocalDateTime> findLastLikeTime(@Param("packId") Long packId);
+    List<Object[]> findLastLikeTimeIn(@Param("ids") List<Long> ids);
 
-    /** 최근 N개 좋아요 시각 (Pageable로 제한) */
     @Query("""
-        select pl.createdAt from PackLike pl
-        where pl.pack.id = :packId
-        order by pl.createdAt desc
+      select pl.pack.id, pl.createdAt
+      from com.starterpack.pack.entity.PackLike pl
+      where pl.pack.id in :ids and pl.createdAt >= :from
+      order by pl.pack.id asc, pl.createdAt desc
     """)
-    List<LocalDateTime> findRecentLikeTimes(@Param("packId") Long packId, Pageable pageable);
-
-    /** streak 계산용: 기준 시각 이후의 like 시간 모두 */
-    @Query("""
-        select pl.createdAt from PackLike pl
-        where pl.pack.id = :packId and pl.createdAt >= :from
-    """)
-    List<LocalDateTime> findLikeTimesSince(@Param("packId") Long packId,
+    List<Object[]> findLikeTimesSinceIn(@Param("ids") List<Long> ids,
             @Param("from") LocalDateTime from);
 
-    // 멤버별 팩 목록 조회
-    @Query("""
-        select distinct p
-        from Pack p
-        left join fetch p.items
-        left join fetch p.category
-        where p.member.userId = :memberId
-        order by p.id desc
-    """)
-    List<Pack> findByMemberId(@Param("memberId") Long memberId);
-
-    // 멤버별 팩 개수 조회
-    @Query("""
-        select count(p)
-        from Pack p
-        where p.member.userId = :memberId
-    """)
-    long countByMemberId(@Param("memberId") Long memberId);
-
+    // 윈도우 함수로 pack별 최신 N개 타임스탬프
+    @Query(value = """
+      SELECT pack_id, created_at
+      FROM (
+        SELECT pl.pack_id, pl.created_at,
+               ROW_NUMBER() OVER (PARTITION BY pl.pack_id ORDER BY pl.created_at DESC) AS rn
+        FROM pack_like pl
+        WHERE pl.pack_id IN (:ids)
+      ) t
+      WHERE t.rn <= :n
+      ORDER BY pack_id, created_at DESC
+    """, nativeQuery = true)
+    List<Object[]> findRecentLikeTimesTopNIn(@Param("ids") List<Long> ids, @Param("n") int n);
 }
