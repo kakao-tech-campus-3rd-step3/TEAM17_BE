@@ -3,14 +3,14 @@ package com.starterpack.feed.dto;
 public record FeedBookmarkResponseDto(
         Boolean isBookmarked
 ) {
-    private static final FeedBookmarkResponseDto BOOKMARED = new FeedBookmarkResponseDto(true);
-    private static final FeedBookmarkResponseDto UNBOOKMARED = new FeedBookmarkResponseDto(false);
+    private static final FeedBookmarkResponseDto BOOKMARKED = new FeedBookmarkResponseDto(true);
+    private static final FeedBookmarkResponseDto UNBOOKMARKED = new FeedBookmarkResponseDto(false);
 
     public static FeedBookmarkResponseDto bookmared() {
-        return BOOKMARED;
+        return BOOKMARKED;
     }
 
     public static FeedBookmarkResponseDto unbookmared() {
-        return UNBOOKMARED;
+        return UNBOOKMARKED;
     }
 }

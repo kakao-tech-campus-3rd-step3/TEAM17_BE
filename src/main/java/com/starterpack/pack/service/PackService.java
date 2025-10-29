@@ -213,17 +213,16 @@ public class PackService {
     public PackBookmarkResponseDto togglePackBookmark(Long id, Member member) {
         Pack pack = findPackById(id);
 
-        boolean exists = packBookmarkRepository.existsByPackAndMember(pack, member);
+        int deletedRows = packBookmarkRepository.deleteByPackAndMember(pack, member);
 
-        if (exists) {
-            packBookmarkRepository.deleteByPackAndMember(pack, member);
+        if (deletedRows > 0) {
             packRepository.decrementPackBookmarkCount(id);
+            return PackBookmarkResponseDto.unbookmarked();
         } else {
             packBookmarkRepository.save(new PackBookmark(pack, member));
             packRepository.incrementPackBookmarkCount(id);
+            return PackBookmarkResponseDto.bookmarked();
         }
-
-        return PackBookmarkResponseDto.of(!exists);
     }
 
     @Transactional(readOnly = true)
