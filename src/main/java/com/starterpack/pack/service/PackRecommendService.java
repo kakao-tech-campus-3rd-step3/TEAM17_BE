@@ -3,6 +3,7 @@ package com.starterpack.pack.service;
 import com.starterpack.pack.dto.PackRecommendDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.repository.PackRepository;
+import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -204,6 +205,16 @@ public class PackRecommendService {
         return sorted.get(idx);
     }
 
+    // ── 공용 변환기: 네이티브 쿼리 Timestamp 안전 변환 ──
+    private static LocalDateTime toLocalDateTime(Object v) {
+        if (v == null) return null;
+        if (v instanceof LocalDateTime ldt) return ldt;
+        if (v instanceof Timestamp ts) return ts.toLocalDateTime();
+        if (v instanceof java.util.Date d) return LocalDateTime.ofInstant(d.toInstant(), ZONE);
+        if (v instanceof Long epochMillis) return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZONE);
+        throw new IllegalStateException("Unsupported timestamp type: " + v.getClass());
+    }
+
     // ── 작은 변환 유틸 ──
     private static Map<Long, Long> toLongMap(List<Object[]> rows) {
         Map<Long, Long> m = new HashMap<>();
@@ -216,7 +227,7 @@ public class PackRecommendService {
     private static Map<Long, LocalDateTime> toTimeMap(List<Object[]> rows) {
         Map<Long, LocalDateTime> m = new HashMap<>();
         for (Object[] r : rows) {
-            m.put(((Number) r[0]).longValue(), (LocalDateTime) r[1]);
+            m.put(((Number) r[0]).longValue(), toLocalDateTime(r[1]));
         }
         return m;
     }
@@ -225,8 +236,10 @@ public class PackRecommendService {
         Map<Long, List<LocalDateTime>> m = new HashMap<>();
         for (Object[] r : rows) {
             Long id = ((Number) r[0]).longValue();
-            LocalDateTime ts = (LocalDateTime) r[1];
-            m.computeIfAbsent(id, k -> new ArrayList<>()).add(ts);
+            LocalDateTime ts = toLocalDateTime(r[1]);
+            if (ts != null) {
+                m.computeIfAbsent(id, k -> new ArrayList<>()).add(ts);
+            }
         }
         return m;
     }
