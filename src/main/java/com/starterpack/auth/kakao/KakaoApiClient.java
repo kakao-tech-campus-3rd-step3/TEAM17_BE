@@ -4,6 +4,7 @@ import com.starterpack.auth.dto.KakaoTokenResponseDto;
 import com.starterpack.auth.dto.KakaoUserInfoResponseDto;
 import com.starterpack.exception.KakaoAuthException;
 import com.starterpack.exception.KakaoServerException;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -35,8 +36,8 @@ public class KakaoApiClient {
 
     public KakaoApiClient() {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(CONNECTION_TIMEOUT_MS);
-        requestFactory.setReadTimeout(READ_TIMEOUT_MS);
+        requestFactory.setConnectTimeout(Duration.ofMillis(CONNECTION_TIMEOUT_MS));
+        requestFactory.setReadTimeout(Duration.ofMillis(READ_TIMEOUT_MS));
 
         this.restClient = RestClient.builder()
                 .requestFactory(requestFactory)
