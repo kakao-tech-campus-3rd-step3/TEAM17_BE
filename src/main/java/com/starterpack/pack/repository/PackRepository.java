@@ -65,6 +65,26 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
     """)
     void decrementCommentCount(@Param("id") Long id);
 
+    // 멤버별 팩 목록 조회
+
+    @Query("""
+        select distinct p
+        from Pack p
+        left join fetch p.items
+        left join fetch p.category
+        where p.member.userId = :memberId
+        order by p.id desc
+    """)
+    List<Pack> findByMemberId(@Param("memberId") Long memberId);
+
+    // 멤버별 팩 개수 조회
+    @Query("""
+        select count(p)
+        from Pack p
+        where p.member.userId = :memberId
+    """)
+    long countByMemberId(@Param("memberId") Long memberId);
+
     // ── N+1 제거용: 배치 집계 (IN + GROUP BY) ──
 
     @Query("""
