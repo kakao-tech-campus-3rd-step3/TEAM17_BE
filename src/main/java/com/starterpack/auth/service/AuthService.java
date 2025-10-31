@@ -122,7 +122,7 @@ public class AuthService {
         //  Kakao Api Client를 통해 액세스 토큰 및 사용자 정보 조회
         KakaoTokenResponseDto kakaoToken = kakaoApiClient.fetchAccessToken(code);
         if (kakaoToken == null) {
-            throw new KakaoAuthException("Kakao token response was empty");
+            throw new KakaoAuthException("카카오 토큰 발급 실패: 응답 본문이 비어있음");
         }
         KakaoUserInfoResponseDto userInfo = kakaoApiClient.fetchUserInfo(kakaoToken.accessToken());
         if (userInfo == null) {
