@@ -10,9 +10,11 @@ import com.starterpack.pack.dto.PackCreateRequestDto;
 import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackLikerResponseDto;
+import com.starterpack.pack.dto.PackRecommendDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.service.PackCommentService;
+import com.starterpack.pack.service.PackRecommendService;
 import com.starterpack.pack.service.PackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -41,6 +43,7 @@ public class PackController {
 
     private final PackService packService;
     private final PackCommentService packCommentService;
+    private final PackRecommendService packRecommendService;
 
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
@@ -198,5 +201,15 @@ public class PackController {
     ) {
         PackBookmarkResponseDto responseDto = packService.togglePackBookmark(id, member);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/packs/recommendations")
+    @Operation(
+            summary = "오늘의 추천 스타터팩 Top 3 조회",
+            description = "추천 알고리즘으로 계산된 오늘의 스타터팩 3개를 반환 + 하루에 한 번 자동 갱신됩니다."
+    )
+    @SecurityRequirement(name = "cookieAuth")
+    public ResponseEntity<List<PackRecommendDto>> getTodayRecommendations() {
+        return ResponseEntity.ok(packRecommendService.getTodayTop3());
     }
 }
