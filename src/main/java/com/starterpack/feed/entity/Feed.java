@@ -128,6 +128,10 @@ public class Feed {
     }
 
     private void setFeedHashtags(List<Hashtag> hashtags) {
+        if (hashtags == null) { //NPE 방지
+            return;
+        }
+
         this.feedHashtags.clear();
         for (int i = 0; i < hashtags.size(); i++) {
             this.feedHashtags.add(new FeedHashtag(this, hashtags.get(i), i));

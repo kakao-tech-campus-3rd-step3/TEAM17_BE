@@ -56,6 +56,12 @@ public class Member {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    @Column(name = "hobby", length = 200)
+    private String hobby;
+
+    @Column(name = "bio", length = 500)
+    private String bio;
+
     @Column(name = "refresh_token", length = 500)
     private String refreshToken;
 

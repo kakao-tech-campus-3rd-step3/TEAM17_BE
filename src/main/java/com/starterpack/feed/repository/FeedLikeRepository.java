@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
     boolean existsByFeedAndMember(Feed feed, Member member);
-    void deleteByFeedAndMember(Feed feed, Member member);
+    int deleteByFeedAndMember(Feed feed, Member member);
 
     @Query("SELECT fl FROM FeedLike fl JOIN FETCH fl.member WHERE fl.feed = :feed")
     Page<FeedLike> findByFeed(@Param("feed") Feed feed, Pageable pageable);

@@ -101,6 +101,13 @@ public enum ErrorCode {
     INVALID_FILE_PATH(HttpStatus.BAD_REQUEST,
             "S3_004",
             "유효하지 않은 파일 경로입니다."),
+    //Kakao
+    KAKAO_AUTH_ERROR(HttpStatus.BAD_REQUEST,
+            "K001",
+            "카카오 인증에 실패했습니다."),
+    KAKAO_SERVER_ERROR(HttpStatus.SERVICE_UNAVAILABLE,
+            "K002",
+            "카카오 서버와 통신에 문제가 발생했습니다."),
 
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "FC001", "해당하는 댓글을 찾을 수 없습니다."),
     COMMENT_ALREADY_DELETED(HttpStatus.CONFLICT, "FC002", "이미 삭제된 댓글입니다.");

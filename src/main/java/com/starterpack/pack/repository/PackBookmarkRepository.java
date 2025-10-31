@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PackBookmarkRepository extends JpaRepository<PackBookmark, Long> {
     boolean existsByPackAndMember(Pack pack, Member member);
-    void deleteByPackAndMember(Pack pack, Member member);
+    int deleteByPackAndMember(Pack pack, Member member);
 }

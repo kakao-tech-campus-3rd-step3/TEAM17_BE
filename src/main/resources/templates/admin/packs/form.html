@@ -114,6 +114,16 @@
                 <textarea id="description" th:field="*{description}" th:classappend="${#fields.hasErrors('description')} ? 'invalid'"></textarea>
                 <div class="error" th:errors="*{description}"></div>
               </div>
+
+              <div class="field">
+                <label for="hashtagNames">해시태그 (쉼표로 구분)</label>
+                <input type="text" id="hashtagNames" name="hashtagNames" 
+                       th:value="${isEdit ? (#strings.listJoin(packDto.hashtagNames, ', ')) : ''}" 
+                       th:classappend="${#fields.hasErrors('hashtagNames')} ? 'invalid'"
+                       placeholder="예: 해시태그1, 해시태그2, 해시태그3"/>
+                <div class="error" th:errors="*{hashtagNames}"></div>
+                <div class="small muted">최대 10개까지 가능합니다.</div>
+              </div>
             </div>
 
             <!-- 우측: PackItem 관리 -->

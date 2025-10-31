@@ -37,6 +37,8 @@ CREATE TABLE member (
   birth_date         DATE,
   gender             VARCHAR(10),
   phone_number       VARCHAR(20),
+  hobby              VARCHAR(200),
+  bio                VARCHAR(500),
   refresh_token      VARCHAR(500),
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,

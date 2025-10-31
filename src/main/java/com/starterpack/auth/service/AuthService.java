@@ -8,6 +8,7 @@ import com.starterpack.auth.jwt.JwtTokenUtil;
 import com.starterpack.auth.kakao.KakaoApiClient;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.auth.dto.LocalSignUpRequestDto;
+import com.starterpack.exception.KakaoAuthException;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.entity.Member;
@@ -120,7 +121,13 @@ public class AuthService {
     public TokenResponseDto kakaoLogin(String code) {
         //  Kakao Api Client를 통해 액세스 토큰 및 사용자 정보 조회
         KakaoTokenResponseDto kakaoToken = kakaoApiClient.fetchAccessToken(code);
+        if (kakaoToken == null) {
+            throw new KakaoAuthException("카카오 토큰 발급 실패: 응답 본문이 비어있음");
+        }
         KakaoUserInfoResponseDto userInfo = kakaoApiClient.fetchUserInfo(kakaoToken.accessToken());
+        if (userInfo == null) {
+            throw new KakaoAuthException("사용자 정보 조회 실패: 응답 본문이 비어있음");
+        }
 
         // userInfo를 토대로 MemberCreationRequestDto 생성
         MemberCreationRequestDto creationRequest = MemberCreationRequestDto.fromKakao(userInfo);
