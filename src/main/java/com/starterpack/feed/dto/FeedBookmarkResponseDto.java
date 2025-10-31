@@ -6,11 +6,11 @@ public record FeedBookmarkResponseDto(
     private static final FeedBookmarkResponseDto BOOKMARKED = new FeedBookmarkResponseDto(true);
     private static final FeedBookmarkResponseDto UNBOOKMARKED = new FeedBookmarkResponseDto(false);
 
-    public static FeedBookmarkResponseDto bookmared() {
+    public static FeedBookmarkResponseDto bookmarked() {
         return BOOKMARKED;
     }
 
-    public static FeedBookmarkResponseDto unbookmared() {
+    public static FeedBookmarkResponseDto unbookmarked() {
         return UNBOOKMARKED;
     }
 }

@@ -220,11 +220,11 @@ public class FeedService {
 
         if (deletedRows > 0) {
             feedRepository.decrementBookmarkCount(feedId);
-            return FeedBookmarkResponseDto.unbookmared();
+            return FeedBookmarkResponseDto.unbookmarked();
         } else {
             feedBookmarkRepository.save(new FeedBookmark(feed, member));
             feedRepository.incrementBookmarkCount(feedId);
-            return FeedBookmarkResponseDto.bookmared();
+            return FeedBookmarkResponseDto.bookmarked();
         }
     }
 
