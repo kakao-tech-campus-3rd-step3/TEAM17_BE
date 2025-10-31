@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface PackLikeRepository extends JpaRepository<PackLike, Long> {
     boolean existsByPackAndMember(Pack pack, Member member);
-    void deleteByPackAndMember(Pack pack, Member member);
+    int deleteByPackAndMember(Pack pack, Member member);
 
     @Query("SELECT pl FROM PackLike pl JOIN FETCH  pl.member WHERE pl.pack = :pack")
     Page<PackLike> findByPack(@Param("pack") Pack pack, Pageable pageable);

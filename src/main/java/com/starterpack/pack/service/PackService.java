@@ -195,36 +195,34 @@ public class PackService {
     public PackLikeResponseDto togglePackLike(Long id, Member member) {
         Pack pack = findPackById(id);
 
-        boolean exists = packLikeRepository.existsByPackAndMember(pack, member);
+        int deletedRows = packLikeRepository.deleteByPackAndMember(pack, member);
 
-        if (exists) {
-            packLikeRepository.deleteByPackAndMember(pack, member);
+        if (deletedRows > 0) {
             packRepository.decrementLikeCount(id);
+            entityManager.refresh(pack);
+            return PackLikeResponseDto.unliked(pack.getPackLikeCount());
         } else {
             packLikeRepository.save(new PackLike(pack, member));
             packRepository.incrementLikeCount(id);
+            entityManager.refresh(pack);
+            return PackLikeResponseDto.liked(pack.getPackLikeCount());
         }
-
-        entityManager.refresh(pack);
-
-        return PackLikeResponseDto.of(pack.getPackLikeCount(), !exists);
     }
 
     @Transactional
     public PackBookmarkResponseDto togglePackBookmark(Long id, Member member) {
         Pack pack = findPackById(id);
 
-        boolean exists = packBookmarkRepository.existsByPackAndMember(pack, member);
+        int deletedRows = packBookmarkRepository.deleteByPackAndMember(pack, member);
 
-        if (exists) {
-            packBookmarkRepository.deleteByPackAndMember(pack, member);
+        if (deletedRows > 0) {
             packRepository.decrementPackBookmarkCount(id);
+            return PackBookmarkResponseDto.unbookmarked();
         } else {
             packBookmarkRepository.save(new PackBookmark(pack, member));
             packRepository.incrementPackBookmarkCount(id);
+            return PackBookmarkResponseDto.bookmarked();
         }
-
-        return PackBookmarkResponseDto.of(!exists);
     }
 
     @Transactional(readOnly = true)

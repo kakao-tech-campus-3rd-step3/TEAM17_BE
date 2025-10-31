@@ -143,19 +143,19 @@ public class FeedService {
     public FeedLikeResponseDto toggleFeedLike(Long feedId, Member liker) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedLikeRepository.existsByFeedAndMember(feed, liker);
+        int deletedRows = feedLikeRepository.deleteByFeedAndMember(feed, liker);
 
-        if (exists) {
-            feedLikeRepository.deleteByFeedAndMember(feed, liker);
+        if (deletedRows > 0) {
             feedRepository.decrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.unliked(feed.getLikeCount());
+
         } else {
             feedLikeRepository.save(new FeedLike(feed, liker));
             feedRepository.incrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.liked(feed.getLikeCount());
         }
-
-        entityManager.refresh(feed);
-
-        return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);
     }
 
     @Transactional(readOnly = true)
@@ -216,17 +216,16 @@ public class FeedService {
     public FeedBookmarkResponseDto toggleFeedBookmark(Long feedId, Member member) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+        int deletedRows = feedBookmarkRepository.deleteByFeedAndMember(feed, member);
 
-        if (exists) {
-            feedBookmarkRepository.deleteByFeedAndMember(feed, member);
+        if (deletedRows > 0) {
             feedRepository.decrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.unbookmarked();
         } else {
             feedBookmarkRepository.save(new FeedBookmark(feed, member));
             feedRepository.incrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.bookmarked();
         }
-
-        return FeedBookmarkResponseDto.of(!exists);
     }
 
     private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {
