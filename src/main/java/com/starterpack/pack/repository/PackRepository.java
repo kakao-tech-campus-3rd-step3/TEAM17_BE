@@ -136,4 +136,8 @@ public interface PackRepository extends JpaRepository<Pack, Long> {
       ORDER BY pack_id, created_at DESC
     """, nativeQuery = true)
     List<Object[]> findRecentLikeTimesTopNIn(@Param("ids") List<Long> ids, @Param("n") int n);
+
+    @Query("select p from Pack p")
+    List<Pack> findAllForRecommendation();
+
 }
