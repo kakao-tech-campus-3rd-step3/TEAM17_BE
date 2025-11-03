@@ -2,8 +2,11 @@ package com.starterpack.member.controller;
 
 import com.starterpack.auth.login.Login;
 import com.starterpack.member.dto.MyPageResponseDto;
+import com.starterpack.member.dto.MyPageUpdateRequestDto;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.service.MemberService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -66,6 +69,38 @@ public class MyPageController {
     ) {
         Long currentUserId = (currentMember != null) ? currentMember.getUserId() : null;
         MyPageResponseDto responseDto = memberService.getMyPage(userId, currentUserId);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
+
+    @PutMapping("/{userId}/mypage")
+    @Operation(
+            summary = "마이페이지 정보 수정",
+            description = """
+                    마이페이지 정보를 수정합니다.
+                    
+                    **수정 가능한 필드**:
+                    - profileImageUrl: 프로필 사진 URL
+                    - nickname: 닉네임 (중복 불가)
+                    - hobby: 취미
+                    - bio: 한 줄 소개
+                    
+                    **중요**: 
+                    - 빈 값(null 또는 빈 문자열)이 들어온 필드는 수정하지 않습니다.
+                    - 닉네임은 다른 사용자가 사용 중인 경우 수정할 수 없습니다.
+                    """
+    )
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<MyPageResponseDto> updateMyPage(
+            @PathVariable Long userId,
+            @Login Member currentMember,
+            @Valid @RequestBody MyPageUpdateRequestDto requestDto
+    ) {
+        // 본인만 수정 가능
+        if (!currentMember.getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        MyPageResponseDto responseDto = memberService.updateMyPage(userId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }

@@ -4,6 +4,7 @@ import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
 import com.starterpack.member.dto.MyPageResponseDto;
+import com.starterpack.member.dto.MyPageUpdateRequestDto;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.repository.MemberRepository;
 import com.starterpack.pack.entity.Pack;
@@ -186,5 +187,46 @@ public class MemberService {
         boolean isMe = currentUserId != null && currentUserId.equals(targetUserId);
 
         return MyPageResponseDto.from(member, packs, feeds, isMe);
+    }
+
+    // 마이페이지 정보 수정
+    @Transactional
+    public MyPageResponseDto updateMyPage(Long userId, MyPageUpdateRequestDto requestDto) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 프로필 사진 수정 (값이 있는 경우만)
+        if (requestDto.profileImageUrl() != null && !requestDto.profileImageUrl().isBlank()) {
+            member.setProfileImageUrl(requestDto.profileImageUrl());
+        }
+
+        // 닉네임 변경 시 중복 확인
+        if (requestDto.nickname() != null && !requestDto.nickname().isBlank()) {
+            if (!requestDto.nickname().equals(member.getNickname())) {
+                if (memberRepository.existsByNickname(requestDto.nickname())) {
+                    throw new BusinessException(ErrorCode.MEMBER_NICKNAME_DUPLICATED);
+                }
+                member.setNickname(requestDto.nickname());
+            }
+        }
+
+        // 취미 수정 (값이 있는 경우만)
+        if (requestDto.hobby() != null && !requestDto.hobby().isBlank()) {
+            member.setHobby(requestDto.hobby());
+        }
+
+        // 소개 수정 (값이 있는 경우만)
+        if (requestDto.bio() != null && !requestDto.bio().isBlank()) {
+            member.setBio(requestDto.bio());
+        }
+
+        memberRepository.save(member);
+
+        // 업데이트된 마이페이지 정보 반환
+        List<Pack> packs = packRepository.findByMemberId(userId);
+        List<Feed> feeds = feedRepository.findByUserId(userId, 
+                org.springframework.data.domain.Pageable.unpaged()).getContent();
+
+        return MyPageResponseDto.from(member, packs, feeds, true);
     }
 }
