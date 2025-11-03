@@ -3,13 +3,12 @@ package com.starterpack.pack.entity;
 import com.starterpack.category.entity.Category;
 import com.starterpack.hashtag.dto.HashtagUpdateResult;
 import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.util.HashtagDiffCalculator;
 import com.starterpack.member.entity.Member;
 import com.starterpack.pack.dto.PackItemDto;
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -173,17 +172,25 @@ public class Pack {
             return HashtagUpdateResult.EMPTY_RESULT;
         }
 
-        Set<Hashtag> oldHashtags = new HashSet<>(this.getHashtags());
-        Set<Hashtag> newHashtags = new HashSet<>(newHashtagList);
+        HashtagUpdateResult result = HashtagDiffCalculator.calculateDiff(
+                this.getHashtags(),
+                newHashtagList
+        );
 
-        Set<Hashtag> added = new HashSet<>(newHashtags);
-        added.removeAll(oldHashtags);
+        this.packHashtags.removeIf(packHashtag ->
+                result.removed().contains(packHashtag.getHashtag())
+        );
 
-        Set<Hashtag> removed = new HashSet<>(oldHashtags);
-        removed.removeAll(newHashtags);
+        for (PackHashtag existing : this.packHashtags) {
+            existing.updateOrder(newHashtagList);
+        }
 
-        setPackHashtags(newHashtagList);
-        return new HashtagUpdateResult(added, removed);
+        for (Hashtag toAdd : result.added()) {
+            int newOrder = newHashtagList.indexOf(toAdd);
+            this.packHashtags.add(new PackHashtag(this, toAdd, newOrder));
+        }
+
+        return result;
     }
 
     private void setPackHashtags(List<Hashtag> hashtags) {
