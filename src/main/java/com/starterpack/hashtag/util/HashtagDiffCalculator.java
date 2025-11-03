@@ -11,7 +11,7 @@ public class HashtagDiffCalculator {
     public static HashtagUpdateResult calculateDiff(Collection<Hashtag> oldTags, Collection<Hashtag> newTags) {
         if (newTags == null || newTags.isEmpty()) {
             if (oldTags == null || oldTags.isEmpty()) {
-                return HashtagUpdateResult.EMPTY_HASHTAG;
+                return HashtagUpdateResult.EMPTY_RESULT;
             }
 
             return new HashtagUpdateResult(Collections.emptySet(), new HashSet<>(oldTags));

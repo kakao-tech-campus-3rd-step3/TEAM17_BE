@@ -170,7 +170,7 @@ public class Pack {
 
     public HashtagUpdateResult updateHashtag(List<Hashtag> newHashtagList) {
         if (newHashtagList == null) {
-            return HashtagUpdateResult.EMPTY_HASHTAG;
+            return HashtagUpdateResult.EMPTY_RESULT;
         }
 
         Set<Hashtag> oldHashtags = new HashSet<>(this.getHashtags());
