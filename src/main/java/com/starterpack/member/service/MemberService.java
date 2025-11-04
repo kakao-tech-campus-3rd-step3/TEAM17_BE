@@ -238,6 +238,10 @@ public class MemberService {
         List<Feed> feeds = feedRepository.findByUserId(userId, 
                 org.springframework.data.domain.Pageable.unpaged()).getContent();
 
-        return MyPageResponseDto.from(member, packs, feeds, true);
+        // updateMyPage는 본인만 호출 가능하므로 북마크한 피드도 조회
+        Pageable pageable = PageRequest.of(0, 10);
+        List<FeedResponseDto> bookmarkedFeeds = feedService.getBookmarkedFeedsByMember(member, pageable).getContent();
+
+        return MyPageResponseDto.from(member, packs, feeds, true, bookmarkedFeeds);
     }
 }
