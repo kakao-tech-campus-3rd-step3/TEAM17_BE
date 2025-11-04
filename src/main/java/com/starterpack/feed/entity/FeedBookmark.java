@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -21,6 +22,7 @@ import org.hibernate.annotations.CreationTimestamp;
                 columnNames = {"feed_id", "member_id"}
         )
 })
+@Getter
 public class FeedBookmark {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
