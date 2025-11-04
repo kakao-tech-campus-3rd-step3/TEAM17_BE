@@ -41,6 +41,9 @@ public enum ErrorCode {
     MEMBER_PROVIDER_ID_DUPLICATED(HttpStatus.CONFLICT,
             "M003",
             "이미 사용 중인 소셜 로그인 계정입니다."),
+    MEMBER_NICKNAME_DUPLICATED(HttpStatus.CONFLICT,
+            "M004",
+            "이미 사용 중인 닉네임입니다."),
     //Security
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,
             "S001",
