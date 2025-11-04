@@ -8,5 +8,5 @@ public record HashtagUpdateResult(
         Set<Hashtag> added,
         Set<Hashtag> removed
 ){
-    public static final HashtagUpdateResult EMPTY_HASHTAG = new HashtagUpdateResult(Collections.emptySet(), Collections.emptySet());
+    public static final HashtagUpdateResult EMPTY_RESULT = new HashtagUpdateResult(Collections.emptySet(), Collections.emptySet());
 }

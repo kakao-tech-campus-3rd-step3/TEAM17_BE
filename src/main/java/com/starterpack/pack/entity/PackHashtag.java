@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +41,18 @@ public class PackHashtag {
     public PackHashtag(Pack pack, Hashtag hashtag, Integer tagOrder) {
         this.pack = pack;
         this.hashtag = hashtag;
+        this.tagOrder = tagOrder;
+    }
+
+    public void updateOrder(List<Hashtag> newHashtags) {
+        int newOrder = newHashtags.indexOf(hashtag);
+
+        if (newOrder != -1) {
+            this.setTagOrder(newOrder);
+        }
+    }
+
+    private void setTagOrder(int tagOrder) {
         this.tagOrder = tagOrder;
     }
 }

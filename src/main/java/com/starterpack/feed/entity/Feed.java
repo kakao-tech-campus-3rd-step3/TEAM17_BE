@@ -5,6 +5,7 @@ import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import com.starterpack.hashtag.dto.HashtagUpdateResult;
 import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.util.HashtagDiffCalculator;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,9 +21,7 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -105,20 +104,28 @@ public class Feed {
 
     public HashtagUpdateResult updateHashtag(List<Hashtag> newHashtagList) {
         if (newHashtagList == null) {
-            return HashtagUpdateResult.EMPTY_HASHTAG;
+            return HashtagUpdateResult.EMPTY_RESULT;
         }
 
-        Set<Hashtag> oldHashtags = new HashSet<>(this.getHashtags());
-        Set<Hashtag> newHashtags = new HashSet<>(newHashtagList);
+        HashtagUpdateResult result = HashtagDiffCalculator.calculateDiff(
+                this.getHashtags(),
+                newHashtagList
+        );
 
-        Set<Hashtag> added = new HashSet<>(newHashtags);
-        added.removeAll(oldHashtags);
+        this.feedHashtags.removeIf(feedHashtag ->
+                result.removed().contains(feedHashtag.getHashtag())
+        );
 
-        Set<Hashtag> removed = new HashSet<>(oldHashtags);
-        removed.removeAll(newHashtags);
+        for (FeedHashtag existing : this.feedHashtags) {
+            existing.updateOrder(newHashtagList);
+        }
 
-        setFeedHashtags(newHashtagList);
-        return new HashtagUpdateResult(added, removed);
+        for (Hashtag toAdd : result.added()) {
+            int newOrder = newHashtagList.indexOf(toAdd);
+            this.feedHashtags.add(new FeedHashtag(this, toAdd, newOrder));
+        }
+
+        return result;
     }
 
     public void validateOwner(Member member) {
