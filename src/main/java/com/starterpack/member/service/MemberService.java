@@ -3,8 +3,13 @@ package com.starterpack.member.service;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
+import com.starterpack.member.dto.MyPageResponseDto;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.repository.MemberRepository;
+import com.starterpack.pack.entity.Pack;
+import com.starterpack.pack.repository.PackRepository;
+import com.starterpack.feed.entity.Feed;
+import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
 import java.util.Optional;
@@ -23,6 +28,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final NicknameService nicknameService;
+    private final PackRepository packRepository;
+    private final FeedRepository feedRepository;
 
     // 모든 멤버 조회
     public List<Member> findAllMembers() {
@@ -159,5 +166,25 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
         member.updateRefreshToken(refreshToken);
+    }
+
+    // 마이페이지 조회
+    @Transactional(readOnly = true)
+    public MyPageResponseDto getMyPage(Long targetUserId, Long currentUserId) {
+        Member member = memberRepository.findById(targetUserId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 비활성화된 회원은 조회 불가 (본인 제외)
+        if (!member.getIsActive() && (currentUserId == null || !currentUserId.equals(targetUserId))) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<Pack> packs = packRepository.findByMemberId(targetUserId);
+        List<Feed> feeds = feedRepository.findByUserId(targetUserId, 
+                org.springframework.data.domain.Pageable.unpaged()).getContent();
+
+        boolean isMe = currentUserId != null && currentUserId.equals(targetUserId);
+
+        return MyPageResponseDto.from(member, packs, feeds, isMe);
     }
 }

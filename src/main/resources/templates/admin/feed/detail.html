@@ -36,6 +36,15 @@
               <dt>작성자</dt><dd th:text="${feed.user.email}">user@example.com</dd>
               <dt>카테고리</dt><dd th:text="${feed.category != null ? feed.category.name : '미지정'}">카테고리</dd>
               <dt>좋아요 수</dt><dd th:text="${feed.likeCount}">0</dd>
+              <dt>해시태그</dt>
+              <dd>
+                <span th:if="${feed.hashtags != null and !feed.hashtags.isEmpty()}"
+                      th:each="hashtag, iterStat : ${feed.hashtags}">
+                  <span th:text="'#' + ${hashtag.name}">#태그</span>
+                  <span th:if="${!iterStat.last}">, </span>
+                </span>
+                <span th:if="${feed.hashtags == null or feed.hashtags.isEmpty()}" class="text-muted">없음</span>
+              </dd>
               <dt>작성일</dt><dd th:text="${#temporals.format(feed.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</dd>
               <dt>수정일</dt><dd th:text="${#temporals.format(feed.updatedAt, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 12:00:00</dd>
             </dl>

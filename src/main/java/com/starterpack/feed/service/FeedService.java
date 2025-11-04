@@ -23,7 +23,6 @@ import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import jakarta.persistence.EntityManager;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +60,7 @@ public class FeedService {
                 .hashtags(hashtags)
                 .build();
 
-        hashtagService.incrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.incrementUsageCount(hashtags);
 
         return feedRepository.save(feed);
     }
@@ -135,7 +134,7 @@ public class FeedService {
         feed.validateOwner(member);
 
         List<Hashtag> hashtags = feed.getHashtags();
-        hashtagService.decrementUsageCount(new HashSet<>(hashtags));
+        hashtagService.decrementUsageCount(hashtags);
 
         feedRepository.delete(feed);
     }
@@ -144,19 +143,19 @@ public class FeedService {
     public FeedLikeResponseDto toggleFeedLike(Long feedId, Member liker) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedLikeRepository.existsByFeedAndMember(feed, liker);
+        int deletedRows = feedLikeRepository.deleteByFeedAndMember(feed, liker);
 
-        if (exists) {
-            feedLikeRepository.deleteByFeedAndMember(feed, liker);
+        if (deletedRows > 0) {
             feedRepository.decrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.unliked(feed.getLikeCount());
+
         } else {
             feedLikeRepository.save(new FeedLike(feed, liker));
             feedRepository.incrementLikeCount(feedId);
+            entityManager.refresh(feed);
+            return FeedLikeResponseDto.liked(feed.getLikeCount());
         }
-
-        entityManager.refresh(feed);
-
-        return FeedLikeResponseDto.of(feed.getLikeCount(), !exists);
     }
 
     @Transactional(readOnly = true)
@@ -183,12 +182,18 @@ public class FeedService {
 
     @Transactional
     public void updateFeedByAdmin(Long feedId, FeedUpdateRequestDto request) {
-        Feed feed = getFeedById(feedId);
+        Feed feed = getFeedByIdWithDetails(feedId);
 
         Category category = getCategory(request.categoryId());
 
-
         feed.update(request.description(), request.imageUrl(), category);
+
+        // 해시태그 처리 로직 추가
+        List<Hashtag> hashtags = hashtagService.resolveHashtags(request.hashtagNames());
+        HashtagUpdateResult result = feed.updateHashtag(hashtags);
+
+        hashtagService.incrementUsageCount(result.added());
+        hashtagService.decrementUsageCount(result.removed());
     }
 
     @Transactional
@@ -211,17 +216,16 @@ public class FeedService {
     public FeedBookmarkResponseDto toggleFeedBookmark(Long feedId, Member member) {
         Feed feed = getFeedById(feedId);
 
-        boolean exists = feedBookmarkRepository.existsByFeedAndMember(feed, member);
+        int deletedRows = feedBookmarkRepository.deleteByFeedAndMember(feed, member);
 
-        if (exists) {
-            feedBookmarkRepository.deleteByFeedAndMember(feed, member);
+        if (deletedRows > 0) {
             feedRepository.decrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.unbookmarked();
         } else {
             feedBookmarkRepository.save(new FeedBookmark(feed, member));
             feedRepository.incrementBookmarkCount(feedId);
+            return FeedBookmarkResponseDto.bookmarked();
         }
-
-        return FeedBookmarkResponseDto.of(!exists);
     }
 
     private Map<Long, InteractionStatusResponseDto> getFeedInteractionStatusMap(Member member, List<Feed> feeds) {

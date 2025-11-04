@@ -109,7 +109,8 @@ public class SecurityConfig {
                                 "/api/products", "/api/products/**",
                                 "/api/categories", // 카테고리 조회 GET 요청
                                 "/api/feeds/*/likes",
-                                "/api/starterPack/packs/*/likes"
+                                "/api/starterPack/packs/*/likes",
+                                "/api/members/*/mypage" // 마이페이지 조회
                         ).permitAll()
                         .requestMatchers(API_PUBLIC_URLS).permitAll()
                         .requestMatchers(COMMON_PUBLIC_URLS).permitAll()
