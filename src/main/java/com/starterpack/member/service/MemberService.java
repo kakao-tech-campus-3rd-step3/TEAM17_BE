@@ -1,5 +1,7 @@
 package com.starterpack.member.service;
 
+import com.starterpack.feed.dto.FeedResponseDto;
+import com.starterpack.feed.service.FeedService;
 import com.starterpack.member.dto.MemberCreationRequestDto;
 import com.starterpack.member.dto.MemberResponseDto;
 import com.starterpack.member.dto.MemberUpdateRequestDto;
@@ -13,13 +15,14 @@ import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class MemberService {
     private final NicknameService nicknameService;
     private final PackRepository packRepository;
     private final FeedRepository feedRepository;
+    private final FeedService feedService;
 
     // 모든 멤버 조회
     public List<Member> findAllMembers() {
@@ -171,7 +175,7 @@ public class MemberService {
 
     // 마이페이지 조회
     @Transactional(readOnly = true)
-    public MyPageResponseDto getMyPage(Long targetUserId, Long currentUserId) {
+    public MyPageResponseDto getMyPage(Long targetUserId, Long currentUserId, Member currentMember) {
         Member member = memberRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
 
@@ -185,8 +189,15 @@ public class MemberService {
                 org.springframework.data.domain.Pageable.unpaged()).getContent();
 
         boolean isMe = currentUserId != null && currentUserId.equals(targetUserId);
+        
+        // 본인일 때만 북마크한 피드 조회
+        List<FeedResponseDto> bookmarkedFeeds = List.of();
+        if (isMe && currentMember != null) {
+            Pageable pageable = PageRequest.of(0, 10);
+            bookmarkedFeeds = feedService.getBookmarkedFeedsByMember(currentMember, pageable).getContent();
+        }
 
-        return MyPageResponseDto.from(member, packs, feeds, isMe);
+        return MyPageResponseDto.from(member, packs, feeds, isMe, bookmarkedFeeds);
     }
 
     // 마이페이지 정보 수정

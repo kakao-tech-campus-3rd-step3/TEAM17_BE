@@ -39,12 +39,13 @@ public class MyPageController {
                     - 게시물 통계 (팩 개수, 피드 개수, 전체 게시물 수)
                     - 작성한 팩 목록 (최신순, 제목, 이미지)
                     - 작성한 피드 목록 (최신순, 설명, 이미지)
+                    - 북마크한 피드 목록 (본인일 때만, 최신순, 상세 정보 포함)
                     - isMe: 조회한 사람이 본인인지 여부 (로그인 필수)
                     
                     **예시**:
-                    - 비로그인 사용자가 조회: isMe = false
-                    - 다른 사용자가 조회: isMe = false
-                    - 본인이 조회: isMe = true
+                    - 비로그인 사용자가 조회: isMe = false, bookmarkedFeeds = []
+                    - 다른 사용자가 조회: isMe = false, bookmarkedFeeds = []
+                    - 본인이 조회: isMe = true, bookmarkedFeeds = [북마크한 피드 목록]
                     """
     )
     @Parameter(
@@ -68,7 +69,7 @@ public class MyPageController {
             @Login(required = false) Member currentMember
     ) {
         Long currentUserId = (currentMember != null) ? currentMember.getUserId() : null;
-        MyPageResponseDto responseDto = memberService.getMyPage(userId, currentUserId);
+        MyPageResponseDto responseDto = memberService.getMyPage(userId, currentUserId, currentMember);
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 

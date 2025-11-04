@@ -247,4 +247,23 @@ public class FeedService {
                         )
                 ));
     }
+
+    // 사용자가 북마크한 피드 목록 조회
+    @Transactional(readOnly = true)
+    public Page<FeedResponseDto> getBookmarkedFeedsByMember(Member member, Pageable pageable) {
+        Page<FeedBookmark> bookmarkPage = feedBookmarkRepository.findByMemberOrderByCreatedAtDesc(member, pageable);
+        
+        List<Feed> feeds = bookmarkPage.getContent().stream()
+                .map(FeedBookmark::getFeed)
+                .toList();
+        
+        List<Long> feedIds = feeds.stream().map(Feed::getId).toList();
+        Set<Long> likedFeedIds = feedLikeRepository.findFeedIdsByMemberAndFeedIds(member, feedIds);
+        
+        return bookmarkPage.map(bookmark -> {
+            Feed feed = bookmark.getFeed();
+            boolean isLiked = likedFeedIds.contains(feed.getId());
+            return FeedResponseDto.forMember(feed, InteractionStatusResponseDto.of(isLiked, true));
+        });
+    }
 }
