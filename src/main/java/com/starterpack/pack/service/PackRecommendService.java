@@ -23,7 +23,7 @@ public class PackRecommendService {
     private static final double HALF_LIFE_HOURS = 24.0;  // 감쇠 반감기(시간)
 
     public List<PackRecommendDto> getTodayTop3() {
-        List<Pack> packs = packRepository.findAll();
+        List<Pack> packs = packRepository.findAllForRecommendation();
         if (packs.isEmpty()) return List.of();
 
         LocalDateTime nowLdt = LocalDateTime.now(ZONE);
