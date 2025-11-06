@@ -300,6 +300,10 @@ public class PackService {
     }
 
     private List<PackDetailResponseDto> convertPacksToDto(List<Pack> packs, Member member) {
+        if (packs.isEmpty()) {
+            return List.of();
+        }
+
         if (member == null) {
             return packs.stream()
                     .map(PackDetailResponseDto::forAnonymous)
