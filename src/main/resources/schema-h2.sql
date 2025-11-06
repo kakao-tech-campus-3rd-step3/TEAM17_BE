@@ -383,3 +383,32 @@ ALTER TABLE pack_hashtag
             REFERENCES hashtag(id)
             ON DELETE CASCADE
             ON UPDATE CASCADE;
+------------------------------------------------------------
+-- 14) 팩-댓글 연관테이블 (pack_comment)
+------------------------------------------------------------
+CREATE TABLE pack_comment (
+  id          BIGINT NOT NULL AUTO_INCREMENT,
+  pack_id     BIGINT NOT NULL,
+  author_id   BIGINT NOT NULL,
+  content     VARCHAR(500)    NOT NULL,
+  parent_id   BIGINT NULL,
+  depth       INT             NOT NULL DEFAULT 0,
+  is_deleted  BOOLEAN         NOT NULL DEFAULT FALSE,
+  deleted_at  TIMESTAMP       NULL,
+  created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_pack_comment_pack (pack_id),
+  KEY idx_pack_comment_author (author_id),
+  KEY idx_pack_comment_parent (parent_id),
+  KEY idx_pack_comment_created_at (created_at),
+  CONSTRAINT fk_pack_comment_pack
+      FOREIGN KEY (pack_id) REFERENCES pack(id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_author
+      FOREIGN KEY (author_id) REFERENCES member(user_id)
+          ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_pack_comment_parent
+      FOREIGN KEY (parent_id) REFERENCES pack_comment(id)
+          ON UPDATE CASCADE ON DELETE CASCADE
+);

@@ -106,6 +106,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/feeds", "/api/feeds/**", // feed 관련 GET 요청
                                 "/api/starterPack/packs", "/api/starterPack/packs/**", "/api/api/starterPack/categories/**", // starterpack 관련 GET 요청
+                                "/api/starterPack/*/comments",
                                 "/api/products", "/api/products/**",
                                 "/api/categories", // 카테고리 조회 GET 요청
                                 "/api/feeds/*/likes",
