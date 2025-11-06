@@ -52,10 +52,6 @@ public class PackService {
     @Transactional(readOnly = true)
     public List<PackDetailResponseDto> getPacks(Member member) {
         List<Pack> packs = packRepository.findAll();
-        packs.forEach(pack ->
-                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
-        );
-
 
         return convertPacksToDto(packs, member);
     }
@@ -73,9 +69,7 @@ public class PackService {
     @Transactional(readOnly = true)
     public List<PackDetailResponseDto> getPacksByCategory(Long categoryId, Member member) {
         List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
-        packs.forEach(pack ->
-                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
-        );
+
         return convertPacksToDto(packs, member);
     }
 
@@ -92,7 +86,6 @@ public class PackService {
     public PackDetailResponseDto getPackDetail(Long id, Member member) {
         Pack pack = packRepository.findWithItemsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
-        pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
 
         if (member == null) {
             return PackDetailResponseDto.forAnonymous(pack);
@@ -271,6 +264,32 @@ public class PackService {
         Page<PackLike> packLikes = packLikeRepository.findByPack(pack, pageable);
 
         return packLikes.map(PackLike::getMember);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PackDetailResponseDto> getBookmarkedPacksByMember(Member member, Pageable pageable) {
+        Page<PackBookmark> bookmarkPage = packBookmarkRepository.findByMemberOrderByCreatedAtDesc(member, pageable);
+
+        List<Pack> packs = bookmarkPage.getContent().stream()
+                .map(PackBookmark::getPack)
+                .toList();
+
+        if (packs.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> packIds = packs.stream().map(Pack::getId).toList();
+        Set<Long> likedPackIds = packLikeRepository.findPackIdsByMemberAndPackIds(member, packIds);
+
+        return bookmarkPage.map(bookmark -> {
+            Pack pack = bookmark.getPack();
+
+            boolean isLiked = likedPackIds.contains(pack.getId());
+            return PackDetailResponseDto.forMember(
+                    pack,
+                    InteractionStatusResponseDto.of(isLiked, true) // (isLiked, isBookmarked = true)
+            );
+        });
     }
 
     private void validatePackOwnership(Pack pack, Member member) {

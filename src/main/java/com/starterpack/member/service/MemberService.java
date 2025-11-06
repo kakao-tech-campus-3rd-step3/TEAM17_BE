@@ -9,12 +9,14 @@ import com.starterpack.member.dto.MyPageResponseDto;
 import com.starterpack.member.dto.MyPageUpdateRequestDto;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.repository.MemberRepository;
+import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.pack.repository.PackRepository;
 import com.starterpack.feed.entity.Feed;
 import com.starterpack.feed.repository.FeedRepository;
 import com.starterpack.exception.BusinessException;
 import com.starterpack.exception.ErrorCode;
+import com.starterpack.pack.service.PackService;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class MemberService {
     private final PackRepository packRepository;
     private final FeedRepository feedRepository;
     private final FeedService feedService;
+    private final PackService packService;
 
     // 모든 멤버 조회
     public List<Member> findAllMembers() {
@@ -192,12 +195,15 @@ public class MemberService {
         
         // 본인일 때만 북마크한 피드 조회
         List<FeedResponseDto> bookmarkedFeeds = List.of();
+        List<PackDetailResponseDto> bookmarkedPacks = List.of();
         if (isMe && currentMember != null) {
             Pageable pageable = PageRequest.of(0, 10);
             bookmarkedFeeds = feedService.getBookmarkedFeedsByMember(currentMember, pageable).getContent();
+
+            bookmarkedPacks = packService.getBookmarkedPacksByMember(currentMember, pageable).getContent();
         }
 
-        return MyPageResponseDto.from(member, packs, feeds, isMe, bookmarkedFeeds);
+        return MyPageResponseDto.from(member, packs, feeds, isMe, bookmarkedFeeds, bookmarkedPacks);
     }
 
     // 마이페이지 정보 수정
@@ -241,7 +247,8 @@ public class MemberService {
         // updateMyPage는 본인만 호출 가능하므로 북마크한 피드도 조회
         Pageable pageable = PageRequest.of(0, 10);
         List<FeedResponseDto> bookmarkedFeeds = feedService.getBookmarkedFeedsByMember(member, pageable).getContent();
+        List<PackDetailResponseDto> bookmarkedPacks = packService.getBookmarkedPacksByMember(member, pageable).getContent();
 
-        return MyPageResponseDto.from(member, packs, feeds, true, bookmarkedFeeds);
+        return MyPageResponseDto.from(member, packs, feeds, true, bookmarkedFeeds, bookmarkedPacks);
     }
 }

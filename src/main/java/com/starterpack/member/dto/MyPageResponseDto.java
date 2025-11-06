@@ -2,6 +2,7 @@ package com.starterpack.member.dto;
 
 import com.starterpack.feed.dto.FeedResponseDto;
 import com.starterpack.member.entity.Member;
+import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.entity.Pack;
 import com.starterpack.feed.entity.Feed;
 import java.util.List;
@@ -18,9 +19,10 @@ public record MyPageResponseDto(
         List<MyPagePackDto> packs,
         List<MyPageFeedDto> feeds,
         List<FeedResponseDto> bookmarkedFeeds,
+        List<PackDetailResponseDto> bookmarkedPacks,
         boolean isMe
 ) {
-    public static MyPageResponseDto from(Member member, List<Pack> packs, List<Feed> feeds, boolean isMe, List<FeedResponseDto> bookmarkedFeeds) {
+    public static MyPageResponseDto from(Member member, List<Pack> packs, List<Feed> feeds, boolean isMe, List<FeedResponseDto> bookmarkedFeeds, List<PackDetailResponseDto> bookmarkedPacks) {
         List<MyPagePackDto> packDtos = packs.stream()
                 .map(MyPagePackDto::from)
                 .toList();
@@ -42,6 +44,7 @@ public record MyPageResponseDto(
                 packDtos,
                 feedDtos,
                 bookmarkedFeeds != null ? bookmarkedFeeds : List.of(),
+                bookmarkedPacks != null ? bookmarkedPacks : List.of(),
                 isMe
         );
     }
