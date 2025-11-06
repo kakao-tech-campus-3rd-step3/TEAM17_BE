@@ -2,6 +2,7 @@ package com.starterpack.hashtag.service;
 
 
 import com.starterpack.hashtag.entity.Hashtag;
+import com.starterpack.hashtag.repository.HashtagBulkRepository;
 import com.starterpack.hashtag.repository.HashtagRepository;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class HashtagService {
     private final HashtagRepository hashtagRepository;
+    private final HashtagBulkRepository hashtagBulkRepository;
 
     @Transactional
     public List<Hashtag> resolveHashtags(List<String> hashtagNames) {
@@ -72,19 +74,14 @@ public class HashtagService {
     }
 
     private Set<Hashtag> findOrAddHashtags(List<String> normalizedNames) {
-        Set<Hashtag> existingTags = hashtagRepository.findAllByNameIn(new HashSet<>(normalizedNames));
+        Set<String> nameSet = new HashSet<>(normalizedNames);
 
-        Set<String> existingTagNames = existingTags.stream().map(Hashtag::getName).collect(Collectors.toSet());
+        if (nameSet.isEmpty()) {
+            return Collections.emptySet();
+        }
 
-        Set<Hashtag> newTags = normalizedNames.stream()
-                .filter(name -> !existingTagNames.contains(name))
-                .map(Hashtag::new)
-                .collect(Collectors.toSet());
+        hashtagBulkRepository.saveAllWithInsertIgnore(nameSet);
 
-        hashtagRepository.saveAll(newTags);
-
-        existingTags.addAll(newTags);
-
-        return existingTags;
+        return new HashSet<>(hashtagRepository.findAllByNameIn(nameSet));
     }
 }
