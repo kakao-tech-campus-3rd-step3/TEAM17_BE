@@ -10,7 +10,7 @@ public record AuthorResponseDto(
         public static AuthorResponseDto from(Member member){
             return new AuthorResponseDto(
                     member.getUserId(),
-                    member.getName(),
+                    member.getNickname(),
                     member.getProfileImageUrl()
             );
         }
