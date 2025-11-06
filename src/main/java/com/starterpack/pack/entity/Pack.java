@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -56,10 +57,11 @@ public class Pack {
     @Column(name = "description")
     private String description;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PackItem> items = new ArrayList<>();
 
-    @org.hibernate.annotations.BatchSize(size = 100)
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "pack", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("tagOrder ASC")
     private List<PackHashtag> packHashtags = new ArrayList<>();

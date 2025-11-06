@@ -47,31 +47,32 @@ public class PackController {
 
     @GetMapping("/packs")
     @Operation(summary = "스타터팩 목록 조회", description = "모든 스타터팩 목록을 조회합니다.")
-    public Map<String, List<PackDetailResponseDto>> getAllPacks() {
-        List<Pack> packs = packService.getPacks(); // 엔티티 반환
-        List<PackDetailResponseDto> responseDto = packs.stream()
-                .map(PackDetailResponseDto::from)
-                .toList();
+    public Map<String, List<PackDetailResponseDto>> getAllPacks(
+            @Login(required = false) Member member
+    ) {
+        List<PackDetailResponseDto> responseDto = packService.getPacks(member); // 엔티티 반환
+
         return Map.of("packs", responseDto);
     }
 
     @GetMapping("/categories/{categoryId}/packs")
     @Operation(summary = "카테고리별 스타터팩 조회", description = "특정 카테고리의 스타터팩 목록을 조회합니다.")
     public Map<String, List<PackDetailResponseDto>> listByCategory(
-            @PathVariable @Positive Long categoryId
+            @PathVariable @Positive Long categoryId,
+            @Login(required = false) Member member
     ) {
-        List<Pack> packs = packService.getPacksByCategory(categoryId); // 엔티티 반환
-        List<PackDetailResponseDto> responseDto = packs.stream()
-                .map(PackDetailResponseDto::from)
-                .toList();
+        List<PackDetailResponseDto> responseDto = packService.getPacksByCategory(categoryId, member); // 엔티티 반환
+
         return Map.of("packs", responseDto);
     }
 
     @GetMapping("/packs/{id}")
     @Operation(summary = "스타터팩 상세 조회", description = "특정 스타터팩의 상세 정보를 조회합니다.")
-    public PackDetailResponseDto detail(@PathVariable @Positive Long id) {
-        Pack pack = packService.getPackDetail(id); // 엔티티 반환
-        return PackDetailResponseDto.from(pack);
+    public PackDetailResponseDto detail(
+            @PathVariable @Positive Long id,
+            @Login(required = false) Member member) {
+        PackDetailResponseDto response = packService.getPackDetail(id, member); // 엔티티 반환
+        return response;
     }
 
     @PostMapping("/packs")
@@ -82,7 +83,7 @@ public class PackController {
             @Login Member member
     ) {
         Pack created = packService.create(req, member); // 엔티티 반환
-        PackDetailResponseDto body = PackDetailResponseDto.from(created);
+        PackDetailResponseDto body = PackDetailResponseDto.forAnonymous(created);
         return ResponseEntity
                 .created(URI.create("/api/starterPack/packs/" + body.id())) // base path 정합성
                 .body(body);
@@ -97,8 +98,7 @@ public class PackController {
             @Login Member member
     ) {
         packService.update(id, req, member);
-        Pack pack = packService.getPackDetail(id);
-        PackDetailResponseDto response = PackDetailResponseDto.from(pack);
+        PackDetailResponseDto response = packService.getPackDetail(id, member);;
 
         return ResponseEntity.ok(response);
 

@@ -18,14 +18,11 @@ public record PackDetailResponseDto(
         Integer bookmarkCount,
         Integer commentCount,
         String authorNickname,
-        Long memberId
+        Long memberId,
+        InteractionStatusResponseDto interactionStatusResponseDto
 ) {
-    public static PackDetailResponseDto from(Pack pack) {
-        List<PackItemDto> items = pack.getItems().stream()
-                .map(PackItemDto::from)
-                .toList();
-
-        return new PackDetailResponseDto(
+    public PackDetailResponseDto(Pack pack, InteractionStatusResponseDto status) {
+        this(
                 pack.getId(),
                 pack.getName(),
                 pack.getPrice(),
@@ -33,7 +30,9 @@ public record PackDetailResponseDto(
                 pack.getMainImageUrl(),
                 pack.getCategory().getId(),
                 pack.getCategory().getName(),
-                items,
+                pack.getItems().stream() 
+                        .map(PackItemDto::from)
+                        .toList(),
                 pack.getHashtags().stream()
                         .map(HashtagResponseDto::from)
                         .toList(),
@@ -41,7 +40,16 @@ public record PackDetailResponseDto(
                 pack.getPackBookmarkCount(),
                 pack.getPackCommentCount(),
                 pack.getMember().getNickname(),
-                pack.getMember().getUserId()
+                pack.getMember().getUserId(),
+                status
         );
+    }
+
+    public static PackDetailResponseDto forAnonymous(Pack pack) {
+        return new PackDetailResponseDto(pack, InteractionStatusResponseDto.anonymousStatus());
+    }
+
+    public static PackDetailResponseDto forMember(Pack pack, InteractionStatusResponseDto status) {
+        return new PackDetailResponseDto(pack, status);
     }
 }

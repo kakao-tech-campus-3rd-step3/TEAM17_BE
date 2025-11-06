@@ -12,9 +12,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
+@Getter
 @Table(name = "pack_bookmark", uniqueConstraints = {
         @UniqueConstraint(
                 name = "uk_pack_bookmark_member",
