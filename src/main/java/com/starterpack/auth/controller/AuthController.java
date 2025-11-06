@@ -133,6 +133,9 @@ public class AuthController {
 
     private void expireCookie(HttpServletResponse response, String cookieName) {
         ResponseCookie cookie = ResponseCookie.from(cookieName, "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
                 .maxAge(0)
                 .path("/")
                 .build();
