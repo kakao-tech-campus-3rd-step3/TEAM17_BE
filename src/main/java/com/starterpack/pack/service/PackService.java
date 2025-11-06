@@ -9,8 +9,10 @@ import com.starterpack.hashtag.entity.Hashtag;
 import com.starterpack.hashtag.service.HashtagService;
 import com.starterpack.member.entity.Member;
 import com.starterpack.member.entity.Role;
+import com.starterpack.pack.dto.InteractionStatusResponseDto;
 import com.starterpack.pack.dto.PackBookmarkResponseDto;
 import com.starterpack.pack.dto.PackCreateRequestDto;
+import com.starterpack.pack.dto.PackDetailResponseDto;
 import com.starterpack.pack.dto.PackItemDto;
 import com.starterpack.pack.dto.PackLikeResponseDto;
 import com.starterpack.pack.dto.PackUpdateRequestDto;
@@ -48,7 +50,18 @@ public class PackService {
     private final HashtagService hashtagService;
 
     @Transactional(readOnly = true)
-    public List<Pack> getPacks() {
+    public List<PackDetailResponseDto> getPacks(Member member) {
+        List<Pack> packs = packRepository.findAll();
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+
+
+        return convertPacksToDto(packs, member);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Pack> getPacksForAdmin() {
         List<Pack> packs = packRepository.findAll();
         packs.forEach(pack ->
                 pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
@@ -58,7 +71,16 @@ public class PackService {
     }
 
     @Transactional(readOnly = true)
-    public List<Pack> getPacksByCategory(Long categoryId) {
+    public List<PackDetailResponseDto> getPacksByCategory(Long categoryId, Member member) {
+        List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
+        packs.forEach(pack ->
+                pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
+        );
+        return convertPacksToDto(packs, member);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Pack> getPacksByCategoryForAdmin(Long categoryId) {
         List<Pack> packs = packRepository.findAllByCategoryIdWithItems(categoryId);
         packs.forEach(pack ->
                 pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName())
@@ -67,7 +89,25 @@ public class PackService {
     }
 
     @Transactional(readOnly = true)
-    public Pack getPackDetail(Long id) {
+    public PackDetailResponseDto getPackDetail(Long id, Member member) {
+        Pack pack = packRepository.findWithItemsById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
+        pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
+
+        if (member == null) {
+            return PackDetailResponseDto.forAnonymous(pack);
+        } else {
+            boolean isLiked = packLikeRepository.existsByPackAndMember(pack, member);
+            boolean isBookmarked = packBookmarkRepository.existsByPackAndMember(pack, member);
+
+            return PackDetailResponseDto.forMember(
+                    pack,
+                    InteractionStatusResponseDto.of(isLiked, isBookmarked));
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Pack getPackDetailForAdmin(Long id) {
         Pack pack = packRepository.findWithItemsById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PACK_NOT_FOUND));
         pack.getPackHashtags().forEach(ph -> ph.getHashtag().getName());
@@ -237,6 +277,33 @@ public class PackService {
         // 관리자이거나 작성자 본인인 경우만 허용
         if (!member.getRole().equals(Role.ADMIN) && !pack.isOwner(member)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED, "Pack을 수정/삭제할 권한이 없습니다.");
+        }
+    }
+
+    private List<PackDetailResponseDto> convertPacksToDto(List<Pack> packs, Member member) {
+        if (member == null) {
+            return packs.stream()
+                    .map(PackDetailResponseDto::forAnonymous)
+                    .toList();
+        } else {
+            List<Long> packIds = packs.stream().map(Pack::getId).toList();
+
+            Set<Long> likedPackIds = packLikeRepository.findPackIdsByMemberAndPackIds(member,
+                    packIds);
+
+            Set<Long> bookmarkedPackIds = packBookmarkRepository.findPackIdsByMemberAndPackIds(
+                    member, packIds);
+
+            return packs.stream()
+                    .map(pack -> {
+                        boolean isLiked = likedPackIds.contains(pack.getId());
+                        boolean isBookmarked = bookmarkedPackIds.contains(pack.getId());
+                        return PackDetailResponseDto.forMember(
+                                pack,
+                                InteractionStatusResponseDto.of(isLiked, isBookmarked)
+                        );
+                    })
+                    .toList();
         }
     }
 }

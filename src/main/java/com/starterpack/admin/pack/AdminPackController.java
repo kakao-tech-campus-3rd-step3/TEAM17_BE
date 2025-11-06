@@ -36,7 +36,7 @@ public class AdminPackController {
     public String listAll(Model model){
         model.addAttribute("categories", categoryService.findAllCategories());
 
-        List<Pack> packList = packService.getPacks();
+        List<Pack> packList = packService.getPacksForAdmin();
         List<PackResponseDto> packs = packList.stream()
                 .map(PackResponseDto::from)
                 .toList();
@@ -50,7 +50,7 @@ public class AdminPackController {
         model.addAttribute("categories", categoryService.findAllCategories());
         model.addAttribute("categoryId", categoryId);
 
-        List<PackResponseDto> packs = packService.getPacksByCategory(categoryId).stream()
+        List<PackResponseDto> packs = packService.getPacksByCategoryForAdmin(categoryId).stream()
                 .map(PackResponseDto::from)
                 .toList();
 
@@ -81,7 +81,7 @@ public class AdminPackController {
         }
 
         Pack created = packService.create(createDto, member);
-        PackDetailResponseDto dto = PackDetailResponseDto.from(created);
+        PackDetailResponseDto dto = PackDetailResponseDto.forAnonymous(created);
 
         redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 등록 완료");
         return "redirect:/admin/packs";
@@ -90,8 +90,8 @@ public class AdminPackController {
     /** 수정 폼 */
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        Pack pack = packService.getPackDetail(id);
-        PackDetailResponseDto detail = PackDetailResponseDto.from(pack);
+        Pack pack = packService.getPackDetailForAdmin(id);
+        PackDetailResponseDto detail = PackDetailResponseDto.forAnonymous(pack);
 
         // PackItem을 PackItemDto로 변환
         List<PackItemDto> items = detail.items();
@@ -132,9 +132,9 @@ public class AdminPackController {
         }
 
         Pack updated = packService.update(id, updateDto, member);
-        Pack packWithMember = packService.getPackDetail(updated.getId());
+        Pack packWithMember = packService.getPackDetailForAdmin(updated.getId());
 
-        PackDetailResponseDto dto = PackDetailResponseDto.from(packWithMember);
+        PackDetailResponseDto dto = PackDetailResponseDto.forAnonymous(packWithMember);
 
         redirectAttributes.addFlashAttribute("message", "패키지 '" + dto.name() + "' 수정 완료");
         return "redirect:/admin/packs";
