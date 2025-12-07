@@ -1,4 +1,4 @@
-# 🎒 실패 없는 취미 생활을 위한 장비 공유 및 커뮤니티 플랫폼 "장비빨"
+# 🎒 실패 없는 취미 생활을 위한 장비 공유 커뮤니티 플랫폼 "장비빨"
 <img width="255" height="118" alt="image" src="https://github.com/user-attachments/assets/ee147b2a-da9f-4469-a15e-d3d436115a2c" />
 
 ## 프로젝트 소개
